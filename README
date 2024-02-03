@@ -2,6 +2,8 @@ Required
 - npm
 - express
 - socket.io
+- nodemon (optional)
+npm i tmx-parser
 
 Initial code based on: 
 https://www.youtube.com/watch?v=4GQCkW23rTU
