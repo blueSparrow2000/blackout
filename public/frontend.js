@@ -15,10 +15,16 @@ const frontEndItems = {}
 const frontEndEnemies = {}
 const frontEndObjects = {}
 
+// player info 
+let frontEndPlayer
+let listen = true // very important for event listener 
+let PLAYERSPEEDFRONTEND = 0
+const PLAYERRADIUS = 16 
 
 const LobbyBGM = new Audio("/sound/Lobby.mp3")
 const shothitsound = new Audio("/sound/shothit.mp3")
 const playerdeathsound = new Audio("/sound/playerdeath.mp3")
+const interactSound = new Audio("/sound/interact.mp3")
 
 
 const mapImage = new Image();
@@ -29,13 +35,13 @@ charImage.src = "/character.png"
 
 
 // resolution upgrade - retina display gives value 2
-const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
+//const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
 
 const canvasEl = document.getElementById('canvas');
 canvasEl.width = window.innerWidth//SCREENWIDTH* devicePixelRatio//window.innerWidth* devicePixelRatio
 canvasEl.height = window.innerHeight//SCREENHEIGHT* devicePixelRatio//window.innerHeight* devicePixelRatio
 const canvas = canvasEl.getContext("2d");
-canvas.scale(devicePixelRatio,devicePixelRatio) 
+//canvas.scale(devicePixelRatio,devicePixelRatio) 
 
 const pointEl = document.querySelector('#pointEl')
 
@@ -43,6 +49,7 @@ const pointEl = document.querySelector('#pointEl')
 let map = [[]];
 const TILE_SIZE = 128;
 const TILES_IN_ROW = 23;
+
 
 // get socket
 const socket = io();//io(`ws://localhost:5000`);
@@ -55,11 +62,48 @@ socket.on('map', (loadedMap)=>{
     map = loadedMap;
 })
 
-// player info 
-let frontEndPlayer
-let listen = true // very important for event listener 
+// initialize server variables
+const gunInfoFrontEnd = {}
+let gunInfoKeysFrontEnd = []
 
+let frontEndGunSounds = {}
+let frontEndGunReloadSounds = {}
 
+let frontEndConsumableSounds = {}
+let consumableInfoKeysFrontEnd = []
+socket.on('serverVars',( {gunInfo, consumableInfo, PLAYERSPEED})=>{
+    PLAYERSPEEDFRONTEND = PLAYERSPEED
+  
+    // gun infos
+    gunInfoKeysFrontEnd = Object.keys(gunInfo)
+    for (let i=0;i<gunInfoKeysFrontEnd.length;i++){
+      const gunkey = gunInfoKeysFrontEnd[i]
+      gunInfoFrontEnd[gunkey] = gunInfo[gunkey]
+  
+      // load sounds
+      frontEndGunSounds[gunkey] =  new Audio(`/sound/${gunkey}.mp3`)
+      if (gunkey !== 'fist' && gunkey !== 'knife' && gunkey !== 'bat'){ // these three dont have reload sounds
+        frontEndGunReloadSounds[gunkey] = new Audio(`/reloadSound/${gunkey}.mp3`)
+      }
+    }
+  
+    // consumable infos
+    consumableInfoKeysFrontEnd = Object.keys(consumableInfo)
+    for (let i=0;i<consumableInfoKeysFrontEnd.length;i++){
+      const conskey = consumableInfoKeysFrontEnd[i]
+      gunInfoFrontEnd[conskey] = consumableInfo[conskey]
+  
+      // load sounds
+      frontEndConsumableSounds[conskey] =  new Audio(`/consumeSound/${conskey}.mp3`)
+    }
+  
+  
+  
+  
+    console.log("front end got the variables from the server")
+  })
+
+  
 const keys = {
     w:{
       pressed: false
@@ -97,152 +141,158 @@ const keys = {
     r:{ // reload
       pressed: false
     },
-  }
+}
 
 
-  window.addEventListener('keydown', (event) => {
-    //if (!frontEndPlayers[socket.id]) return // if player does not exist
-  
-    switch(event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
-        keys.w.pressed = true
-        break
-      case 'KeyA':
-      case 'ArrowLeft':
-        keys.a.pressed = true
-        break
-      case 'KeyS':
-      case 'ArrowDown':
-        keys.s.pressed = true
-        break
-      case 'KeyD':
-      case 'ArrowRight':
-        keys.d.pressed = true
-        break
-      case 'Digit1':
-        keys.digit1.pressed = true
-        break
-      case 'Digit2':
-        keys.digit2.pressed = true
-        break
-      case 'Digit3':
-        keys.digit3.pressed = true
-        break
-      case 'Digit4':
-        keys.digit4.pressed = true
-        break
-      case 'KeyF':
-        keys.f.pressed = true
-        break
-      case 'Space':
-        keys.space.pressed = true
-        break
-      case 'KeyG':
-        keys.g.pressed = true
-        break
-      case 'KeyR':
-        keys.r.pressed = true
-        break
-    }
-  })
-  
-  window.addEventListener('keyup',(event)=>{
-    //if (!frontEndPlayers[socket.id]) return // if player does not exist
-    switch(event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
-        keys.w.pressed = false
-        break
-      case 'KeyA':
-      case 'ArrowLeft':
-        keys.a.pressed = false
-        break
-      case 'KeyS':
-      case 'ArrowDown':
-        keys.s.pressed = false
-        break
-      case 'KeyD':
-      case 'ArrowRight':
-        keys.d.pressed = false
-        break
-      case 'Digit1':
-        keys.digit1.pressed = false
-        break
-      case 'Digit2':
-        keys.digit2.pressed = false
-        break
-      case 'Digit3':
-        keys.digit3.pressed = false
-        break
-      case 'Digit4':
-        keys.digit4.pressed = false
-        break
-      case 'KeyF':
-        keys.f.pressed = false
-        break
-      case 'Space':
-        keys.space.pressed = false
-        break
-      case 'KeyG':
-        keys.g.pressed = false
-        break
-      case 'KeyR':
-        keys.r.pressed = false
-        break
-    }
-  })
-  
-  addEventListener('mousemove', (event) => {
+window.addEventListener('keydown', (event) => {
+//if (!frontEndPlayers[socket.id]) return // if player does not exist
+
+switch(event.code) {
+    case 'KeyW':
+    case 'ArrowUp':
+    keys.w.pressed = true
+    break
+    case 'KeyA':
+    case 'ArrowLeft':
+    keys.a.pressed = true
+    break
+    case 'KeyS':
+    case 'ArrowDown':
+    keys.s.pressed = true
+    break
+    case 'KeyD':
+    case 'ArrowRight':
+    keys.d.pressed = true
+    break
+    case 'Digit1':
+    keys.digit1.pressed = true
+    break
+    case 'Digit2':
+    keys.digit2.pressed = true
+    break
+    case 'Digit3':
+    keys.digit3.pressed = true
+    break
+    case 'Digit4':
+    keys.digit4.pressed = true
+    break
+    case 'KeyF':
+    keys.f.pressed = true
+    break
+    case 'Space':
+    keys.space.pressed = true
+    break
+    case 'KeyG':
+    keys.g.pressed = true
+    break
+    case 'KeyR':
+    keys.r.pressed = true
+    break
+}
+})
+
+window.addEventListener('keyup',(event)=>{
+//if (!frontEndPlayers[socket.id]) return // if player does not exist
+switch(event.code) {
+    case 'KeyW':
+    case 'ArrowUp':
+    keys.w.pressed = false
+    break
+    case 'KeyA':
+    case 'ArrowLeft':
+    keys.a.pressed = false
+    break
+    case 'KeyS':
+    case 'ArrowDown':
+    keys.s.pressed = false
+    break
+    case 'KeyD':
+    case 'ArrowRight':
+    keys.d.pressed = false
+    break
+    case 'Digit1':
+    keys.digit1.pressed = false
+    break
+    case 'Digit2':
+    keys.digit2.pressed = false
+    break
+    case 'Digit3':
+    keys.digit3.pressed = false
+    break
+    case 'Digit4':
+    keys.digit4.pressed = false
+    break
+    case 'KeyF':
+    keys.f.pressed = false
+    break
+    case 'Space':
+    keys.space.pressed = false
+    break
+    case 'KeyG':
+    keys.g.pressed = false
+    break
+    case 'KeyR':
+    keys.r.pressed = false
+    break
+}
+})
+
+addEventListener('mousemove', (event) => {
     const {top, left} = canvasEl.getBoundingClientRect()
     // update mousepos if changed
     cursorX = (event.clientX-left)
     cursorY = (event.clientY-top)
-  })
+})
 
-  
-  // periodically request backend server
-  setInterval(()=>{
-    if (keys.digit1.pressed){
-      socket.emit('keydown',{keycode:'Digit1'})
-    }
-    if (keys.digit2.pressed){
-      socket.emit('keydown',{keycode:'Digit2'})
-    }
-    if (keys.digit3.pressed){
-      socket.emit('keydown',{keycode:'Digit3'})
-    }
-    if (keys.digit4.pressed){
-      socket.emit('keydown',{keycode:'Digit4'})
-    }
-    if (keys.f.pressed){
-      socket.emit('keydown',{keycode:'KeyF'})
-    }
-    // dont have to emit since they are seen by me(a client, not others)
-    if (keys.g.pressed){
-      socket.emit('keydown',{keycode:'KeyG'})
-    }
-    if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
-      socket.emit('keydown',{keycode:'KeyR'})
-    }
-  
-    const Movement = keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed
-  
-    if (Movement && keys.space.pressed){ // always fire hold = true since space was pressed
-    // update frequent keys at once (Movement & hold shoot)
-      socket.emit('moveNshootUpdate', {WW: keys.w.pressed, AA: keys.a.pressed,SS: keys.s.pressed,DD: keys.d.pressed, x:cursorX, y:cursorY})
-  
-    } else if (Movement){
-    // update frequent keys at once (Movement only)
-      socket.emit('movingUpdate', {WW: keys.w.pressed, AA: keys.a.pressed, SS: keys.s.pressed, DD: keys.d.pressed, x:cursorX, y:cursorY})
-  
-    } else if(keys.space.pressed){ // always fire hold = true since space was pressed
-      socket.emit('holdUpdate',{x:cursorX, y:cursorY})
-  
-    } else{ // builtin
-      socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
-    } 
-  },TICKRATE)
+addEventListener('click', (event) => {
+    const angle = Math.atan2(event.clientY - canvasEl.height/2, event.clientX - canvasEl.width/2)
+    socket.emit("shoot", angle)
+})
+
+
+
+// periodically request backend server
+setInterval(()=>{
+if (keys.digit1.pressed){
+    socket.emit('keydown',{keycode:'Digit1'})
+}
+if (keys.digit2.pressed){
+    socket.emit('keydown',{keycode:'Digit2'})
+}
+if (keys.digit3.pressed){
+    socket.emit('keydown',{keycode:'Digit3'})
+}
+if (keys.digit4.pressed){
+    socket.emit('keydown',{keycode:'Digit4'})
+}
+if (keys.f.pressed){
+    socket.emit('keydown',{keycode:'KeyF'})
+}
+// dont have to emit since they are seen by me(a client, not others)
+if (keys.g.pressed){
+    socket.emit('keydown',{keycode:'KeyG'})
+}
+if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
+    socket.emit('keydown',{keycode:'KeyR'})
+}
+
+const Movement = keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed
+
+if (Movement && keys.space.pressed){ // always fire hold = true since space was pressed
+// update frequent keys at once (Movement & hold shoot)
+    socket.emit('moveNshootUpdate', {WW: keys.w.pressed, AA: keys.a.pressed,SS: keys.s.pressed,DD: keys.d.pressed, x:cursorX, y:cursorY})
+
+} else if (Movement){
+// update frequent keys at once (Movement only)
+    socket.emit('movingUpdate', {WW: keys.w.pressed, AA: keys.a.pressed, SS: keys.s.pressed, DD: keys.d.pressed, x:cursorX, y:cursorY})
+
+} else if(keys.space.pressed){ // always fire hold = true since space was pressed
+    socket.emit('holdUpdate',{x:cursorX, y:cursorY})
+
+} else{ // builtin
+    socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
+} 
+},TICKRATE)
 
 
 
@@ -285,8 +335,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else {      // player already exists
             let frontEndPlayerOthers = frontEndPlayers[id] 
 
-            frontEndPlayerOthers.x = backEndPlayer.x
-            frontEndPlayerOthers.y = backEndPlayer.y
+            frontEndPlayerOthers.x = parseInt(backEndPlayer.x)
+            frontEndPlayerOthers.y = parseInt(backEndPlayer.y)
 
             // update players attributes
             frontEndPlayerOthers.health = backEndPlayer.health
@@ -370,50 +420,50 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
     // }
   
     /////////////////////////////////////////////////// 3.PROJECTILES //////////////////////////////////////////////////
-    // for (const id in backEndProjectiles) {
-    //   const backEndProjectile = backEndProjectiles[id]
-    //   const gunName = backEndProjectile.gunName
+    for (const id in backEndProjectiles) {
+      const backEndProjectile = backEndProjectiles[id]
+      const gunName = backEndProjectile.gunName
   
-    //   if (!frontEndProjectiles[id]){ // new projectile
-    //     frontEndProjectiles[id] = new Projectile({
-    //       x: backEndProjectile.x, 
-    //       y: backEndProjectile.y, 
-    //       radius: backEndProjectile.radius, 
-    //       color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
-    //       velocity: backEndProjectile.velocity,
-    //       gunName
-    //     })
+      if (!frontEndProjectiles[id]){ // new projectile
+        frontEndProjectiles[id] = new Projectile({
+          x: backEndProjectile.x, 
+          y: backEndProjectile.y, 
+          radius: backEndProjectile.radius, 
+          color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
+          velocity: backEndProjectile.velocity,
+          gunName
+        })
   
-    //       // player close enough should hear the sound (when projectile created) - for me
-    //       const me = frontEndPlayers[myPlayerID]
-    //       if (me){
+          // player close enough should hear the sound (when projectile created) - for me
+          const me = frontEndPlayers[myPlayerID]
+          if (me){
   
-    //         const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
-    //         const thatGunSoundDistance = gunInfoFrontEnd[gunName].projectileSpeed * 20
-    //         if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
-    //           let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
-    //           if (DISTANCE > 100){
-    //             gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
-    //           }
-    //           gunSound.play()
-    //           gunSound.remove()
-    //         }
-    //       }
+            const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
+            const thatGunSoundDistance = 900
+            if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
+              let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
+              if (DISTANCE > 100){
+                gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
+              }
+              gunSound.play()
+              gunSound.remove()
+            }
+          }
   
-    //   } else { // already exist
-    //     let frontEndProj = frontEndProjectiles[id]
-    //     frontEndProj.x = backEndProjectile.x
-    //     frontEndProj.y = backEndProjectile.y
+      } else { // already exist
+        let frontEndProj = frontEndProjectiles[id]
+        frontEndProj.x = backEndProjectile.x
+        frontEndProj.y = backEndProjectile.y
 
-    //   }
+      }
     
-    // }
-    // // remove deleted projectiles
-    // for (const frontEndProjectileId in frontEndProjectiles){
-    //   if (!backEndProjectiles[frontEndProjectileId]){
-    //    delete frontEndProjectiles[frontEndProjectileId]
-    //   }
-    // }
+    }
+    // remove deleted projectiles
+    for (const frontEndProjectileId in frontEndProjectiles){
+      if (!backEndProjectiles[frontEndProjectileId]){
+       delete frontEndProjectiles[frontEndProjectileId]
+      }
+    }
   
   
     /////////////////////////////////////////////////// 4.OBJECTS //////////////////////////////////////////////////
@@ -470,12 +520,25 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
     //   }
     // }
   
-  })
+})
 
+// init cam
+let camX = 100
+let camY = 100
+
+const centerX = parseInt(canvasEl.width/2)
+const centerY = parseInt(canvasEl.height/2)
 
 canvas.font ='italic bold 12px sans-serif'
 function loop(){
-    canvas.clearRect(0,0,canvas.width, canvas.height)    
+    canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
+
+    
+    if (frontEndPlayer){ // if exists
+        camX = frontEndPlayer.x - centerX
+        camY = frontEndPlayer.y - centerY
+    }
+
     for (let row = 0;row < map.length;row++){
         for (let col = 0;col < map[0].length;col++){
             const { id } = map[row][col];
@@ -486,20 +549,35 @@ function loop(){
                 imageCol * TILE_SIZE,
                 imageRow * TILE_SIZE,
                 TILE_SIZE,TILE_SIZE,
-                col*TILE_SIZE, 
-                row*TILE_SIZE,
+                col*TILE_SIZE - camX, 
+                row*TILE_SIZE - camY,
                 TILE_SIZE,TILE_SIZE
                 );
         }
     }
 
-    canvas.fillStyle = 'white'
-    for (const id in frontEndPlayers){
-        const currentPlayer = frontEndPlayers[id]
-        canvas.drawImage(charImage, currentPlayer.x, currentPlayer.y)
-        currentPlayer.displayName(canvas)
 
+    for (const id in frontEndProjectiles){ 
+        const frontEndProjectile = frontEndProjectiles[id]
+        frontEndProjectile.draw(canvas, camX, camY)
     }
+
+
+    canvas.fillStyle = 'white'
+    // draw myself in the center
+    if (frontEndPlayer){
+        canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
+        canvas.fillText(`HP: ${Math.round(frontEndPlayer.health * 100) / 100}`,centerX - 4 - PLAYERRADIUS, centerY - PLAYERRADIUS)
+    }
+
+    for (const id in frontEndPlayers){
+        if (id !== socket.id){
+            const currentPlayer = frontEndPlayers[id]
+            canvas.drawImage(charImage, currentPlayer.x - camX, currentPlayer.y - camY)
+            currentPlayer.displayName(canvas, camX, camY)
+        }
+    }
+
 
 
     window.requestAnimationFrame(loop);
@@ -532,8 +610,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     
-    const playerX = 0 //MAPWIDTH * Math.random()
-    const playerY = 0 //MAPHEIGHT * Math.random()
+    const playerX = MAPWIDTH * Math.random()
+    const playerY = MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
     
     socket.emit('initGame', {username: document.querySelector('#usernameInput').value, playerX, playerY, playerColor})

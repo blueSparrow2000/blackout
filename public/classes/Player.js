@@ -15,9 +15,9 @@ class Player{
       this.wearingarmorID = wearingarmorID
     }
 
-    displayName(canvas) {
-      canvas.fillText(this.username,this.x - this.username.length ,this.y - this.radius*2)
-      canvas.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 12 ,this.y - this.radius)
+    displayName(canvas, camX, camY) {
+      canvas.fillText(this.username,this.x - this.username.length - camX ,this.y - this.radius*2 - camY)
+      canvas.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 4  - camX ,this.y - this.radius - camY)
     //   const itemName = currentHoldingItem.name
     //   c.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14 ,this.y + this.radius*3)
     
