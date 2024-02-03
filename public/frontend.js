@@ -46,7 +46,8 @@ const canvas = canvasEl.getContext("2d");
 const pointEl = document.querySelector('#pointEl')
 
 // map info
-let map = [[]];
+let groundMap = [[]];
+let decalMap = [[]];
 const TILE_SIZE = 128;
 const TILES_IN_ROW = 23;
 
@@ -59,7 +60,8 @@ socket.on('connect', ()=>{
 })
 
 socket.on('map', (loadedMap)=>{
-    map = loadedMap;
+    groundMap = loadedMap.ground;
+    decalMap = loadedMap.decals;
 })
 
 // initialize server variables
@@ -533,15 +535,15 @@ canvas.font ='italic bold 12px sans-serif'
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
 
-    
     if (frontEndPlayer){ // if exists
         camX = frontEndPlayer.x - centerX
         camY = frontEndPlayer.y - centerY
     }
 
-    for (let row = 0;row < map.length;row++){
-        for (let col = 0;col < map[0].length;col++){
-            const { id } = map[row][col];
+    // ground tiles
+    for (let row = 0;row < groundMap.length;row++){
+        for (let col = 0;col < groundMap[0].length;col++){
+            const { id } = groundMap[row][col];
             const imageRow = parseInt(id / TILES_IN_ROW);
             const imageCol = id % TILES_IN_ROW;
 
@@ -555,6 +557,7 @@ function loop(){
                 );
         }
     }
+    
 
 
     for (const id in frontEndProjectiles){ 
@@ -573,11 +576,28 @@ function loop(){
     for (const id in frontEndPlayers){
         if (id !== socket.id){
             const currentPlayer = frontEndPlayers[id]
-            canvas.drawImage(charImage, currentPlayer.x - camX, currentPlayer.y - camY)
+            canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
             currentPlayer.displayName(canvas, camX, camY)
         }
     }
 
+    // decals
+    for (let row = 0;row < groundMap.length;row++){
+        for (let col = 0;col < groundMap[0].length;col++){
+            const { id } = decalMap[row][col] ?? {id:undefined};
+            const imageRow = parseInt(id / TILES_IN_ROW);
+            const imageCol = id % TILES_IN_ROW;
+
+            canvas.drawImage(mapImage, 
+                imageCol * TILE_SIZE,
+                imageRow * TILE_SIZE,
+                TILE_SIZE,TILE_SIZE,
+                col*TILE_SIZE - camX, 
+                row*TILE_SIZE - camY,
+                TILE_SIZE,TILE_SIZE
+                );
+        }
+    }
 
 
     window.requestAnimationFrame(loop);

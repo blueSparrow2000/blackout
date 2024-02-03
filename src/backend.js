@@ -132,11 +132,11 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
   
 
 async function main(){
-    const map2D = await loadMap();
+    const {ground2D, decals2D} = await loadMap();
 
     io.on("connect", (socket) => {
         console.log("user connected",socket.id);
-        socket.emit('map',map2D)
+        socket.emit('map',{ground:ground2D, decals: decals2D})
         // give server info to a frontend
         socket.emit('serverVars', {gunInfo, consumableInfo, PLAYERSPEED})
 

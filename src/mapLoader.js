@@ -9,19 +9,29 @@ async function loadMap() {
           });
     })
     
-    const layer = map.layers[0];
-    const tiles = layer.tiles;
-    const map2D = [];
+    const groundtiles = map.layers[0].tiles;
+    const decaltiles = map.layers[1].tiles;
+    const ground2D = [];
+    const decals2D = [];
     for (let row=0;row<map.height;row++){
         const tileRow=[];
+        const decaltileRow=[];
         for (let col=0;col<map.width;col++){
-            const tile = tiles[row*map.height+col]
+            const tile = groundtiles[row*map.height+col] 
+            const decaltile = decaltiles[row*map.height+col] 
             tileRow.push({id:tile.id, gid: tile.gid});
+            if (decaltile){
+                decaltileRow.push({id:decaltile.id, gid: decaltile.gid});
+            }else{
+                decaltileRow.push(undefined);
+            }
+            
         }
-        map2D.push(tileRow);
+        ground2D.push(tileRow);
+        decals2D.push(decaltileRow);
     }
-    //console.log("map2D", map2D)
-    return map2D;
+    //console.log("ground2D", ground2D)
+    return {ground2D, decals2D};
 }
 
 module.exports = loadMap;
