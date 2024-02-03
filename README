@@ -1,3 +1,10 @@
-How to run server
+Required
+- npm
+- express
+- socket.io
 
-npm run dev
+Initial code based on: 
+https://www.youtube.com/watch?v=4GQCkW23rTU
+
+How to run the server
+> npm run dev
