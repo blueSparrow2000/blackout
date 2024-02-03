@@ -16,7 +16,6 @@ async function main(){
         console.log("user connected",socket.id);
 
         socket.emit('map',map2D)
-
       });
 
 

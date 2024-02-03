@@ -19,6 +19,7 @@ socket.on('connect', ()=>{
 
 socket.on('map', (loadedMap)=>{
     map = loadedMap;
+    console.log(map)
 })
 
 
@@ -26,8 +27,8 @@ const TILES_IN_ROW = 23;
 
 function loop(){
     canvas.clearRect(0,0,canvas.width, canvas.height)    
-    for (let row = 0;row<map.length;row++){
-        for (let col = 0;col<map.length;col++){
+    for (let row = 0;row < map.length;row++){
+        for (let col = 0;col < map[0].length;col++){
             const { id } = map[row][col];
             const imageRow = parseInt(id / TILES_IN_ROW);
             const imageCol = id % TILES_IN_ROW;
