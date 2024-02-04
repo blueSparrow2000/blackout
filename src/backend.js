@@ -5,6 +5,8 @@ const SCREENHEIGHT = 576
 
 const MAPWIDTH = 128*30
 const MAPHEIGHT = 128*30
+const TILE_SIZE = 128;
+const TILES_IN_ROW = 23;
 
 const collide = require('line-circle-collision')
 
@@ -50,22 +52,26 @@ const FRICTION = 0.999//0.992
 
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
-let ENEMYSPAWNRATE = 10000
-let ENEMYNUM = 3
+let ENEMYSPAWNRATE = 30000
+let ENEMYNUM = 2
 let ENEMYCOUNT = 0
 
 const GROUNDITEMFLAG = true
 let GHOSTENEMY = false
+
+const ENTITYDISTRIBUTIONS = ["test", "battleRoyale"]
+const ENTITYDISTRIBUTION_MARK = 1
+
 
 const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     
-    'M1':{travelDistance:2000, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
+    'M1':{travelDistance:1400, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
     'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
-    'AWM':{travelDistance:2400, damage: 9, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
+    'AWM':{travelDistance:1600, damage: 9, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
 
     'pistol':{travelDistance:500, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
     'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
@@ -125,37 +131,75 @@ function armorEffect(armorID, damage){
 
 // GROUND drop items
 if (GROUNDITEMFLAG){
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:1000,y:1000}, end:{x:1000,y:2000}, width:20, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:2000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:1500,y:1000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:1000}, end:{x:1500,y:1000}, width:20, color: 'gray'})
-
-  makeObjects("hut", 1000, {center:{x:1250,y:1500}, radius: 50, color:'gray'})
-
-  const groundItemSpawnLoc = {x:500, y:500}
-  const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const groundGunAmount = groundgunList.length
-  for (let i=0;i<groundGunAmount; i++){
-    makeNdropItem('gun', groundgunList[i], groundItemSpawnLoc.x + Math.round(60*(i - groundGunAmount/2)), groundItemSpawnLoc.y )
-  }
+  if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="test"){
+    makeObjects("wall", 30, {orientation: 'vertical',start:{x:1000,y:1000}, end:{x:1000,y:2000}, width:20, color: 'gray'})
+    makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:2000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
+    makeObjects("wall", 30, {orientation: 'vertical',start:{x:1500,y:1000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
+    makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:1000}, end:{x:1500,y:1000}, width:20, color: 'gray'})
   
+    makeObjects("hut", 1000, {center:{x:1250,y:1500}, radius: 50, color:'gray'})
   
-  const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
-  const groundConsAmount = groundConsList.length
-  for (let i=0;i<groundConsAmount; i++){
-    makeNdropItem('consumable', groundConsList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundConsAmount/2)), groundItemSpawnLoc.y - 100)
+    const groundItemSpawnLoc = {x:500, y:500}
+    const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+    const groundGunAmount = groundgunList.length
+    for (let i=0;i<groundGunAmount; i++){
+      makeNdropItem('gun', groundgunList[i], groundItemSpawnLoc.x + Math.round(60*(i - groundGunAmount/2)), groundItemSpawnLoc.y )
+    }
+    
+    const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
+    const groundConsAmount = groundConsList.length
+    for (let i=0;i<groundConsAmount; i++){
+      makeNdropItem('consumable', groundConsList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundConsAmount/2)), groundItemSpawnLoc.y - 100)
+    }
+  
+    const groundArmorAmount = armorTypes.length
+    for (let i=0;i<groundArmorAmount; i++){
+      makeNdropItem( 'armor', armorTypes[i], groundItemSpawnLoc.x + Math.round(50*(i - groundArmorAmount/2)), groundItemSpawnLoc.y - 150)
+    }
+  
+    const groundMeleeList = ['knife','bat']
+    const groundMeleeAmount = groundMeleeList.length
+    for (let i=0;i<groundMeleeAmount; i++){
+      makeNdropItem('melee', groundMeleeList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundMeleeAmount/2)), groundItemSpawnLoc.y - 200)
+    }
   }
 
-  const groundArmorAmount = armorTypes.length
-  for (let i=0;i<groundArmorAmount; i++){
-    makeNdropItem( 'armor', armorTypes[i], groundItemSpawnLoc.x + Math.round(50*(i - groundArmorAmount/2)), groundItemSpawnLoc.y - 150)
+  if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
+    // special tile locations in map1
+    const TILESLOC = {"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
+    function getCoordTiles(location){
+      return {x:location.col*TILE_SIZE + parseInt(TILE_SIZE/2), y:location.row*TILE_SIZE + parseInt(TILE_SIZE/2)}
+    }
+
+    // some guns 
+    const rock1loc = getCoordTiles(TILESLOC["rock1"])
+    makeNdropItem('gun', 'AWM', rock1loc.x, rock1loc.y)
+    // console.log(rockloc)
+    // console.log(MAPWIDTH)
+    const rock2loc = getCoordTiles(TILESLOC["rock2"])
+    makeNdropItem('gun', 'M249', rock2loc.x, rock2loc.y)
+
+    const sandroad1loc = getCoordTiles(TILESLOC["sandroad1"])
+    makeNdropItem('gun', 'mp5', sandroad1loc.x, sandroad1loc.y)
+
+    const sandroad2loc = getCoordTiles(TILESLOC["sandroad2"])
+    makeNdropItem('gun', 'usas12', sandroad2loc.x, sandroad2loc.y)
+
+
+    // some health packs
+    const tree1loc = getCoordTiles(TILESLOC["tree1"])
+    makeNdropItem('consumable', 'medkit',tree1loc.x, tree1loc.y)
+
+    // some armors
+    const forest1loc = getCoordTiles(TILESLOC["forest1"])
+    makeNdropItem( 'armor', 'absorb', forest1loc.x, forest1loc.y)
+
+    const forest2loc = getCoordTiles(TILESLOC["forest2"])
+    makeNdropItem( 'armor', 'reduce', forest2loc.x, forest2loc.y)
+
+
   }
 
-  const groundMeleeList = ['knife','bat']
-  const groundMeleeAmount = groundMeleeList.length
-  for (let i=0;i<groundMeleeAmount; i++){
-    makeNdropItem('melee', groundMeleeList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundMeleeAmount/2)), groundItemSpawnLoc.y - 200)
-  }
 }
 
 
