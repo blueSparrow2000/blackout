@@ -10,21 +10,21 @@ class Item {
       this.onground = onground // before pickup: true
       this.haloRadius = Math.max(this.length,this.width)/2 + 5
     }
-    draw(canvas, camX, camY) { // on the ground
+    draw(canvas, camX, camY, {img,offset}) { // on the ground
       if (this.onground){
-        canvas.beginPath()
-        canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
-        canvas.lineWidth = 3
-        canvas.strokeStyle = 'gray'
-        canvas.stroke()
+        canvas.drawImage(img, this.groundx-camX-offset, this.groundy-camY-offset)
+        
+        // canvas.beginPath()
+        // canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
+        // canvas.lineWidth = 3
+        // canvas.strokeStyle = 'gray'
+        // canvas.stroke()
 
-        // name
-        canvas.fillStyle = 'white'
-        canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
+        // // name
+        // canvas.fillStyle = 'white'
+        // canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
       }
     }
-
-
   }
 
 
@@ -53,7 +53,7 @@ class Consumable extends Item {
       this.gap = 2
       this.barlen = 4
   }
-  draw(canvas, camX, camY) { // on the ground
+  draw(canvas, camX, camY, {img,offset}) { // on the ground
     if (this.onground){
 
       canvas.beginPath()
@@ -97,7 +97,7 @@ class Armor extends Item {
       this.amount = iteminfo.amount
       this.itemtype = 'armor'
   }
-  draw(canvas, camX, camY) { // on the ground
+  draw(canvas, camX, camY,{img,offset}) { // on the ground
     if (this.onground){
       canvas.beginPath()
       canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)

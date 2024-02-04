@@ -58,9 +58,9 @@ const GROUNDITEMFLAG = true
 let GHOSTENEMY = false
 
 const gunInfo = {
-    'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
-    'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
-    'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
+    // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
+    // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
+    // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     
     'M1':{travelDistance:2000, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -81,9 +81,9 @@ const gunInfo = {
     'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
-    'fist':{travelDistance:12, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
-    'knife':{travelDistance:15, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
-    'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
+    'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
+    'knife':{travelDistance:30, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
+    'bat':{travelDistance:36, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
 }
 const defaultGuns = ['pistol']//[] 
 
@@ -127,7 +127,10 @@ function armorEffect(armorID, damage){
 if (GROUNDITEMFLAG){
   makeObjects("wall", 30, {orientation: 'vertical',start:{x:1000,y:1000}, end:{x:1000,y:2000}, width:20, color: 'gray'})
   makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:2000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
-  
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:1500,y:1000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:1000}, end:{x:1500,y:1000}, width:20, color: 'gray'})
+
+  makeObjects("hut", 1000, {center:{x:1250,y:1500}, radius: 50, color:'gray'})
 
   const groundItemSpawnLoc = {x:500, y:500}
   const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
@@ -919,11 +922,11 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
   if (leaveDrop){
     const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
     const chance = Math.random()
-    if (chance < 0.1){ // 10% chance to drop medkit
+    if (chance < 0.01){ // 1% chance to drop medkit
       makeNdropItem( 'consumable', 'medkit', enemyInfoGET.x,enemyInfoGET.y)
-    } else if (0.1 < chance && chance < 0.2){ //10% change to drop bandage
+    } else if (0.01 < chance && chance < 0.03){ // 2% chance to drop bandage
       makeNdropItem( 'consumable', 'bandage', enemyInfoGET.x,enemyInfoGET.y)
-    } else if (chance>0.99){ // 1% to drop guns
+    } else if (chance>0.999){ // 0.1% to drop guns
       makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
     } 
   } 

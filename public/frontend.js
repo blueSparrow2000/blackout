@@ -38,7 +38,6 @@ mapImage.src = "/tiles1.png"
 const charImage = new Image();
 charImage.src = "/character.png"
 
-
 // resolution upgrade - retina display gives value 2
 //const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
 
@@ -75,6 +74,7 @@ let gunInfoKeysFrontEnd = []
 
 let frontEndGunSounds = {}
 let frontEndGunReloadSounds = {}
+let gunImages = {}
 
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
@@ -92,6 +92,11 @@ socket.on('serverVars',( {gunInfo, consumableInfo, PLAYERSPEED})=>{
       if (gunkey !== 'fist' && gunkey !== 'knife' && gunkey !== 'bat'){ // these three dont have reload sounds
         frontEndGunReloadSounds[gunkey] = new Audio(`/reloadSound/${gunkey}.mp3`)
       }
+
+      // load images
+      gunImages[gunkey] = new Image()
+      gunImages[gunkey].src = `/gunImages/${gunkey}.png`
+
     }
   
     // consumable infos
@@ -793,10 +798,12 @@ function loop(){
     // ITEMS
     for (const id in frontEndItems){
       const item = frontEndItems[id]
-      item.draw(canvas, camX, camY)
+      const gunImg = gunImages[item.name]
+      item.draw(canvas, camX, camY, {img:gunImg,offset:PLAYERRADIUS})
     }
   
     // PROJECTILES
+    canvas.strokeStyle = 'black'
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
         frontEndProjectile.draw(canvas, camX, camY)
@@ -809,12 +816,6 @@ function loop(){
     }
 
 
-    // WALLS
-    for (const id in frontEndObjects){
-      const obj = frontEndObjects[id]
-      obj.draw(canvas, camX, camY)
-    }
-
     // PLAYERS
     canvas.fillStyle = 'white'
     if (frontEndPlayer){ // draw myself in the center
@@ -826,6 +827,7 @@ function loop(){
           frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo,canvasEl)
         }
         canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
+        // canvas.drawImage(gunImages['AWM'], centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
     }
 
     for (const id in frontEndPlayers){ 
@@ -842,14 +844,19 @@ function loop(){
       }
     }
 
-    // PLANTS AND BUSHES
+
+    
+    // PLANTS AND BUSHES - indexing starts from 0, top left 
     for (let row = 0;row < groundMap.length;row++){
         for (let col = 0;col < groundMap[0].length;col++){
             const { id } = decalMap[row][col] ?? {id:undefined};
             const imageRow = parseInt(id / TILES_IN_ROW);
             const imageCol = id % TILES_IN_ROW;
 
-            canvas.drawImage(mapImage, 
+            if (130 <= id && id <= 134){ // grass - opacity
+              canvas.save();
+              canvas.globalAlpha = 0.9;
+              canvas.drawImage(mapImage, 
                 imageCol * TILE_SIZE,
                 imageRow * TILE_SIZE,
                 TILE_SIZE,TILE_SIZE,
@@ -857,7 +864,28 @@ function loop(){
                 row*TILE_SIZE - camY,
                 TILE_SIZE,TILE_SIZE
                 );
+              canvas.restore();
+            } else if(135 <= id && id <= 137){ // rocks - non-opaque
+              canvas.drawImage(mapImage, 
+                imageCol * TILE_SIZE,
+                imageRow * TILE_SIZE,
+                TILE_SIZE,TILE_SIZE,
+                col*TILE_SIZE - camX, 
+                row*TILE_SIZE - camY,
+                TILE_SIZE,TILE_SIZE
+                );
+            }
+
+
         }
+    }
+
+    // WALLS
+    canvas.strokeStyle ='gray'
+    canvas.fillStyle = 'gray'
+    for (const id in frontEndObjects){
+      const obj = frontEndObjects[id]
+      obj.draw(canvas, camX, camY)
     }
 
     // OTHERS

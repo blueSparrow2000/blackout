@@ -22,7 +22,6 @@ class ObjectEntity {
           canvas.beginPath()
           canvas.moveTo(this.start.x-camX,this.start.y-camY)
           canvas.lineTo(this.end.x-camX,this.end.y-camY)
-          canvas.strokeStyle = this.color
           canvas.lineWidth = this.linewidth * (this.health)/this.originalHealth
           canvas.stroke()
       }
@@ -83,8 +82,8 @@ class ObjectEntity {
       draw(canvas, camX, camY) { // on the ground
           canvas.beginPath()
           canvas.arc(this.x-camX, this.y-camY, this.radius , 0, Math.PI * 2, false)
-          canvas.fillStyle = this.color
           canvas.fill()
+
       }
       drawShade(playerX,playerY){
        //pass 
