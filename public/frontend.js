@@ -265,7 +265,10 @@ function shootCheck(event){
 
 
   // get currently holding item
-  let currentHoldingItem = getCurItem(frontEndPlayer)
+  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
+  if (!inventoryPointer) {inventoryPointer = 0} // default 0
+  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
+  let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
   if (!currentHoldingItem) {return} // undefined case
 
@@ -619,35 +622,35 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         }
     }
     /////////////////////////////////////////////////// 2.ENEMIES //////////////////////////////////////////////////
-    // for (const id in backEndEnemies) {
-    //   const backEndEnemy = backEndEnemies[id]
+    for (const id in backEndEnemies) {
+      const backEndEnemy = backEndEnemies[id]
   
-    //   if (!frontEndEnemies[id]){ // new 
-    //     frontEndEnemies[id] = new Enemy({
-    //       x: backEndEnemy.x, 
-    //       y: backEndEnemy.y, 
-    //       radius: backEndEnemy.radius, 
-    //       color: backEndEnemy.color, 
-    //       velocity: backEndEnemy.velocity,
-    //       damage: backEndEnemy.damage,
-    //       health: backEndEnemy.health,
-    //       wearingarmorID: backEndEnemy.wearingarmorID
-    //     })
+      if (!frontEndEnemies[id]){ // new 
+        frontEndEnemies[id] = new Enemy({
+          x: backEndEnemy.x, 
+          y: backEndEnemy.y, 
+          radius: backEndEnemy.radius, 
+          color: backEndEnemy.color, 
+          velocity: backEndEnemy.velocity,
+          damage: backEndEnemy.damage,
+          health: backEndEnemy.health,
+          wearingarmorID: backEndEnemy.wearingarmorID
+        })
   
-    //   } else { // already exist
-    //     let frontEndEnemy = frontEndEnemies[id]
-    //     frontEndEnemy.health = backEndEnemy.health
-    //     frontEndEnemy.x = backEndEnemy.x
-    //     frontEndEnemy.y = backEndEnemy.y
-    //   }
+      } else { // already exist
+        let frontEndEnemy = frontEndEnemies[id]
+        frontEndEnemy.health = backEndEnemy.health
+        frontEndEnemy.x = backEndEnemy.x
+        frontEndEnemy.y = backEndEnemy.y
+      }
     
-    // }
-    // // remove deleted enemies
-    // for (const frontEndEnemyId in frontEndEnemies){
-    //   if (!backEndEnemies[frontEndEnemyId]){
-    //    delete frontEndEnemies[frontEndEnemyId]
-    //   }
-    // }
+    }
+    // remove deleted enemies
+    for (const frontEndEnemyId in frontEndEnemies){
+      if (!backEndEnemies[frontEndEnemyId]){
+       delete frontEndEnemies[frontEndEnemyId]
+      }
+    }
   
     /////////////////////////////////////////////////// 3.PROJECTILES //////////////////////////////////////////////////
     for (const id in backEndProjectiles) {
@@ -813,22 +816,30 @@ function loop(){
     }
 
     // PLAYERS
-    canvas.lineWidth = 8
     canvas.fillStyle = 'white'
     if (frontEndPlayer){ // draw myself in the center
-        canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
         frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
+        const currentHoldingItem = getCurItem(frontEndPlayer)
+        frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
+        if (gunInfoFrontEnd){
+          const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
+          frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo,canvasEl)
+        }
+        canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
     }
 
-    for (const id in frontEndPlayers){
+    for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
-      if (id !== socket.id){
-          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
+      if (id !== socket.id){ // other players
+          const currentHoldingItem = getCurItem(currentPlayer)
+          if (gunInfoFrontEnd){
+            const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
+            currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo,canvasEl)
+          }
           currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
           currentPlayer.displayName(canvas, camX, camY)
+          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
       }
-      const currentHoldingItem = getCurItem(currentPlayer)
-      currentPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
     }
 
     // PLANTS AND BUSHES

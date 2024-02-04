@@ -85,6 +85,7 @@ const gunInfo = {
     'knife':{travelDistance:15, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
     'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
 }
+const defaultGuns = ['pistol']//[] 
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -122,13 +123,10 @@ function armorEffect(armorID, damage){
   }
 }
 
-const defaultGuns = ['pistol','usas12','ak47','SLR']//[] 
-
-
 // GROUND drop items
 if (GROUNDITEMFLAG){
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:1000,y:1000}, end:{x:1000,y:2000}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:2000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
   
 
   const groundItemSpawnLoc = {x:500, y:500}
@@ -480,8 +478,20 @@ httpServer.listen(5000);
 
 main();
 
+let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
+  GLOBALCLOCK += TICKRATE
+  // enemy spawn mechanism
+  if ((GLOBALCLOCK > ENEMYSPAWNRATE) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
+    for (let i=0;i<ENEMYNUM;i++){
+      spawnEnemies()
+    }
+    GLOBALCLOCK = 0 // init
+  }
+
+
+
   // update projectiles
   for (const id in backEndProjectiles){
     let BULLETDELETED = false
@@ -622,6 +632,7 @@ setInterval(() => {
       safeDeleteObject(id)
     }
   }
+
   // update items - dont have to be done fast
   for (const id in backEndItems){
     if (backEndItems[id].deleteRequest){
@@ -629,9 +640,62 @@ setInterval(() => {
     }
   }
 
-  // update enemies
-  // not implemented
 
+  // update enemies
+  for (const id in backEndEnemies){
+    let enemy = backEndEnemies[id]
+    const enemyRad = enemy.radius
+
+    if (enemy.homing){ 
+      const targetplayer = backEndPlayers[enemy.homingTargetId]
+      if (targetplayer){// initial target still exists
+        const angle = Math.atan2(
+          targetplayer.y - enemy.y,
+          targetplayer.x - enemy.x
+        )
+        
+        enemy.x += enemy.speed * Math.cos(angle)
+        enemy.y += enemy.speed * Math.sin(angle)
+      }
+      else{  // initial target died => dont move for a moment and walk randomly
+        enemy.homing = false 
+      }
+    } else{ // just walk random direction
+      enemy.x += enemy.velocity.x
+      enemy.y += enemy.velocity.y
+    }
+
+    if (enemy.x - enemyRad >= MAPWIDTH ||
+      enemy.x + enemyRad <= 0 ||
+      enemy.y - enemyRad >= MAPHEIGHT ||
+      enemy.y + enemyRad <= 0 
+      ) {
+        safeDeleteEnemy(id,leaveDrop = false)
+      continue // dont reference enemy that does not exist
+    }
+
+    // collision detection
+    for (const playerId in backEndPlayers) {
+      let backEndPlayer = backEndPlayers[playerId]
+      const DISTANCE = Math.hypot(enemy.x - backEndPlayer.x, enemy.y - backEndPlayer.y)
+      if ((DISTANCE < enemyRad + backEndPlayer.radius)) {
+        // who got hit
+        if (backEndPlayer){ // safe
+          const armoredDamage = armorEffect(backEndPlayer.wearingarmorID, enemy.damage)
+          backEndPlayer.health -= armoredDamage
+          if (backEndPlayer.health <= 0){ //check alive
+            safeDeletePlayer(playerId)} 
+        }
+        // delete enemy after calculating damage
+        safeDeleteEnemy(id,leaveDrop = false)
+        break // only one player can get hit by an enemy
+      }
+    }
+    // boundary check with objects!
+    if (!GHOSTENEMY){
+      borderCheckWithObjects(enemy)
+    }
+  }
 
     io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems})
 }, TICKRATE)
@@ -781,4 +845,88 @@ function borderCheckWithObjects(entity){
     }
   }
 
+}
+
+
+
+
+
+function spawnEnemies(){
+  enemyId++
+  ENEMYCOUNT ++
+  const factor = 1 +  Math.random()  // 1~2
+  const radius = Math.round(factor*16) // 16~32
+  const speed = 3 - factor // 1~2
+  let x = 64
+  let y = 64
+
+  // if (Math.random() < 0.5) {
+  //     x = Math.random() < 0.5 ? 0 - radius : MAPWIDTH + radius
+  //     y = Math.random() * MAPHEIGHT
+  // }else{
+  //     x = Math.random() * MAPWIDTH
+  //     y = Math.random() < 0.5 ? 0 - radius : MAPHEIGHT + radius
+  // }
+
+
+  let homing = false
+  let homingTargetId = -1
+  let colorfactor = 100 + Math.round(factor*40)
+
+  if (Math.random() > 0.5){ // 50% chance of homing!
+    homing = true
+    colorfactor = Math.round(factor*40)
+    const backEndPlayersKey = Object.keys(backEndPlayers)
+    const playerNum = backEndPlayersKey.length
+
+    if (playerNum===0){
+      //console.log('No players')
+      idx = 0
+      homing = false
+    }else{
+      //console.log(`${playerNum} Players playing`)
+      idx = Math.round(Math.random()* (playerNum - 1) ) // 0 ~ #player - 1
+    }
+    homingTargetId = backEndPlayersKey[idx]
+  }
+  // back ticks: ~ type this without shift!
+
+  const color = `hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
+  const angle = Math.atan2(MAPHEIGHT/2 - y, MAPWIDTH/2 - x)
+  const velocity = {
+      x: Math.cos(angle)*speed,
+      y: Math.sin(angle)*speed
+  }
+
+  const damage = 1
+  const myID = enemyId
+  const health = factor*2 -1
+  const wearingarmorID = -1 //none
+
+  // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
+  backEndEnemies[enemyId] = {
+    x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID
+  }
+  //console.log(`spawned enemy ID: ${enemyId}`)
+}
+
+
+const enemyDropGuns = ['M249', 'VSS', 'ak47', 'FAMAS']
+
+function safeDeleteEnemy(enemyid, leaveDrop = true){
+  const enemyInfoGET = backEndEnemies[enemyid]
+  if (!backEndEnemies[enemyid]) {return} // already removed somehow
+  if (leaveDrop){
+    const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
+    const chance = Math.random()
+    if (chance < 0.1){ // 10% chance to drop medkit
+      makeNdropItem( 'consumable', 'medkit', enemyInfoGET.x,enemyInfoGET.y)
+    } else if (0.1 < chance && chance < 0.2){ //10% change to drop bandage
+      makeNdropItem( 'consumable', 'bandage', enemyInfoGET.x,enemyInfoGET.y)
+    } else if (chance>0.99){ // 1% to drop guns
+      makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
+    } 
+  } 
+  ENEMYCOUNT--
+  delete backEndEnemies[enemyid]
 }
