@@ -1,0 +1,114 @@
+class Item {
+    constructor({ groundx, groundy, size, name, onground = true , color = 'white'}) {
+      this.groundx = groundx
+      this.groundy = groundy
+      this.size = size
+      this.length = size.length
+      this.width = size.width
+      this.name = name
+      this.color = color
+      this.onground = onground // before pickup: true
+      this.haloRadius = Math.max(this.length,this.width)/2 + 5
+    }
+    draw(canvas, camX, camY) { // on the ground
+      if (this.onground){
+        canvas.beginPath()
+        canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
+        canvas.lineWidth = 3
+        canvas.strokeStyle = 'gray'
+        canvas.stroke()
+
+        // name
+        canvas.fillStyle = 'white'
+        canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
+      }
+    }
+
+
+  }
+
+
+class Gun extends Item {
+    constructor({groundx, groundy, size, name, onground = true, color = 'white',iteminfo = {ammo,ammotype}}) {
+        super({groundx, groundy, size, name,onground, color})
+        this.ammo = iteminfo.ammo
+        this.ammotype = iteminfo.ammotype
+        this.itemtype = 'gun'
+        this.magSize = 0//gunInfoFrontEnd[name].magSize
+        this.reloadTime = 0//gunInfoFrontEnd[name].reloadTime
+    }
+
+    restock(playerId){
+      this.ammo = this.magSize
+    }
+}
+
+
+class Consumable extends Item {
+  constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {amount , healamount}}) {
+      super({groundx, groundy, size, name, onground, color})
+      this.amount = iteminfo.amount
+      this.healamount = iteminfo.healamount
+      this.itemtype = 'consumable'
+      this.gap = 2
+      this.barlen = 4
+  }
+  draw(canvas, camX, camY) { // on the ground
+    if (this.onground){
+
+      canvas.beginPath()
+      canvas.arc(this.groundx-camX, this.groundy-camY, this.length, 0, Math.PI * 2, false)
+      canvas.fillStyle = this.color
+      canvas.fill()
+
+
+      if (this.name == 'medkit'){
+        canvas.beginPath()
+        canvas.moveTo(this.groundx - this.barlen-camX,this.groundy-camY)
+        canvas.lineTo(this.groundx + this.barlen-camX,this.groundy-camY)
+        canvas.strokeStyle = 'red'
+        canvas.lineWidth = this.gap
+        canvas.stroke()
+
+        canvas.beginPath()
+        canvas.moveTo(this.groundx-camX,this.groundy - this.barlen-camY)
+        canvas.lineTo(this.groundx-camX,this.groundy + this.barlen-camY)
+        canvas.stroke()
+      }
+    }
+  }
+}
+
+
+class Melee extends Item {
+  constructor({groundx, groundy, size, name, onground = true, color = 'white',iteminfo = {ammo,ammotype}}) {
+      super({groundx, groundy, size, name,onground, color})
+      this.itemtype = 'melee'
+      this.ammo = iteminfo.ammo
+      this.ammotype = iteminfo.ammotype
+  }
+}
+
+
+
+class Armor extends Item {
+  constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {amount}}) {
+      super({groundx, groundy, size, name, onground, color})
+      this.amount = iteminfo.amount
+      this.itemtype = 'armor'
+  }
+  draw(canvas, camX, camY) { // on the ground
+    if (this.onground){
+      canvas.beginPath()
+      canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
+      canvas.lineWidth = 3
+      canvas.strokeStyle = 'gray'
+      canvas.stroke()
+
+      // name
+      canvas.fillStyle = this.color
+      canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
+    }
+  }
+}
+

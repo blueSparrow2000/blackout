@@ -83,10 +83,75 @@ const gunInfo = {
     'knife':{travelDistance:15, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
     'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
 }
+
+const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
-    'bandage': {size:{length:8, width:8}, color: 'gray', healamount: 2 },
-    'medkit': {size:{length:12, width:12}, color: 'gray', healamount: PLAYERHEALTHMAX},
+'bandage': {size:{length:8, width:8}, color: 'gray', healamount: 2 },
+'medkit': {size:{length:12, width:12}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
+
+const armorTypes = ['absorb', 'reduce']
+const armorInfo = {
+'absorb':{color: 'DarkTurquoise',size:{length:12, width:12}, amount:5, radius:1},
+'reduce':{color: 'DeepSkyBlue',size:{length:12, width:12}, amount:5, radius:2},
+}
+
+function armorEffect(armorID, damage){
+  if (armorID <= 0){ // no armor
+    return damage
+  }
+  const armortype = backEndItems[armorID].name
+  switch (armortype){
+    case 'absorb': // absorb 0.2 damage: immune to fist
+    //console.log("absorb")
+      if (damage>0.5){ // absorb more
+        return Math.max(damage - 0.4, 0)
+      }
+      return Math.max(damage - 0.2, 0)
+    case 'reduce': // reduce 10% of damage
+    //console.log("reduce")
+      if (damage>3){// reduce 30% of damage if large
+        return (7*damage)/10
+      }
+      return (9*damage)/10
+    default:
+      console.log("Item ID is malfunctioning")
+      return damage
+  }
+}
+
+const defaultGuns = ['pistol','usas12','ak47','SLR']//[] 
+
+
+// GROUND drop items
+if (GROUNDITEMFLAG){
+  const groundItemSpawnLoc = {x:500, y:500}
+  const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+  const groundGunAmount = groundgunList.length
+  for (let i=0;i<groundGunAmount; i++){
+    makeNdropItem('gun', groundgunList[i], groundItemSpawnLoc.x + Math.round(60*(i - groundGunAmount/2)), groundItemSpawnLoc.y )
+  }
+  
+  
+  const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
+  const groundConsAmount = groundConsList.length
+  for (let i=0;i<groundConsAmount; i++){
+    makeNdropItem('consumable', groundConsList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundConsAmount/2)), groundItemSpawnLoc.y - 100)
+  }
+
+  const groundArmorAmount = armorTypes.length
+  for (let i=0;i<groundArmorAmount; i++){
+    makeNdropItem( 'armor', armorTypes[i], groundItemSpawnLoc.x + Math.round(50*(i - groundArmorAmount/2)), groundItemSpawnLoc.y - 150)
+  }
+
+  const groundMeleeList = ['knife','bat']
+  const groundMeleeAmount = groundMeleeList.length
+  for (let i=0;i<groundMeleeAmount; i++){
+    makeNdropItem('melee', groundMeleeList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundMeleeAmount/2)), groundItemSpawnLoc.y - 200)
+  }
+}
+
+
 
 
 function safeDeletePlayer(playerId){
@@ -127,7 +192,7 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     }
   
     // check boundary with objects also
-    //borderCheckWithObjects(playerGIVEN)
+    borderCheckWithObjects(playerGIVEN)
   }
   
 
@@ -151,6 +216,12 @@ async function main(){
             // initialize inventory with fist
             let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
+            // default item for a player if exists
+            for (let i=0;i<defaultGuns.length; i++){
+              makeNdropItem('gun', defaultGuns[i], 0 , 0,onground=false)
+              inventory[i] = backEndItems[itemsId]
+            }
+
             playerJoinTimeout = setTimeout(function(){
             clearTimeout(playerJoinTimeout);
             backEndPlayers[socket.id] = {
@@ -171,34 +242,66 @@ async function main(){
 
         })
 
+        // aux function for shoot
+        function shootProjectile(angle,currentGun){
+          if (!backEndPlayers[socket.id]) return // player not defined
 
-        socket.on('shoot', (angle)=>{
+          const gunName = currentGun
             function addProjectile(){
                 projectileId++
-               
-                const shakeProj = 1
-                const bulletSpeed = 30
+                const guninfoGET = gunInfo[currentGun]
+                const shakeProj = guninfoGET.shake
+                const bulletSpeed = guninfoGET.projectileSpeed
                 const velocity = { // with shake!
                   x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
                   y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
                 }
                 const radius = 5
             
-                const travelDistance = 2000
-                const projDamage =  3
+                const travelDistance = guninfoGET.travelDistance
+                const projDamage =  guninfoGET.damage
             
                 backEndProjectiles[projectileId] = {
-                    x:backEndPlayers[socket.id].x, y:backEndPlayers[socket.id].y, radius,velocity, speed:bulletSpeed, playerId: socket.id, travelDistance, projDamage, gunName:"AWM"
+                  x:backEndPlayers[socket.id].x, y:backEndPlayers[socket.id].y,radius,velocity, speed:bulletSpeed, playerId: socket.id, gunName, travelDistance, projDamage
                 }
               }
-              if (backEndPlayers[socket.id]){
-                for (let i=0;i< 1;i++){
-                    addProjectile()
-                  }
+              
+              for (let i=0;i< gunInfo[currentGun].num;i++){
+                addProjectile()
               }
-
+        }
+        socket.on('shoot', ({angle,currentGun})=>{
+          shootProjectile(angle,currentGun)
         } )
 
+        
+        // change gound item info from client side
+        socket.on('updateitemrequest', ({itemid, requesttype,currentSlot=1, playerId=0})=>{
+          let itemToUpdate = backEndItems[itemid]
+          if (!itemToUpdate) {return}
+          if (requesttype === 'pickupinventory'){
+            itemToUpdate.onground = false
+            if (backEndPlayers[playerId]){
+              backEndPlayers[playerId].inventory[currentSlot-1] = backEndItems[itemid]// reassign item (only me)
+            }
+            //console.log(backEndPlayers[playerId].inventory[currentSlot-1].myID)
+          } else if (requesttype === 'weararmor'){
+            backEndPlayers[playerId].wearingarmorID = itemid
+            itemToUpdate.onground = false
+          }
+        })
+
+        socket.on('updateitemrequestDROP', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
+          let itemToUpdate = backEndItems[itemid]
+          if (!itemToUpdate) {return}
+          if(requesttype==='dropitem' || (!itemid)){ // not fist
+            itemToUpdate.onground = true
+            itemToUpdate.groundx = groundx
+            itemToUpdate.groundy = groundy
+            //console.log(`dropped: ${itemToUpdate.name}`)
+          }
+
+        })
 
         ///////////////////////////////// Frequent key-downs update ///////////////////////////////////////////////
         // update frequent keys at once (Movement & hold shoot)  //always fire hold = true since space was pressed
@@ -208,7 +311,6 @@ async function main(){
             backEndPlayer.mousePos = {x,y}
             // Movement analysis
             Moveplayer(backEndPlayer, WW, AA, SS, DD)
-            socket.emit('holdSpace')
         })
 
         // update frequent keys at once (Movement only)
@@ -225,7 +327,6 @@ async function main(){
             let backEndPlayer = backEndPlayers[socket.id]
             if (!backEndPlayer){return}
             backEndPlayer.mousePos = {x,y}
-            socket.emit('holdSpace')
         })
 
         // hear player's mouse pos changes 
@@ -288,11 +389,11 @@ main();
 
 // backend ticker - update periodically server info to clients
 setInterval(() => {
-    
   // update projectiles
   for (const id in backEndProjectiles){
     let BULLETDELETED = false
     let projGET = backEndProjectiles[id]
+    const gunNameOfProjectile = projGET.gunName
     const PROJECTILERADIUS = projGET.radius
     let myspeed = projGET.speed
 
@@ -322,36 +423,227 @@ setInterval(() => {
       continue // dont reference projectile that does not exist
     }
 
-    let COLLISIONTOLERANCE = 1 // px
-        // collision detection with players
-        for (const playerId in backEndPlayers) {
-        let backEndPlayer = backEndPlayers[playerId]
-        const DISTANCE = Math.hypot(projGET.x - backEndPlayer.x - PLAYERRADIUS, projGET.y - backEndPlayer.y - PLAYERRADIUS)
-            if ((projGET.playerId !== playerId) && (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE)) {
-                // who got hit
-                if (backEndPlayer){ // safe
-                //const armoredDamage = armorEffect(backEndPlayer.wearingarmorID, projGET.projDamage)
-                const armoredDamage = projGET.projDamage
-                if (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-                    backEndPlayer.health -= armoredDamage
-                } else{ // not accurate shot
-                    backEndPlayer.health -= armoredDamage/2
-                }
-                if (backEndPlayer.health <= 0){ //check again
-                    // who shot projectile
-                    if (backEndPlayers[projGET.playerId]){ // safe
-                    backEndPlayers[projGET.playerId].score ++
-                    }
-                    safeDeletePlayer(playerId)} 
-                }
-                // delete projectile after inspecting who shot the projectile & calculating damage
-                BULLETDELETED = true
-                delete backEndProjectiles[id] 
-                break // only one player can get hit by a projectile
+    let COLLISIONTOLERANCE = Math.floor(gunInfo[gunNameOfProjectile].projectileSpeed/6) -1 // px
+    
+    // collision with objects
+    for (const objid in backEndObjects) {
+      const backEndObject = backEndObjects[objid]
+      const objInfo = backEndObject.objectinfo
+
+
+      let collisionDetectedObject 
+      if (backEndObject.objecttype==='wall'){
+        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [projGET.x, projGET.y], PROJECTILERADIUS + objInfo.width/2 + COLLISIONTOLERANCE)
+      } else if(backEndObject.objecttype==='hut'){
+        const DISTANCE = Math.hypot(projGET.x - objInfo.center.x, projGET.y - objInfo.center.y)
+        collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance
+      } else{
+        console.log("invalid object-projectile interaction: undefined or other name given to obj")
+      }
+
+      if (collisionDetectedObject) {
+        // who got hit
+        if (backEndObjects[objid]){ // safe
+          backEndObjects[objid].health -= projGET.projDamage
+          //console.log(`Object: ${objid} has health: ${backEndObjects[objid].health} remaining`)
+          if (backEndObjects[objid].health <= 0){ //check
+            safeDeleteObject(objid)
+          } 
+        }
+        BULLETDELETED = true
+        delete backEndProjectiles[id] 
+        break // only one obj can get hit by a projectile
+      }
+    }
+
+    if (BULLETDELETED){ // dont check below if collided
+      continue
+    }
+
+    // collision detection with players
+    for (const playerId in backEndPlayers) {
+    let backEndPlayer = backEndPlayers[playerId]
+    const DISTANCE = Math.hypot(projGET.x - backEndPlayer.x, projGET.y - backEndPlayer.y)
+        if ((projGET.playerId !== playerId) && (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE)) {
+            // who got hit
+            if (backEndPlayer){ // safe
+            const armoredDamage = armorEffect(backEndPlayer.wearingarmorID, projGET.projDamage)
+            //const armoredDamage = projGET.projDamage
+            if (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
+                backEndPlayer.health -= armoredDamage
+            } else{ // not accurate shot
+                backEndPlayer.health -= armoredDamage/2
             }
+            if (backEndPlayer.health <= 0){ //check again
+                // who shot projectile
+                if (backEndPlayers[projGET.playerId]){ // safe
+                backEndPlayers[projGET.playerId].score ++
+                }
+                safeDeletePlayer(playerId)} 
+            }
+            // delete projectile after inspecting who shot the projectile & calculating damage
+            BULLETDELETED = true
+            delete backEndProjectiles[id] 
+            break // only one player can get hit by a projectile
         }
     }
+    // collision detection with enemies
+    if (BULLETDELETED){ // dont check for loop with enemy 
+      continue
+    }
+    for (const enemyId in backEndEnemies) {
+      let backEndEnemy = backEndEnemies[enemyId]
+      const DISTANCE = Math.hypot(projGET.x - backEndEnemy.x, projGET.y - backEndEnemy.y)
+      if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE)) {
+        // who got hit
+        if (backEndEnemy){ // safe
+          const armoredDamage = armorEffect(backEndEnemy.wearingarmorID, projGET.projDamage)
+            if (DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
+              backEndEnemy.health -= armoredDamage
+            } else{ // not accurate shot
+              backEndEnemy.health -= armoredDamage/2
+            }
+            if (backEndEnemy.health <= 0){ //check again
+              if (backEndPlayers[projGET.playerId]){ // safe
+                backEndPlayers[projGET.playerId].score ++
+              }
+              safeDeleteEnemy(enemyId)} 
+        }
+        // delete projectile after inspecting who shot the projectile & calculating damage
+        BULLETDELETED = true
+        delete backEndProjectiles[id] 
+        break // only one enemy can get hit by a projectile
+      }
+    }
+    if (BULLETDELETED){ // dont check below
+      continue
+    }
+
+
+  }
+
+  // update objects
+  for (const id in backEndObjects){
+    const objinfo = backEndObjects[id].objectinfo
+    if (objinfo.health <= 0){
+      safeDeleteObject(id)
+    }
+  }
+  // update items - dont have to be done fast
+  for (const id in backEndItems){
+    if (backEndItems[id].deleteRequest){
+      delete backEndItems[id]
+    }
+  }
+
+
 
     io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems})
 }, TICKRATE)
 
+
+
+
+function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
+  itemsId++
+  let size
+  let color
+  let iteminfo 
+
+  //different value
+  if (itemtype === 'gun' || itemtype === 'melee'){
+    const guninfoGET = gunInfo[name]
+    size = guninfoGET.size
+    color = 'white'
+    let ammo = 0
+    if (itemtype === 'melee'){
+      color = 'black'
+      ammo = 'inf'
+    }
+    const ammotype = guninfoGET.ammotype 
+    iteminfo = {ammo,ammotype}
+
+  } else if(itemtype === 'consumable'){
+    const consumableinfoGET = consumableInfo[name]
+    size = consumableinfoGET.size
+    color = consumableinfoGET.color
+    const amount = 1
+    const healamount = consumableinfoGET.healamount
+    iteminfo =  {amount,healamount}
+
+  } else if(itemtype==='armor'){
+    const armorinfoGET = armorInfo[name]
+    size = armorinfoGET.size
+    color = armorinfoGET.color
+    const amount = armorinfoGET.amount
+    iteminfo = {amount}
+  } 
+  
+  else{
+    console.log("invalid itemtype requested in makeNdropItem")
+    return 
+  }
+
+  backEndItems[itemsId] = {
+    itemtype, name, groundx, groundy, size, color, iteminfo, onground, myID: itemsId, deleteRequest:false
+  }
+}
+
+
+
+function borderCheckWithObjects(entity){
+  if (!entity) {return} // no need to check
+  for (const id in backEndObjects){
+    const obj = backEndObjects[id]
+
+    if (obj.objecttype === 'wall'){
+      const objSides = obj.objectsideforbackend
+      const entitySides = {
+        left: entity.x - entity.radius,
+        right: entity.x + entity.radius,
+        top: entity.y - entity.radius,
+        bottom: entity.y + entity.radius
+      }
+      if (entity){// only when entity exists
+        // LR check (hori)
+        if (objSides.top < entity.y && entity.y < objSides.bottom){
+          if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
+            entity.x = entity.radius + objSides.right
+          }
+          if (objSides.centerx >= entity.x && entitySides.right > objSides.left){ // restore position for backend
+            entity.x = objSides.left - entity.radius
+          }
+        } 
+
+        //TB check (verti)
+        if (objSides.left < entity.x && entity.x < objSides.right){
+          if (objSides.centery < entity.y && entitySides.top < objSides.bottom){ // restore position for backend
+            entity.y = objSides.bottom + entity.radius
+          }
+          if (objSides.centery >= entity.y && entitySides.bottom > objSides.top){ // restore position for backend
+            entity.y = objSides.top - entity.radius
+          }
+        }
+      }
+    } 
+    
+    if(obj.objecttype === 'hut'){
+      const objinfoGET = obj.objectinfo
+      // 'hut': {center:{x:,y:}, radius: 20, color:, health:}
+      const radiusSum = objinfoGET.radius + entity.radius
+      const xDist = entity.x - objinfoGET.center.x
+      const yDist = entity.y - objinfoGET.center.y 
+      const Dist = Math.hypot(xDist,yDist)
+
+      if (Dist < radiusSum){
+        const angle = Math.atan2(
+          yDist,
+          xDist
+        )
+        entity.x = objinfoGET.center.x + Math.cos(angle) * radiusSum
+        entity.y = objinfoGET.center.y + Math.sin(angle) * radiusSum
+      }
+    }
+  }
+
+}
