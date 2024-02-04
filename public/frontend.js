@@ -250,6 +250,13 @@ function getAngle(event){
   const angle = Math.atan2(event.clientY - canvasEl.height/2, event.clientX - canvasEl.width/2)
   return angle
 }
+function getCurItem(currentPlayer){
+  let inventoryPointer = currentPlayer.currentSlot - 1 // current slot is value between 1 to 4
+  if (!inventoryPointer) {inventoryPointer = 0} // default 0
+  let currentHoldingItemId = currentPlayer.inventory[inventoryPointer] // if it is 0, it is fist
+  let currentHoldingItem = frontEndItems[currentHoldingItemId]
+  return currentHoldingItem
+}
 function shootCheck(event){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not fire bullet
     return
@@ -258,10 +265,7 @@ function shootCheck(event){
 
 
   // get currently holding item
-  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
-  if (!inventoryPointer) {inventoryPointer = 0} // default 0
-  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
-  let currentHoldingItem = frontEndItems[currentHoldingItemId]
+  let currentHoldingItem = getCurItem(frontEndPlayer)
 
   if (!currentHoldingItem) {return} // undefined case
 
@@ -375,12 +379,8 @@ function reloadGun(){
   }
   // reload only when player is created
   if (!frontEndPlayer){return}
+  let currentHoldingItem = getCurItem(frontEndPlayer)
 
-  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
-  if (!inventoryPointer) {inventoryPointer = 0} // default 0
-  
-  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
-  let currentHoldingItem = frontEndItems[currentHoldingItemId]
   //check currentHolding is a gun or not
   if (!(currentHoldingItem.itemtype==='gun')){ // not a gun, dont reload
     return
@@ -813,18 +813,22 @@ function loop(){
     }
 
     // PLAYERS
+    canvas.lineWidth = 8
     canvas.fillStyle = 'white'
     if (frontEndPlayer){ // draw myself in the center
         canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
-        canvas.fillText(`HP: ${Math.round(frontEndPlayer.health * 100) / 100}`,centerX - 4 - PLAYERRADIUS, centerY - PLAYERRADIUS)
+        frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
     }
 
     for (const id in frontEndPlayers){
-        if (id !== socket.id){
-            const currentPlayer = frontEndPlayers[id]
-            canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
-            currentPlayer.displayName(canvas, camX, camY)
-        }
+      const currentPlayer = frontEndPlayers[id]
+      if (id !== socket.id){
+          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
+          currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
+          currentPlayer.displayName(canvas, camX, camY)
+      }
+      const currentHoldingItem = getCurItem(currentPlayer)
+      currentPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
     }
 
     // PLANTS AND BUSHES
