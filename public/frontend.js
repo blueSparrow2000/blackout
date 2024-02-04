@@ -57,7 +57,7 @@ const TILES_IN_ROW = 23;
 
 
 // get socket
-const socket = io();//io(`ws://localhost:5000`);
+const socket = io()//io(`ws://localhost:5000`);
 
 socket.on('connect', ()=>{
     console.log("connected!");
@@ -768,18 +768,53 @@ const centerX = parseInt(canvasEl.width/2)
 const centerY = parseInt(canvasEl.height/2)
 
 canvas.font ='italic bold 12px sans-serif'
+let chunkInfo 
+let sightChunk = 3
+let sightdistance = (sightChunk+1)*TILE_SIZE
+
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
 
-    // CAMERA 
-    if (frontEndPlayer){ // if exists
-        camX = frontEndPlayer.x - centerX
-        camY = frontEndPlayer.y - centerY
+
+    if (!frontEndPlayer){ // if not exists - draw nothing
+      window.requestAnimationFrame(loop);
+      return
     }
 
+    // CAMERA 
+    camX = frontEndPlayer.x - centerX
+    camY = frontEndPlayer.y - centerY
+
+
     // GROUND TILES
-    for (let row = 0;row < groundMap.length;row++){
-        for (let col = 0;col < groundMap[0].length;col++){
+    // for (let row = 0;row < groundMap.length;row++){
+    //     for (let col = 0;col < groundMap[0].length;col++){
+    //         const { id } = groundMap[row][col];
+    //         const imageRow = parseInt(id / TILES_IN_ROW);
+    //         const imageCol = id % TILES_IN_ROW;
+
+    //         canvas.drawImage(mapImage, 
+    //             imageCol * TILE_SIZE,
+    //             imageRow * TILE_SIZE,
+    //             TILE_SIZE,TILE_SIZE,
+    //             col*TILE_SIZE - camX, 
+    //             row*TILE_SIZE - camY,
+    //             TILE_SIZE,TILE_SIZE
+    //             );
+    //     }
+    // }
+      // ADVANCED GROUNDTILES
+      // if (!frontEndPlayer){
+      //   chunkInfo = getChunk(0,0)
+      // } else{
+      //   chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
+      // }
+      chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
+      for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
+        for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
+            if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
+              continue
+            }
             const { id } = groundMap[row][col];
             const imageRow = parseInt(id / TILES_IN_ROW);
             const imageCol = id % TILES_IN_ROW;
@@ -794,25 +829,33 @@ function loop(){
                 );
         }
     }
-    
+    // ADVANCED GROUNDTILES
+
+
     // ITEMS
     for (const id in frontEndItems){
       const item = frontEndItems[id]
       const gunImg = gunImages[item.name]
-      item.draw(canvas, camX, camY, {img:gunImg,offset:PLAYERRADIUS})
+      if (frontEndPlayer.IsVisible(item.groundx,item.groundy,sightdistance) ){
+        item.draw(canvas, camX, camY, {img:gunImg,offset:PLAYERRADIUS})
+      }
     }
   
     // PROJECTILES
     canvas.strokeStyle = 'black'
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
-        frontEndProjectile.draw(canvas, camX, camY)
+        if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistance) ){
+          frontEndProjectile.draw(canvas, camX, camY)
+        }
     }
 
     // ENEMIES
     for (const id in frontEndEnemies){ 
       const frontEndEnemy = frontEndEnemies[id]
-      frontEndEnemy.draw(canvas, camX, camY)
+      if (frontEndPlayer.IsVisible(frontEndEnemy.x,frontEndEnemy.y,sightdistance) ){
+        frontEndEnemy.draw(canvas, camX, camY)
+      }
     }
 
 
@@ -833,6 +876,10 @@ function loop(){
     for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
       if (id !== socket.id){ // other players
+          if (!frontEndPlayer.IsVisible(currentPlayer.x,currentPlayer.y,sightdistance) ){
+            continue
+          }
+
           const currentHoldingItem = getCurItem(currentPlayer)
           if (gunInfoFrontEnd){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
@@ -844,48 +891,82 @@ function loop(){
       }
     }
 
-
-    
     // PLANTS AND BUSHES - indexing starts from 0, top left 
-    for (let row = 0;row < groundMap.length;row++){
-        for (let col = 0;col < groundMap[0].length;col++){
-            const { id } = decalMap[row][col] ?? {id:undefined};
-            const imageRow = parseInt(id / TILES_IN_ROW);
-            const imageCol = id % TILES_IN_ROW;
+    // for (let row = 0;row < groundMap.length;row++){
+    //     for (let col = 0;col < groundMap[0].length;col++){
+    //         const { id } = decalMap[row][col] ?? {id:undefined};
+    //         const imageRow = parseInt(id / TILES_IN_ROW);
+    //         const imageCol = id % TILES_IN_ROW;
 
-            if (130 <= id && id <= 134){ // grass - opacity
-              canvas.save();
-              canvas.globalAlpha = 0.9;
-              canvas.drawImage(mapImage, 
-                imageCol * TILE_SIZE,
-                imageRow * TILE_SIZE,
-                TILE_SIZE,TILE_SIZE,
-                col*TILE_SIZE - camX, 
-                row*TILE_SIZE - camY,
-                TILE_SIZE,TILE_SIZE
-                );
-              canvas.restore();
-            } else if(135 <= id && id <= 137){ // rocks - non-opaque
-              canvas.drawImage(mapImage, 
-                imageCol * TILE_SIZE,
-                imageRow * TILE_SIZE,
-                TILE_SIZE,TILE_SIZE,
-                col*TILE_SIZE - camX, 
-                row*TILE_SIZE - camY,
-                TILE_SIZE,TILE_SIZE
-                );
-            }
+    //         if (130 <= id && id <= 134){ // grass - opacity
+    //           canvas.save();
+    //           canvas.globalAlpha = 0.9;
+    //           canvas.drawImage(mapImage, 
+    //             imageCol * TILE_SIZE,
+    //             imageRow * TILE_SIZE,
+    //             TILE_SIZE,TILE_SIZE,
+    //             col*TILE_SIZE - camX, 
+    //             row*TILE_SIZE - camY,
+    //             TILE_SIZE,TILE_SIZE
+    //             );
+    //           canvas.restore();
+    //         } else if(135 <= id && id <= 137){ // rocks - non-opaque
+    //           canvas.drawImage(mapImage, 
+    //             imageCol * TILE_SIZE,
+    //             imageRow * TILE_SIZE,
+    //             TILE_SIZE,TILE_SIZE,
+    //             col*TILE_SIZE - camX, 
+    //             row*TILE_SIZE - camY,
+    //             TILE_SIZE,TILE_SIZE
+    //             );
+    //         }
+    //     }
+    // }
 
-
+    // ADVANCED PLANTS
+    for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
+      for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
+        if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
+          continue
         }
+        const { id } = decalMap[row][col] ?? {id:undefined};
+        const imageRow = parseInt(id / TILES_IN_ROW);
+        const imageCol = id % TILES_IN_ROW;
+
+        if (130 <= id && id <= 134){ // grass - opacity
+          canvas.save();
+          canvas.globalAlpha = 0.9;
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+          canvas.restore();
+        } else if(135 <= id && id <= 137){ // rocks - non-opaque
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        }
+      }
     }
+    //ADVANCED PLANTS
 
     // WALLS
     canvas.strokeStyle ='gray'
     canvas.fillStyle = 'gray'
     for (const id in frontEndObjects){
       const obj = frontEndObjects[id]
-      obj.draw(canvas, camX, camY)
+      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistance*2) ){
+        obj.draw(canvas, camX, camY)
+      }
     }
 
     // OTHERS
@@ -894,6 +975,9 @@ function loop(){
 }
 window.requestAnimationFrame(loop);
 
+function getChunk(x,y){
+  return {rowNum:Math.round(y/TILE_SIZE), colNum:Math.round(x/TILE_SIZE)}
+}
 
 function resetKeys(){
     let keysKey = Object.keys(keys)

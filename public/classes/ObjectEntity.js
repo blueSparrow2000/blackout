@@ -16,6 +16,8 @@ class ObjectEntity {
           this.end = objectinfo.end
           this.color = objectinfo.color
           this.orientation = objectinfo.orientation
+          this.x = Math.round((this.start.x + this.end.x) /2)
+          this.y = Math.round((this.start.y + this.end.y) /2)
   
       }
       draw(canvas, camX, camY) { // on the ground

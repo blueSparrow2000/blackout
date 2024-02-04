@@ -16,6 +16,11 @@ class Player{
       this.score = score
       this.wearingarmorID = wearingarmorID
     }
+
+    IsVisible(x,y,refDistance){
+      return Math.hypot(this.x-x,this.y-y) < refDistance
+    }
+
     displayName(canvas, camX, camY) {
       canvas.fillText(this.username,this.x - 2*this.username.length - camX ,this.y - this.radius*3 - camY)
     }

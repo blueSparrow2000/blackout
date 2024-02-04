@@ -54,7 +54,7 @@ let ENEMYSPAWNRATE = 10000
 let ENEMYNUM = 3
 let ENEMYCOUNT = 0
 
-const GROUNDITEMFLAG = true 
+const GROUNDITEMFLAG = true
 let GHOSTENEMY = false
 
 const gunInfo = {
