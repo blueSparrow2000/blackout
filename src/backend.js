@@ -6,6 +6,8 @@ const SCREENHEIGHT = 576
 const MAPWIDTH = 128*30
 const MAPHEIGHT = 128*30
 
+const collide = require('line-circle-collision')
+
 const express = require('express');
 const { createServer } = require("http");
 const { Server } = require("socket.io");
@@ -18,6 +20,7 @@ const loadMap = require("./mapLoader")
 
 // Server Data
 const backEndPlayers = {}
+const deadPlayerPos = {}
 const backEndEnemies = {}
 const backEndProjectiles = {}
 const backEndItems = {}
@@ -125,6 +128,10 @@ const defaultGuns = ['pistol','usas12','ak47','SLR']//[]
 
 // GROUND drop items
 if (GROUNDITEMFLAG){
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+  
+
   const groundItemSpawnLoc = {x:500, y:500}
   const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
   const groundGunAmount = groundgunList.length
@@ -153,9 +160,57 @@ if (GROUNDITEMFLAG){
 
 
 
+function itemBorderCheck(xCoord, yCoord){
+  let xInBorder = xCoord
+  let yInBorder = yCoord
+
+  if (xCoord < 0){
+    xInBorder = 0
+  }else if (xCoord > MAPWIDTH){
+    xInBorder = MAPWIDTH
+  }
+  if ( yCoord < 0){
+    yInBorder = 0
+  } else if( yCoord > MAPHEIGHT){
+    yInBorder = MAPHEIGHT
+  }
+  return [xInBorder, yInBorder]
+}
+
+function itemBorderUpdate(item){
+  if (item.groundx < 0){
+    item.groundx = 0
+  }else if (item.groundx > MAPWIDTH){
+    item.groundx = MAPWIDTH
+  }
+  if (item.groundy < 0){
+    item.groundy = 0
+  } else if(item.groundy > MAPHEIGHT){
+    item.groundy = MAPHEIGHT
+  }
+}
+
 
 function safeDeletePlayer(playerId){
-    delete backEndPlayers[playerId]
+  // drop all item before removing
+  const backEndPlayer = backEndPlayers[playerId]
+  const inventoryItems = backEndPlayer.inventory
+   
+  for (let i=0;i<inventoryItems.length;i++){
+    const curitemID = inventoryItems[i].myID
+    if (curitemID===0){ // no fist
+      continue
+    }
+    let backEndItem = backEndItems[curitemID]
+    backEndItem.onground = true
+    backEndItem.groundx = backEndPlayer.x + (Math.random() - 0.5)*100
+    backEndItem.groundy = backEndPlayer.y + (Math.random() - 0.5)*100
+    itemBorderUpdate(backEndItem)
+  }
+
+  deadPlayerPos[playerId] = {x:backEndPlayer.x,y:backEndPlayer.y}
+
+  delete backEndPlayers[playerId]
 }
 
 function Moveplayer(playerGIVEN, WW, AA, SS, DD){
@@ -210,6 +265,23 @@ async function main(){
             console.log(reason)
             delete backEndPlayers[socket.id]
         })
+
+        // player death => put ammos to the ground!
+        socket.on('playerdeath',({playerId,armorID})=>{
+          let deadplayerGET = deadPlayerPos[playerId]
+          if (!deadplayerGET){return}
+          // DROP armor
+          if (armorID>0){
+            let itemToUpdate = backEndItems[armorID]
+            itemToUpdate.onground = true
+            itemToUpdate.groundx = deadplayerGET.x
+            itemToUpdate.groundy = deadplayerGET.y
+          }
+          delete deadPlayerPos[playerId]
+
+        })
+
+
 
         // initialize game when clicking button (submit name)
         socket.on('initGame',({username,playerX, playerY, playerColor})=>{
@@ -274,6 +346,28 @@ async function main(){
           shootProjectile(angle,currentGun)
         } )
 
+
+          // eat
+        socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {
+          let curplayer = backEndPlayers[playerId]
+          if (!curplayer) {return}
+          function APIdeleteItem(){
+            // change player current holding item to fist
+            curplayer.inventory[currentSlot-1] = backEndItems[0]
+            // delete safely
+            backEndItems[itemid].deleteflag = deleteflag
+            //delete backEndItems[itemid]
+          }
+
+          if (itemName === 'medkit'){
+            curplayer.health = PLAYERHEALTHMAX
+            APIdeleteItem()
+          } else if (curplayer.health + healamount <= PLAYERHEALTHMAX){
+            curplayer.health += healamount
+            APIdeleteItem()
+          }
+          
+        })
         
         // change gound item info from client side
         socket.on('updateitemrequest', ({itemid, requesttype,currentSlot=1, playerId=0})=>{
@@ -536,6 +630,8 @@ setInterval(() => {
     }
   }
 
+  // update enemies
+  // not implemented
 
 
     io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems})
@@ -590,6 +686,46 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 }
 
 
+
+// safely create object
+function makeObjects(objecttype, health, objectinfo){
+  objectId++
+
+  let objectsideforbackend = {}
+
+  if (objecttype === 'wall'){
+    if (objectinfo.orientation==='vertical'){
+      objectsideforbackend = {
+        left: objectinfo.start.x - objectinfo.width/2,
+        right: objectinfo.start.x + objectinfo.width/2,
+        top: objectinfo.start.y,
+        bottom: objectinfo.end.y,
+        centerx: objectinfo.start.x, // same with end.x
+        centery: ( objectinfo.start.y + objectinfo.end.y )/2
+      }
+    }else if(objectinfo.orientation==='horizontal'){
+      objectsideforbackend = {
+        left: objectinfo.start.x,
+        right: objectinfo.end.x,
+        top: objectinfo.start.y - objectinfo.width/2,
+        bottom: objectinfo.start.y + objectinfo.width/2,
+        centerx: ( objectinfo.start.x + objectinfo.end.x )/2,
+        centery: objectinfo.start.y // same with end.y
+      }
+    }
+
+  }
+  //console.log(`new obj ID: ${objectId}`)
+
+  backEndObjects[objectId] = {
+    objecttype , myID:objectId, deleteRequest:false, health, objectinfo, objectsideforbackend
+  }
+}
+
+function safeDeleteObject(id){
+  //console.log(`obj removed ID: ${id}`)
+  delete backEndObjects[id]
+}
 
 function borderCheckWithObjects(entity){
   if (!entity) {return} // no need to check

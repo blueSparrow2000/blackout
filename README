@@ -2,7 +2,9 @@ Required
 - npm
 - express
 - socket.io
+- line-circle-collision
 - nodemon (optional)
+
 npm i tmx-parser
 
 Initial code based on: 

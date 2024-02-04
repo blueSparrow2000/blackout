@@ -607,6 +607,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
                 pointEl.innerHTML = mePlayer.score
                 playerdeathsound.play()
                 document.querySelector('#usernameForm').style.display = 'block'
+                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID})
                 LobbyBGM.play()
             }
             else{ // other player died
@@ -696,37 +697,37 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
   
   
     /////////////////////////////////////////////////// 4.OBJECTS //////////////////////////////////////////////////
-    // for (const id in backEndObjects) {
-    //   const backEndObject = backEndObjects[id]
+    for (const id in backEndObjects) {
+      const backEndObject = backEndObjects[id]
   
-    //   if (!frontEndObjects[id]){ // new 
-    //     if (backEndObject.objecttype === 'wall'){
-    //       frontEndObjects[id] = new Wall({
-    //         objecttype: backEndObject.objecttype, 
-    //         health: backEndObject.health, 
-    //         objectinfo: backEndObject.objectinfo,
-    //       })
-    //     } else if(backEndObject.objecttype === 'hut'){
-    //       frontEndObjects[id] = new Hut({
-    //         objecttype: backEndObject.objecttype, 
-    //         health: backEndObject.health, 
-    //         objectinfo: backEndObject.objectinfo,
-    //       })
-    //     }
+      if (!frontEndObjects[id]){ // new 
+        if (backEndObject.objecttype === 'wall'){
+          frontEndObjects[id] = new Wall({
+            objecttype: backEndObject.objecttype, 
+            health: backEndObject.health, 
+            objectinfo: backEndObject.objectinfo,
+          })
+        } else if(backEndObject.objecttype === 'hut'){
+          frontEndObjects[id] = new Hut({
+            objecttype: backEndObject.objecttype, 
+            health: backEndObject.health, 
+            objectinfo: backEndObject.objectinfo,
+          })
+        }
   
   
-    //   } else { // already exist
-    //     // update health attributes if changed
-    //     frontEndObjects[id].health = backEndObject.health
+      } else { // already exist
+        // update health attributes if changed
+        frontEndObjects[id].health = backEndObject.health
   
-    //   }
-    // }
-    // // remove deleted 
-    // for (const Id in frontEndObjects){
-    //   if (!backEndObjects[Id]){
-    //    delete frontEndObjects[Id]
-    //   }
-    // }
+      }
+    }
+    // remove deleted 
+    for (const Id in frontEndObjects){
+      if (!backEndObjects[Id]){
+       delete frontEndObjects[Id]
+      }
+    }
   
     /////////////////////////////////////////////////// 5.ITEMS //////////////////////////////////////////////////
     for (const id in backEndItems) {
@@ -796,6 +797,19 @@ function loop(){
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
         frontEndProjectile.draw(canvas, camX, camY)
+    }
+
+    // ENEMIES
+    for (const id in frontEndEnemies){ 
+      const frontEndEnemy = frontEndEnemies[id]
+      frontEndEnemy.draw(canvas, camX, camY)
+    }
+
+
+    // WALLS
+    for (const id in frontEndObjects){
+      const obj = frontEndObjects[id]
+      obj.draw(canvas, camX, camY)
     }
 
     // PLAYERS
