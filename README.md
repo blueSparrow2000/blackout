@@ -12,13 +12,13 @@ https://www.youtube.com/watch?v=4GQCkW23rTU
 
 
 ## How to run the server
-> npm run dev
+- npm run dev
 
 
 or 
 
 
-> nodemon src/backend.js
+- nodemon src/backend.js
 
 
 ## How to join the server
