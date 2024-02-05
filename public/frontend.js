@@ -9,7 +9,8 @@ const ITEMRADIUS = 24
 let groundMap = [[]];
 let decalMap = [[]];
 const TILES_IN_ROW = 23;
-const TILE_SIZE = 128;
+const TILE_SIZE_HALF = 64;
+const TILE_SIZE = TILE_SIZE_HALF*2 //128;
 const MAPTILENUM = 30
 const MAPWIDTH = TILE_SIZE*MAPTILENUM
 const MAPHEIGHT =TILE_SIZE*MAPTILENUM
@@ -525,7 +526,7 @@ function interactItem(itemId,backEndItems){
 
     // IMPORTANT: Should check in-house again if scope is picked up inside the house!
     if (frontEndPlayer.getinhouse){
-      frontEndPlayer.getinhouse = false
+      frontEndPlayer.getinhouse = false // prediction
       socket.emit('houseLeave')
     }
 
@@ -815,14 +816,14 @@ canvas.font ='italic bold 24px sans-serif'
 const defaultSightChunk = 2
 let chunkInfo 
 let sightChunk = defaultSightChunk
-let sightdistance = (sightChunk)*TILE_SIZE // using tile based
-let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE // using tile based
+let sightdistance = (sightChunk)*TILE_SIZE + TILE_SIZE_HALF  // using tile based
+let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF // using tile based
 
 
 function updateSightChunk(scopeDist){
   sightChunk = defaultSightChunk + scopeDist
-  sightdistance = (sightChunk)*TILE_SIZE 
-  sightdistanceProjectile = (sightChunk+1)*TILE_SIZE 
+  sightdistance = (sightChunk)*TILE_SIZE + TILE_SIZE_HALF 
+  sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF 
 }
 
 function loop(){
@@ -870,12 +871,12 @@ function loop(){
       const { id } =groundMap[chunkInfo.rowNum][chunkInfo.colNum]
       
       if (!frontEndPlayer.getinhouse && id === 50){ //  get in house for the first time
-        // frontEndPlayer.getinhouse = true
+        frontEndPlayer.getinhouse = true // prediction
         socket.emit('houseEnter')
         updateSightChunk(-1)
       }
       if (frontEndPlayer.getinhouse && id !== 50){ // get out of the house for the first time
-        // frontEndPlayer.getinhouse = false
+        frontEndPlayer.getinhouse = false // prediction
         socket.emit('houseLeave')
         if (frontEndPlayer.wearingscopeID>0){// if scope
           updateSightChunk(frontEndItems[frontEndPlayer.wearingscopeID].scopeDist)
