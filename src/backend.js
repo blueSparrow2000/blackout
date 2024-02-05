@@ -52,6 +52,7 @@ let USERCOUNT = [0]
 
 // for bullets
 const FRICTION = 0.999//0.992
+const THROWFRICTION = 0.985
 
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
@@ -70,31 +71,34 @@ const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
-    
+    'grenadeLauncher':{travelDistance:700, damage: 1, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'7mm', size: {length:25, width:5}}, 
+    'fragment':{travelDistance:200, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 100, ammotype:'5mm', size: {length:13, width:1}}, 
+
+
     'M1':{travelDistance:1400, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
     'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
     'AWM':{travelDistance:1600, damage: 9, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
 
-    'pistol':{travelDistance:500, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
+    'pistol':{travelDistance:600, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
     'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
     'VSS':{travelDistance:1000, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:19, magSize:10, reloadTime: 2300, ammotype:'5mm' , size: {length:27, width:2}}, 
     'ak47':{travelDistance:700, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:21, magSize:30, reloadTime: 1000, ammotype:'5mm', size: {length:28, width:3}}, 
     'FAMAS':{travelDistance:650, damage: 1, shake:2, num: 1, fireRate: 80, projectileSpeed:17, magSize: 30, reloadTime: 3200, ammotype:'5mm', size: {length:22, width:3}}, 
     
-    's686':{travelDistance:260, damage: 1, shake:5, num: 5, fireRate: 180, projectileSpeed:10, magSize:2, reloadTime: 1200, ammotype:'12G', size: {length:13, width:5}},
-    'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:13, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
-    'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
+    's686':{travelDistance:360, damage: 1, shake:5, num: 5, fireRate: 180, projectileSpeed:10, magSize:2, reloadTime: 1200, ammotype:'12G', size: {length:13, width:5}},
+    'DBS':{travelDistance:400, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:13, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
+    'usas12':{travelDistance:500, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
     
     'ump45':{travelDistance:680, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:15, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
     'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
-    'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
-    'knife':{travelDistance:30, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
-    'bat':{travelDistance:36, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
+    'fist':{travelDistance:32, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
+    'knife':{travelDistance:48, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
+    'bat':{travelDistance:60, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
 }
-const defaultGuns = ['pistol']//[] 
+const defaultGuns = ['pistol','grenadeLauncher']//[] 
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -244,6 +248,41 @@ function itemBorderUpdate(item){
 }
 
 
+function addProjectile(angle,currentGun,playerID,location){
+  projectileId++
+  const guninfoGET = gunInfo[currentGun]
+  const shakeProj = guninfoGET.shake
+  const bulletSpeed = guninfoGET.projectileSpeed
+  const velocity = { // with shake!
+    x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
+    y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
+  }
+  const radius = 5
+
+  const travelDistance = guninfoGET.travelDistance
+  const projDamage =  guninfoGET.damage
+
+  backEndProjectiles[projectileId] = {
+    x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+  }
+}
+
+function safeDeleteProjectile(projID){
+  const backEndProjectile = backEndProjectiles[projID]
+  // if name is grenadeLauncher, explode and damage surrounding enemies and players!backEndProjectile.name
+  // console.log(backEndProjectile.gunName)
+  if (backEndProjectile.gunName==='grenadeLauncher'){
+    const BLASTNUM = 8
+    for (let i=0;i< BLASTNUM;i++){
+      addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',backEndProjectile.playerId, backEndProjectile)
+    }
+
+  }
+
+  delete backEndProjectiles[projID]
+}
+
+
 function safeDeletePlayer(playerId){
   // drop all item before removing
   const backEndPlayer = backEndPlayers[playerId]
@@ -265,6 +304,8 @@ function safeDeletePlayer(playerId){
 
   delete backEndPlayers[playerId]
 }
+
+
 
 function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     if (WW){
@@ -381,28 +422,10 @@ async function main(){
           if (!backEndPlayers[socket.id]) return // player not defined
 
           const gunName = currentGun
-            function addProjectile(){
-                projectileId++
-                const guninfoGET = gunInfo[currentGun]
-                const shakeProj = guninfoGET.shake
-                const bulletSpeed = guninfoGET.projectileSpeed
-                const velocity = { // with shake!
-                  x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
-                  y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
-                }
-                const radius = 5
             
-                const travelDistance = guninfoGET.travelDistance
-                const projDamage =  guninfoGET.damage
-            
-                backEndProjectiles[projectileId] = {
-                  x:backEndPlayers[socket.id].x, y:backEndPlayers[socket.id].y,radius,velocity, speed:bulletSpeed, playerId: socket.id, gunName, travelDistance, projDamage
-                }
-              }
-              
-              for (let i=0;i< gunInfo[currentGun].num;i++){
-                addProjectile()
-              }
+          for (let i=0;i< gunInfo[currentGun].num;i++){
+            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id])
+          }
         }
         socket.on('shoot', ({angle,currentGun})=>{
           shootProjectile(angle,currentGun)
@@ -569,9 +592,16 @@ setInterval(() => {
     let myspeed = projGET.speed
 
     if (gunNameOfProjectile !== 'AWM'){
-      projGET.velocity.x *= FRICTION
-      projGET.velocity.y *= FRICTION
-      myspeed *= FRICTION
+      if (gunNameOfProjectile === 'grenadeLauncher'){
+        projGET.velocity.x *= THROWFRICTION
+        projGET.velocity.y *= THROWFRICTION
+        myspeed *= THROWFRICTION
+      }else{
+        projGET.velocity.x *= FRICTION
+        projGET.velocity.y *= FRICTION
+        myspeed *= FRICTION
+      }
+
     }
 
     projGET.x += projGET.velocity.x
@@ -581,7 +611,7 @@ setInterval(() => {
     // travel distance check for projectiles
     if (projGET.travelDistance <= 0){
       BULLETDELETED = true
-      delete backEndProjectiles[id]
+      safeDeleteProjectile(id)
       continue // dont reference projectile that does not exist
     }
 
@@ -592,7 +622,7 @@ setInterval(() => {
         projGET.y + PROJECTILERADIUS <= 0 
       ) {
       BULLETDELETED = true
-      delete backEndProjectiles[id]
+      safeDeleteProjectile(id)
       continue // dont reference projectile that does not exist
     }
 
@@ -624,7 +654,7 @@ setInterval(() => {
           } 
         }
         BULLETDELETED = true
-        delete backEndProjectiles[id] 
+        safeDeleteProjectile(id)
         break // only one obj can get hit by a projectile
       }
     }
@@ -656,7 +686,7 @@ setInterval(() => {
             }
             // delete projectile after inspecting who shot the projectile & calculating damage
             BULLETDELETED = true
-            delete backEndProjectiles[id] 
+            safeDeleteProjectile(id)
             break // only one player can get hit by a projectile
         }
     }
@@ -684,7 +714,7 @@ setInterval(() => {
         }
         // delete projectile after inspecting who shot the projectile & calculating damage
         BULLETDELETED = true
-        delete backEndProjectiles[id] 
+        safeDeleteProjectile(id)
         break // only one enemy can get hit by a projectile
       }
     }
