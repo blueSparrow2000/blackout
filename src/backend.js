@@ -2,6 +2,7 @@
 const TICKRATE = 15
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
+const ITEMRADIUS = 16
 
 // map info
 const TILES_IN_ROW = 23;

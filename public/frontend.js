@@ -2,6 +2,8 @@
 const TICKRATE = 15
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
+const ITEMRADIUS = 24
+
 
 // map info
 let groundMap = [[]];
@@ -80,7 +82,7 @@ socket.on('map', (loadedMap)=>{
     decalMap = loadedMap.decals;
 })
 
-const ITEMRADIUS = 16
+
 // initialize server variables
 let gunInfoFrontEnd = {}
 let gunInfoKeysFrontEnd = []
@@ -877,7 +879,7 @@ function loop(){
       const item = frontEndItems[id]
       const gunImg = gunImages[item.name]
       if (frontEndPlayer.IsVisible(item.groundx,item.groundy,sightdistance) ){
-        item.draw(canvas, camX, camY, {img:gunImg,offset:PLAYERRADIUS})
+        item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
       }
     }
   
