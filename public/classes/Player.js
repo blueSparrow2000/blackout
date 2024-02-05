@@ -18,6 +18,10 @@ class Player{
       this.wearingscopeID = wearingscopeID
     }
 
+    getMinimapLoc(MiniMapRatio){
+      return {x:Math.round(this.x*MiniMapRatio), y:Math.round(this.y*MiniMapRatio)}
+    }
+
     IsVisible(x,y,refDistance){
       if (Math.abs(this.x-x) <= refDistance && Math.abs(this.y-y) <= refDistance){
         return true

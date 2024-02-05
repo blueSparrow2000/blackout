@@ -38,6 +38,12 @@ mapImage.src = "/tiles1.png"
 const charImage = new Image();
 charImage.src = "/character.png"
 
+
+const minimapImage = new Image();
+minimapImage.src = "/minimap_map1.png"
+const MINIMAPSIZE = 512
+const MINIMAPSIZE_HALF = 256
+
 // resolution upgrade - retina display gives value 2
 //const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
 
@@ -363,6 +369,7 @@ setInterval(()=>{
   // dont have to emit since they are seen by me(a client, not others)
   if (keys.g.pressed){
       socket.emit('keydown',{keycode:'KeyG'})
+
   }
   if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
       socket.emit('keydown',{keycode:'KeyR'})
@@ -1004,6 +1011,20 @@ function loop(){
     }
 
     // OTHERS
+    if (keys.g.pressed){ // draw minimap
+      canvas.drawImage(minimapImage, 
+        0,
+        0,
+        MINIMAPSIZE,MINIMAPSIZE,
+        centerX - MINIMAPSIZE_HALF, centerY - MINIMAPSIZE_HALF, 
+        MINIMAPSIZE,MINIMAPSIZE
+        )
+        const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
+        const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
+        canvas.drawImage(charImage, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
+
+    }
+
 
     window.requestAnimationFrame(loop);
 }

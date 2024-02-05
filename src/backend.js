@@ -567,9 +567,11 @@ setInterval(() => {
     const PROJECTILERADIUS = projGET.radius
     let myspeed = projGET.speed
 
-    projGET.velocity.x *= FRICTION
-    projGET.velocity.y *= FRICTION
-    myspeed *= FRICTION
+    if (gunNameOfProjectile !== 'AWM'){
+      projGET.velocity.x *= FRICTION
+      projGET.velocity.y *= FRICTION
+      myspeed *= FRICTION
+    }
 
     projGET.x += projGET.velocity.x
     projGET.y += projGET.velocity.y
