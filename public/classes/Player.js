@@ -33,7 +33,7 @@ class Player{
     //   return Math.hypot(this.x-x,this.y-y) < refDistance
     // }
     displayName(canvas, camX, camY) {
-      canvas.fillText(this.username,this.x - 2*this.username.length - camX ,this.y - this.radius*3 - camY)
+      canvas.fillText(this.username,this.x - 6*this.username.length - camX ,this.y - this.radius*4 - camY)
     }
 
     displayHealth(canvas, camX, camY, locX, locY){
@@ -139,14 +139,14 @@ class Player{
 
     displayAttribute(canvas, camX, camY, currentHoldingItem){
       const itemName = currentHoldingItem.name
-      canvas.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14- camX ,this.y + this.radius*2- camY)
+      canvas.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 50 - camX ,this.y + this.radius*3- camY)
       
       if (currentHoldingItem){
         if (currentHoldingItem.itemtype === 'gun'){
           if (this.reloading){
-            canvas.fillText('reloading...',this.x - 10 - camX,this.y + this.radius*3- camY)
+            canvas.fillText('reloading...',this.x - 50 - camX,this.y + this.radius*5- camY)
           } else{
-            canvas.fillText(`${currentHoldingItem.ammo}/${currentHoldingItem.magSize}`,this.x - 10 - camX,this.y + this.radius*3- camY)
+            canvas.fillText(`${currentHoldingItem.ammo}/${currentHoldingItem.magSize}`,this.x - 50 - camX,this.y + this.radius*5- camY)
           }
         }
       }

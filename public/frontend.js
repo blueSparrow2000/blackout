@@ -80,6 +80,7 @@ socket.on('map', (loadedMap)=>{
     decalMap = loadedMap.decals;
 })
 
+const ITEMRADIUS = 16
 // initialize server variables
 let gunInfoFrontEnd = {}
 let gunInfoKeysFrontEnd = []
@@ -545,15 +546,10 @@ socket.on('interact',(backEndItems)=>{
       // only when item is near - collision check with player and item!
       // only when item is onground
       const item = backEndItems[id]
-      const itemSizeObj = item.size
-      let itemRadius = Math.max(itemSizeObj.length, itemSizeObj.width)
-      if (item.itemtype==='gun'){
-        itemRadius = itemRadius/2
-      }
+      // const itemSizeObj = item.size
+      // let itemRadius = Math.max(itemSizeObj.length, itemSizeObj.width)
       const DISTANCE = Math.hypot(item.groundx - frontEndPlayer.x, item.groundy - frontEndPlayer.y)
-      //console.log(`${item.name} DISTANCE: ${DISTANCE}`)
-      if (item.onground && (DISTANCE < itemRadius + frontEndPlayer.radius)) {
-        //console.log(`${item.name} is near the player!`)
+      if (item.onground && (DISTANCE < ITEMRADIUS + frontEndPlayer.radius)) {
         interactItem(id,backEndItems)
         break
       }
@@ -799,7 +795,7 @@ let camY = 100
 const centerX = Math.round(canvasEl.width/2)
 const centerY = Math.round(canvasEl.height/2)
 
-canvas.font ='italic bold 12px sans-serif'
+canvas.font ='italic bold 24px sans-serif'
 let chunkInfo 
 let sightChunk = 3
 let sightdistance = (sightChunk)*TILE_SIZE // using tile based
@@ -818,6 +814,9 @@ function loop(){
 
 
     if (!frontEndPlayer){ // if not exists - draw nothing
+      canvas.fillStyle = 'black'
+      canvas.fillText("loading...",centerX - 50,centerY + 50)
+
       window.requestAnimationFrame(loop);
       return
     }
