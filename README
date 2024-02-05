@@ -1,4 +1,4 @@
-Required
+##Required
 - npm
 - express
 - socket.io
@@ -11,13 +11,13 @@ Initial code based on:
 https://www.youtube.com/watch?v=4GQCkW23rTU
 
 
-How to run the server
+##How to run the server
 > npm run dev
 or 
 > nodemon src/backend.js
 
 
-How to join the server
+##How to join the server
  - on hosting device
  URL: localhost:5000
 
