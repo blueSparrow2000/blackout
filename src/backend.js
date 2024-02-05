@@ -74,7 +74,6 @@ const gunInfo = {
     'grenadeLauncher':{travelDistance:700, damage: 2, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'7mm', size: {length:25, width:5}}, 
     'fragment':{travelDistance:128, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 100, ammotype:'5mm', size: {length:13, width:1}}, 
 
-
     'M1':{travelDistance:1400, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
     'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
@@ -94,11 +93,11 @@ const gunInfo = {
     'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
-    'fist':{travelDistance:32, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
-    'knife':{travelDistance:48, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
-    'bat':{travelDistance:60, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:12, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
+    'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
+    'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
+    'bat':{travelDistance:48, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
 }
-const defaultGuns = ['pistol','grenadeLauncher']//[] 
+const defaultGuns = ['pistol']//[] 
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -173,11 +172,11 @@ if (GROUNDITEMFLAG){
 
   if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
 
-    makeObjects("wall", 30, {orientation: 'vertical',start:{x:500,y:1000}, end:{x:500,y:2000}, width:20, color: 'gray'})
+    makeObjects("wall", 30, {orientation: 'vertical',start:{x:500,y:1000}, end:{x:500,y:1200}, width:20, color: 'gray'})
 
 
     // special tile locations in map1
-    const TILESLOC = {"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
+    const TILESLOC = {"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"tree2":{row:21,col:4},"tree3":{row:16,col:14},"tree4":{row:17,col:21},"tree5":{row:13,col:23},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
     function getCoordTiles(location){
       return {x:location.col*TILE_SIZE + Math.round(TILE_SIZE/2), y:location.row*TILE_SIZE + Math.round(TILE_SIZE/2)}
     }
@@ -196,7 +195,15 @@ if (GROUNDITEMFLAG){
     makeNdropItem('gun', 'mp5', sandroad1loc.x, sandroad1loc.y)
 
     const sandroad2loc = getCoordTiles(TILESLOC["sandroad2"])
-    makeNdropItem('gun', 'usas12', sandroad2loc.x, sandroad2loc.y)
+    makeNdropItem('gun', 's686', sandroad2loc.x, sandroad2loc.y)
+
+    const tree2loc = getCoordTiles(TILESLOC["tree2"])
+    makeNdropItem('gun', 'grenadeLauncher', tree2loc.x, tree2loc.y)
+    
+
+    makeNdropItem('gun', 'vector', getCoordTiles(TILESLOC["tree3"]).x, getCoordTiles(TILESLOC["tree3"]).y)
+    makeNdropItem('melee', 'knife', getCoordTiles(TILESLOC["tree4"]).x, getCoordTiles(TILESLOC["tree4"]).y)
+    makeNdropItem('gun', 'ak47', getCoordTiles(TILESLOC["tree5"]).x, getCoordTiles(TILESLOC["tree5"]).y)
 
 
     // some health packs
