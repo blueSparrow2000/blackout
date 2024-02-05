@@ -149,74 +149,80 @@ if (GROUNDITEMFLAG){
     const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
     const groundGunAmount = groundgunList.length
     for (let i=0;i<groundGunAmount; i++){
-      makeNdropItem('gun', groundgunList[i], groundItemSpawnLoc.x + Math.round(60*(i - groundGunAmount/2)), groundItemSpawnLoc.y )
+      makeNdropItem('gun', groundgunList[i], {x:groundItemSpawnLoc.x + Math.round(60*(i - groundGunAmount/2)), y:groundItemSpawnLoc.y} )
     }
     
     const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
     const groundConsAmount = groundConsList.length
     for (let i=0;i<groundConsAmount; i++){
-      makeNdropItem('consumable', groundConsList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundConsAmount/2)), groundItemSpawnLoc.y - 100)
+      makeNdropItem('consumable', groundConsList[i], {x:groundItemSpawnLoc.x + Math.round(50*(i - groundConsAmount/2)), y:groundItemSpawnLoc.y - 100})
     }
   
     const groundArmorAmount = armorTypes.length
     for (let i=0;i<groundArmorAmount; i++){
-      makeNdropItem( 'armor', armorTypes[i], groundItemSpawnLoc.x + Math.round(50*(i - groundArmorAmount/2)), groundItemSpawnLoc.y - 150)
+      makeNdropItem( 'armor', armorTypes[i], {x:groundItemSpawnLoc.x + Math.round(50*(i - groundArmorAmount/2)), y:groundItemSpawnLoc.y - 150})
     }
   
     const groundMeleeList = ['knife','bat']
     const groundMeleeAmount = groundMeleeList.length
     for (let i=0;i<groundMeleeAmount; i++){
-      makeNdropItem('melee', groundMeleeList[i], groundItemSpawnLoc.x + Math.round(50*(i - groundMeleeAmount/2)), groundItemSpawnLoc.y - 200)
+      makeNdropItem('melee', groundMeleeList[i], {x:groundItemSpawnLoc.x + Math.round(50*(i - groundMeleeAmount/2)), y:groundItemSpawnLoc.y - 200})
     }
   }
 
   if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
-
-    makeObjects("wall", 30, {orientation: 'vertical',start:{x:500,y:1000}, end:{x:500,y:1200}, width:20, color: 'gray'})
-
-
     // special tile locations in map1
-    const TILESLOC = {"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"tree2":{row:21,col:4},"tree3":{row:16,col:14},"tree4":{row:17,col:21},"tree5":{row:13,col:23},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
-    function getCoordTiles(location){
+    const TILESLOC = {"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"tree2":{row:21,col:4},"tree3":{row:16,col:14},"tree4":{row:17,col:21},"tree5":{row:13,col:23},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
+    
+
+    function getCoordTilesCenter(location){
       return {x:location.col*TILE_SIZE + Math.round(TILE_SIZE/2), y:location.row*TILE_SIZE + Math.round(TILE_SIZE/2)}
     }
 
+    function getCoordTiles(location){
+      return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
+    }
+
+    makeHouse(getCoordTiles(TILESLOC["house1"]))
+    makeHouse(getCoordTiles(TILESLOC["house2"]))
+    makeHouse(getCoordTiles(TILESLOC["house3"]))
+
     // some guns 
-    const rock1loc = getCoordTiles(TILESLOC["rock1"])
-    makeNdropItem('gun', 'AWM', rock1loc.x, rock1loc.y)
-    makeNdropItem('scope', "2", rock1loc.x, rock1loc.y+50) // scope 3 is laggy to other PCs
+    const rock1loc = getCoordTilesCenter(TILESLOC["rock1"])
+    makeNdropItem('gun', 'AWM', rock1loc)
+    makeNdropItem('scope', "2", rock1loc) // scope 3 is laggy to other PCs
     // console.log(rockloc)
     // console.log(MAPWIDTH)
-    const rock2loc = getCoordTiles(TILESLOC["rock2"])
-    makeNdropItem('gun', 'M249', rock2loc.x, rock2loc.y)
-    makeNdropItem('scope', "1", rock2loc.x, rock2loc.y + 50)
+    const rock2loc = getCoordTilesCenter(TILESLOC["rock2"])
+    makeNdropItem('gun', 'M249', rock2loc)
+    makeNdropItem('scope', "1", rock2loc)
 
-    const sandroad1loc = getCoordTiles(TILESLOC["sandroad1"])
-    makeNdropItem('gun', 'mp5', sandroad1loc.x, sandroad1loc.y)
+    const sandroad1loc = getCoordTilesCenter(TILESLOC["sandroad1"])
+    makeNdropItem('gun', 'mp5', sandroad1loc)
 
-    const sandroad2loc = getCoordTiles(TILESLOC["sandroad2"])
-    makeNdropItem('gun', 's686', sandroad2loc.x, sandroad2loc.y)
+    const sandroad2loc = getCoordTilesCenter(TILESLOC["sandroad2"])
+    makeNdropItem('gun', 's686', sandroad2loc)
 
-    const tree2loc = getCoordTiles(TILESLOC["tree2"])
-    makeNdropItem('gun', 'grenadeLauncher', tree2loc.x, tree2loc.y)
+    const tree2loc = getCoordTilesCenter(TILESLOC["tree2"])
+    makeNdropItem('gun', 'grenadeLauncher', tree2loc)
     
 
-    makeNdropItem('gun', 'vector', getCoordTiles(TILESLOC["tree3"]).x, getCoordTiles(TILESLOC["tree3"]).y)
-    makeNdropItem('melee', 'knife', getCoordTiles(TILESLOC["tree4"]).x, getCoordTiles(TILESLOC["tree4"]).y)
-    makeNdropItem('gun', 'ak47', getCoordTiles(TILESLOC["tree5"]).x, getCoordTiles(TILESLOC["tree5"]).y)
+    makeNdropItem('gun', 'vector', getCoordTilesCenter(TILESLOC["tree3"]))
+    makeNdropItem('melee', 'knife', getCoordTilesCenter(TILESLOC["tree4"]))
+    makeNdropItem('gun', 'ak47', getCoordTilesCenter(TILESLOC["tree5"]))
 
 
     // some health packs
-    const tree1loc = getCoordTiles(TILESLOC["tree1"])
-    makeNdropItem('consumable', 'medkit',tree1loc.x, tree1loc.y)
+    const tree1loc = getCoordTilesCenter(TILESLOC["tree1"])
+    makeNdropItem('consumable', 'medkit',tree1loc)
 
     // some armors
-    const forest1loc = getCoordTiles(TILESLOC["forest1"])
-    makeNdropItem( 'armor', 'absorb', forest1loc.x, forest1loc.y)
+    const forest1loc = getCoordTilesCenter(TILESLOC["forest1"])
+    makeNdropItem( 'armor', 'absorb', forest1loc)
 
-    const forest2loc = getCoordTiles(TILESLOC["forest2"])
-    makeNdropItem( 'armor', 'reduce', forest2loc.x, forest2loc.y)
-    makeNdropItem('scope', "1", forest2loc.x, forest2loc.y+50)
+    const forest2loc = getCoordTilesCenter(TILESLOC["forest2"])
+    makeNdropItem( 'armor', 'reduce', forest2loc)
+    makeNdropItem('scope', "1", forest2loc)
 
   }
 
@@ -399,7 +405,7 @@ async function main(){
 
             // default item for a player if exists
             for (let i=0;i<defaultGuns.length; i++){
-              makeNdropItem('gun', defaultGuns[i], 0 , 0,onground=false)
+              makeNdropItem('gun', defaultGuns[i], {x:0 ,y:0},onground=false)
               inventory[i] = backEndItems[itemsId]
             }
 
@@ -810,7 +816,10 @@ setInterval(() => {
 
 
 
-function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
+function makeNdropItem(itemtype, name, groundloc,onground=true){
+  const groundx = groundloc.x
+  const groundy = groundloc.y
+
   itemsId++
   let size
   let color
@@ -894,6 +903,28 @@ function makeObjects(objecttype, health, objectinfo){
   backEndObjects[objectId] = {
     objecttype , myID:objectId, deleteRequest:false, health, objectinfo, objectsideforbackend
   }
+}
+
+function makeBox(location){ // location is top left corner
+  const WALLWIDTH = 20
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:location.x+WALLWIDTH,y:location.y}, end:{x:location.x+WALLWIDTH,y:location.y+200}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:location.x+300-WALLWIDTH,y:location.y}, end:{x:location.x+300-WALLWIDTH,y:location.y+200}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x,y:location.y}, end:{x:location.x+300,y:location.y}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x,y:location.y+200}, end:{x:location.x+300,y:location.y+200}, width:WALLWIDTH, color: 'gray'})
+  
+}
+
+function makeHouse(location){ // location is top left corner
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+  const HOUSEWIDTH = TILE_SIZE*2
+  const HOUSEHEIGHT = TILE_SIZE
+  const DOORLEN = 40
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:location.x+WALLWIDTH_HALF,y:location.y+DOORLEN}, end:{x:location.x+WALLWIDTH_HALF,y:location.y+HOUSEHEIGHT}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:location.x+HOUSEWIDTH-WALLWIDTH_HALF,y:location.y}, end:{x:location.x+HOUSEWIDTH-WALLWIDTH_HALF,y:location.y+HOUSEHEIGHT}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x,y:location.y}, end:{x:location.x+HOUSEWIDTH,y:location.y}, width:WALLWIDTH, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x,y:location.y+HOUSEHEIGHT}, end:{x:location.x+HOUSEWIDTH,y:location.y+HOUSEHEIGHT}, width:WALLWIDTH, color: 'gray'})
+  
 }
 
 function safeDeleteObject(id){
@@ -1031,11 +1062,11 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
     const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
     const chance = Math.random()
     if (chance < 0.01){ // 1% chance to drop medkit
-      makeNdropItem( 'consumable', 'medkit', enemyInfoGET.x,enemyInfoGET.y)
+      makeNdropItem( 'consumable', 'medkit', {x:enemyInfoGET.x, y:enemyInfoGET.y})
     } else if (0.01 < chance && chance < 0.03){ // 2% chance to drop bandage
-      makeNdropItem( 'consumable', 'bandage', enemyInfoGET.x,enemyInfoGET.y)
+      makeNdropItem( 'consumable', 'bandage', {x:enemyInfoGET.x, y:enemyInfoGET.y})
     } else if (chance>0.999){ // 0.1% to drop guns
-      makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
+      makeNdropItem( 'gun', enemyDropGuns[idxGUN], {x:enemyInfoGET.x, y:enemyInfoGET.y})
     } 
   } 
   ENEMYCOUNT--
