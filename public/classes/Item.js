@@ -92,8 +92,9 @@ class Melee extends Item {
 
 
 let armorImages = {}
-const armorKeys = ["reduce","absorb"]
-for (armorkey in armorKeys){
+const armorKeys = ['reduce','absorb']
+for (let i=0;i<2;i++){
+  const armorkey = armorKeys[i]
   armorImages[armorkey] = new Image()
   armorImages[armorkey].src = `/images/${armorkey}.png`
 }
@@ -106,8 +107,7 @@ class Armor extends Item {
   }
   draw(canvas, camX, camY,{img,offset}) { // on the ground
     if (this.onground){
-      console.log(this.name)
-      canvas.drawImage(armorImages['reduce'], this.groundx-camX-offset, this.groundy-camY-offset)
+      canvas.drawImage(armorImages[this.name], this.groundx-camX-offset, this.groundy-camY-offset)
 
       // canvas.beginPath()
       // canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
@@ -126,10 +126,12 @@ class Armor extends Item {
 
 let scopeImages = {}
 const scopeKeys = ["1","2","3","4"]
-for (scopekey in scopeKeys){
+for (let i=0;i<4;i++){
+  const scopekey = scopeKeys[i]
   scopeImages[scopekey] = new Image()
   scopeImages[scopekey].src = `/images/${scopekey}.png`
 }
+
 
 class Scope extends Item {
   constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {scopeDist}}) {
