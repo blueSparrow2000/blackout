@@ -3,9 +3,10 @@
 - express
 - socket.io
 - line-circle-collision
+- tmx-parser
 - nodemon (optional)
 
-npm i tmx-parser
+Do: npm i tmx-parser
 
 
 Also need 'Tiled' app
