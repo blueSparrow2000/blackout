@@ -91,6 +91,13 @@ class Melee extends Item {
 
 
 
+let armorImages = {}
+const armorKeys = ["reduce","absorb"]
+for (armorkey in armorKeys){
+  armorImages[armorkey] = new Image()
+  armorImages[armorkey].src = `/images/${armorkey}.png`
+}
+
 class Armor extends Item {
   constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {amount}}) {
       super({groundx, groundy, size, name, onground, color})
@@ -99,18 +106,23 @@ class Armor extends Item {
   }
   draw(canvas, camX, camY,{img,offset}) { // on the ground
     if (this.onground){
-      canvas.beginPath()
-      canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
-      canvas.lineWidth = 3
-      canvas.strokeStyle = 'gray'
-      canvas.stroke()
+      console.log(this.name)
+      canvas.drawImage(armorImages['reduce'], this.groundx-camX-offset, this.groundy-camY-offset)
 
-      // name
-      canvas.fillStyle = this.color
-      canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
+      // canvas.beginPath()
+      // canvas.arc(this.groundx-camX, this.groundy-camY, this.haloRadius, 0, Math.PI * 2, false)
+      // canvas.lineWidth = 3
+      // canvas.strokeStyle = 'gray'
+      // canvas.stroke()
+
+      // // name
+      // canvas.fillStyle = this.color
+      // canvas.fillText(this.name,this.groundx - 4*this.name.length-camX,this.groundy+3-camY)
     }
   }
 }
+
+
 
 let scopeImages = {}
 const scopeKeys = ["1","2","3","4"]
