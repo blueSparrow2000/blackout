@@ -41,14 +41,20 @@ class Player{
       let xReal = locX
       let yReal = locY
       if (locX===-1){ // other player
-        xReal = this.x - camX 
-        yReal = this.y - this.radius*2 - camY
+        xReal = Math.round(this.x - camX) 
+        yReal = Math.round(this.y - this.radius*2 - camY)
       }
 
       //canvas.fillText(`HP: ${Math.round(this.health * 100) / 100}`,xReal,yReal)
 
       const HPlen = parseInt( HEALTHBARHALFLEN * this.health / 4) // max health is 8
       canvas.lineWidth = 8
+      canvas.strokeStyle = 'gray'
+      canvas.beginPath()
+      canvas.moveTo(xReal - HEALTHBARHALFLEN, yReal)
+      canvas.lineTo(xReal + HEALTHBARHALFLEN, yReal)
+      canvas.stroke()
+
       canvas.strokeStyle = 'red'
       canvas.beginPath()
       canvas.moveTo(xReal - HEALTHBARHALFLEN, yReal)
