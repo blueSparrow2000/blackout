@@ -423,7 +423,8 @@ async function main(){
                 currentSlot: 1, // 1~4
                 mousePos: {x:0,y:0},
                 wearingarmorID: -1,
-                wearingscopeID: -1
+                wearingscopeID: -1,
+                getinhouse: false
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
@@ -496,6 +497,14 @@ async function main(){
             //console.log(`dropped: ${itemToUpdate.name}`)
           }
 
+        })
+
+        // house in-outs
+        socket.on('houseEnter',() => {
+          backEndPlayers[socket.id].getinhouse = true
+        })
+        socket.on('houseLeave',() => {
+          backEndPlayers[socket.id].getinhouse = false
         })
 
         ///////////////////////////////// Frequent key-downs update ///////////////////////////////////////////////

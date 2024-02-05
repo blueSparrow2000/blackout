@@ -1,7 +1,7 @@
 const HEALTHBARHALFLEN = 16
 
 class Player{
-    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1,wearingscopeID=-1}) {
+    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1,wearingscopeID=-1,getinhouse}) {
       this.x = x
       this.y = y
       this.radius = radius
@@ -16,6 +16,7 @@ class Player{
       this.score = score
       this.wearingarmorID = wearingarmorID
       this.wearingscopeID = wearingscopeID
+      this.getinhouse = getinhouse // in house initially false
     }
 
     getMinimapLoc(MiniMapRatio){

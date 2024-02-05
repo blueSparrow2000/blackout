@@ -524,7 +524,10 @@ function interactItem(itemId,backEndItems){
     const currentwearingscopeID = frontEndPlayer.wearingscopeID
 
     // IMPORTANT: Should check in-house again if scope is picked up inside the house!
-    getInHouse = false 
+    if (frontEndPlayer.getinhouse){
+      frontEndPlayer.getinhouse = false
+      socket.emit('houseLeave')
+    }
 
     //console.log(currentwearingscopeID)
     if (currentwearingscopeID > 0 ){
@@ -603,7 +606,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           currentPos: {x:cursorX,y:cursorY}, // client side prediction mousepos
           score: backEndPlayer.score,
           wearingarmorID: backEndPlayer.wearingarmorID,
-          wearingscopeID: backEndPlayer.wearingscopeID // do not have to keep track of this though
+          wearingscopeID: backEndPlayer.wearingscopeID, 
+          getinhouse:backEndPlayer.getinhouse 
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -619,6 +623,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             frontEndPlayerOthers.score = backEndPlayer.score
             frontEndPlayerOthers.wearingarmorID = backEndPlayer.wearingarmorID
             frontEndPlayerOthers.wearingscopeID = backEndPlayer.wearingscopeID
+            frontEndPlayerOthers.getinhouse = backEndPlayer.getinhouse 
 
             // inventory attributes
             frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
@@ -820,8 +825,6 @@ function updateSightChunk(scopeDist){
   sightdistanceProjectile = (sightChunk+1)*TILE_SIZE 
 }
 
-let getInHouse = false
-
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
 
@@ -862,15 +865,18 @@ function loop(){
       // }
       chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
 
-      
+
       // SIGHT DISTANCE IS CHANGED IF PLAYER IS IN THE HOUSE CHUNK - house chunk has id===50
       const { id } =groundMap[chunkInfo.rowNum][chunkInfo.colNum]
-      if (!getInHouse && id === 50){ //  get in house for the first time
-        getInHouse = true
+      
+      if (!frontEndPlayer.getinhouse && id === 50){ //  get in house for the first time
+        // frontEndPlayer.getinhouse = true
+        socket.emit('houseEnter')
         updateSightChunk(-1)
       }
-      if (getInHouse && id !== 50){ // get out of the house for the first time
-        getInHouse = false
+      if (frontEndPlayer.getinhouse && id !== 50){ // get out of the house for the first time
+        // frontEndPlayer.getinhouse = false
+        socket.emit('houseLeave')
         if (frontEndPlayer.wearingscopeID>0){// if scope
           updateSightChunk(frontEndItems[frontEndPlayer.wearingscopeID].scopeDist)
         } else{ // default scope: 0
@@ -954,8 +960,10 @@ function loop(){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
             currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo,canvasEl)
           }
-          currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
-          currentPlayer.displayName(canvas, camX, camY)
+          if (!currentPlayer.getinhouse){ // display player info only if they are not inside the house!
+            currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
+            currentPlayer.displayName(canvas, camX, camY)
+          }
           canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
       }
     }
@@ -1004,7 +1012,7 @@ function loop(){
 
         if (130 <= id && id <= 134){ // grass - opacity
           canvas.save();
-          canvas.globalAlpha = 0.8;
+          canvas.globalAlpha = 0.7;
           canvas.drawImage(mapImage, 
             imageCol * TILE_SIZE,
             imageRow * TILE_SIZE,
@@ -1025,7 +1033,7 @@ function loop(){
             );
         } else if(id === 188 || id === 50){ // ceiling of the house
           canvas.save();
-          canvas.globalAlpha = 0.95;
+          canvas.globalAlpha = 0.8;
           canvas.drawImage(mapImage, 
             imageCol * TILE_SIZE,
             imageRow * TILE_SIZE,
