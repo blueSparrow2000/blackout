@@ -707,7 +707,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           if (me){
   
             const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
-            const thatGunSoundDistance = 900
+            const thatGunSoundDistance = Math.max(backEndProjectile.travelDistance, sightdistanceProjectile)  //900
             if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
               let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
               if (DISTANCE > 100){
@@ -798,18 +798,18 @@ const centerX = Math.round(canvasEl.width/2)
 const centerY = Math.round(canvasEl.height/2)
 
 canvas.font ='italic bold 24px sans-serif'
+const defaultSightChunk = 2
 let chunkInfo 
-let sightChunk = 3
+let sightChunk = defaultSightChunk
 let sightdistance = (sightChunk)*TILE_SIZE // using tile based
-let sightdistanceProjectile = (sightChunk+2)*TILE_SIZE // using tile based
+let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE // using tile based
 
 
 function updateSightChunk(scopeDist){
-  sightChunk = 3+scopeDist
+  sightChunk = defaultSightChunk + scopeDist
   sightdistance = (sightChunk)*TILE_SIZE 
-  sightdistanceProjectile = (sightChunk+2)*TILE_SIZE 
+  sightdistanceProjectile = (sightChunk+1)*TILE_SIZE 
 }
-
 
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  

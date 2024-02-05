@@ -71,8 +71,8 @@ const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
-    'grenadeLauncher':{travelDistance:700, damage: 1, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'7mm', size: {length:25, width:5}}, 
-    'fragment':{travelDistance:200, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 100, ammotype:'5mm', size: {length:13, width:1}}, 
+    'grenadeLauncher':{travelDistance:700, damage: 2, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'7mm', size: {length:25, width:5}}, 
+    'fragment':{travelDistance:128, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 100, ammotype:'5mm', size: {length:13, width:1}}, 
 
 
     'M1':{travelDistance:1400, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
@@ -185,12 +185,12 @@ if (GROUNDITEMFLAG){
     // some guns 
     const rock1loc = getCoordTiles(TILESLOC["rock1"])
     makeNdropItem('gun', 'AWM', rock1loc.x, rock1loc.y)
-    makeNdropItem('scope', "3", rock1loc.x, rock1loc.y+50)
+    makeNdropItem('scope', "2", rock1loc.x, rock1loc.y+50) // scope 3 is laggy to other PCs
     // console.log(rockloc)
     // console.log(MAPWIDTH)
     const rock2loc = getCoordTiles(TILESLOC["rock2"])
     makeNdropItem('gun', 'M249', rock2loc.x, rock2loc.y)
-    makeNdropItem('scope', "2", rock2loc.x, rock2loc.y + 50)
+    makeNdropItem('scope', "1", rock2loc.x, rock2loc.y + 50)
 
     const sandroad1loc = getCoordTiles(TILESLOC["sandroad1"])
     makeNdropItem('gun', 'mp5', sandroad1loc.x, sandroad1loc.y)
@@ -272,7 +272,7 @@ function safeDeleteProjectile(projID){
   // if name is grenadeLauncher, explode and damage surrounding enemies and players!backEndProjectile.name
   // console.log(backEndProjectile.gunName)
   if (backEndProjectile.gunName==='grenadeLauncher'){
-    const BLASTNUM = 8
+    const BLASTNUM = 12
     for (let i=0;i< BLASTNUM;i++){
       addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',backEndProjectile.playerId, backEndProjectile)
     }
