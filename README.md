@@ -7,6 +7,10 @@
 
 npm i tmx-parser
 
+
+Also need 'Tiled' app
+
+
 Initial code based on: 
 https://www.youtube.com/watch?v=4GQCkW23rTU
 
@@ -23,10 +27,18 @@ or
 
 ## How to join the server
  - on hosting device
+
+
  URL: localhost:5000
 
+
  - on other device
+
+
+
  URL: [hosting device ip - use ipconfig]:5000
+
+
  for example: 192.168.0.27:5000
 
  
