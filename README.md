@@ -13,7 +13,11 @@ https://www.youtube.com/watch?v=4GQCkW23rTU
 
 ## How to run the server
 > npm run dev
+
+
 or 
+
+
 > nodemon src/backend.js
 
 
