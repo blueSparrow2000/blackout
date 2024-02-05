@@ -52,7 +52,7 @@ let USERCOUNT = [0]
 
 // for bullets
 const FRICTION = 0.999//0.992
-const THROWFRICTION = 0.985
+const THROWFRICTION = 0.98
 
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
@@ -71,8 +71,8 @@ const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
-    'grenadeLauncher':{travelDistance:700, damage: 2, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'7mm', size: {length:25, width:5}}, 
-    'fragment':{travelDistance:128, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 100, ammotype:'5mm', size: {length:13, width:1}}, 
+    'grenadeLauncher':{travelDistance:600, damage: 2, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
+    'fragment':{travelDistance:128, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
 
     'M1':{travelDistance:1400, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -599,7 +599,7 @@ setInterval(() => {
     let myspeed = projGET.speed
 
     if (gunNameOfProjectile !== 'AWM'){
-      if (gunNameOfProjectile === 'grenadeLauncher'){
+      if (gunNameOfProjectile === 'grenadeLauncher' || gunNameOfProjectile === 'fragment'){
         projGET.velocity.x *= THROWFRICTION
         projGET.velocity.y *= THROWFRICTION
         myspeed *= THROWFRICTION

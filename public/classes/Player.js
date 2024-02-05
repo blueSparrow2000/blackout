@@ -130,6 +130,17 @@ class Player{
 
           canvas.lineWidth = tipwidth
           canvas.stroke()
+        } else if(thisguninfo.ammotype==='fragment'){
+          const cylotip = 5
+          const tipstart = 36
+          const tipwidth = gunmainwidth + 3
+
+          canvas.beginPath()
+          canvas.moveTo(xReal + direction.x * tipstart, yReal + direction.y * tipstart)
+          canvas.lineTo(xReal + direction.x * (itemlength-cylotip), yReal + direction.y * (itemlength-cylotip))
+
+          canvas.lineWidth = tipwidth
+          canvas.stroke()
         }
 
       }
