@@ -3,10 +3,12 @@ const TICKRATE = 15
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 
-const MAPWIDTH = 128*30
-const MAPHEIGHT = 128*30
-const TILE_SIZE = 128;
+// map info
 const TILES_IN_ROW = 23;
+const TILE_SIZE = 128;
+const MAPTILENUM = 30
+const MAPWIDTH = TILE_SIZE*MAPTILENUM
+const MAPHEIGHT =TILE_SIZE*MAPTILENUM
 
 const collide = require('line-circle-collision')
 
@@ -178,10 +180,12 @@ if (GROUNDITEMFLAG){
     // some guns 
     const rock1loc = getCoordTiles(TILESLOC["rock1"])
     makeNdropItem('gun', 'AWM', rock1loc.x, rock1loc.y)
+    makeNdropItem('scope', "3", rock1loc.x, rock1loc.y+50)
     // console.log(rockloc)
     // console.log(MAPWIDTH)
     const rock2loc = getCoordTiles(TILESLOC["rock2"])
     makeNdropItem('gun', 'M249', rock2loc.x, rock2loc.y)
+    makeNdropItem('scope', "2", rock2loc.x, rock2loc.y + 50)
 
     const sandroad1loc = getCoordTiles(TILESLOC["sandroad1"])
     makeNdropItem('gun', 'mp5', sandroad1loc.x, sandroad1loc.y)
@@ -200,11 +204,7 @@ if (GROUNDITEMFLAG){
 
     const forest2loc = getCoordTiles(TILESLOC["forest2"])
     makeNdropItem( 'armor', 'reduce', forest2loc.x, forest2loc.y)
-
-    makeNdropItem('scope', "1", forest2loc.x+50, forest2loc.y)
-    makeNdropItem('scope', "2", forest2loc.x+50, forest2loc.y-50)
-    makeNdropItem('scope', "3", forest2loc.x+50, forest2loc.y+50)
-
+    makeNdropItem('scope', "1", forest2loc.x, forest2loc.y+50)
 
   }
 

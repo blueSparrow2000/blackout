@@ -3,8 +3,14 @@ const TICKRATE = 15
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 
-const MAPWIDTH = 128*30
-const MAPHEIGHT = 128*30
+// map info
+let groundMap = [[]];
+let decalMap = [[]];
+const TILES_IN_ROW = 23;
+const TILE_SIZE = 128;
+const MAPTILENUM = 30
+const MAPWIDTH = TILE_SIZE*MAPTILENUM
+const MAPHEIGHT =TILE_SIZE*MAPTILENUM
 
 let cursorX = 0
 let cursorY = 0
@@ -60,12 +66,6 @@ const canvas = canvasEl.getContext("2d");
 //canvas.scale(devicePixelRatio,devicePixelRatio) 
 
 const pointEl = document.querySelector('#pointEl')
-
-// map info
-let groundMap = [[]];
-let decalMap = [[]];
-const TILE_SIZE = 128;
-const TILES_IN_ROW = 23;
 
 
 // get socket
