@@ -46,11 +46,20 @@ mapImage.src = "/tiles1.png"
 const charImage = new Image();
 charImage.src = "/character.png"
 
+// no frame
+// const minimapImage = new Image();
+// minimapImage.src = "/minimap_map1_no_frame.png"
+// const MINIMAPSIZE = 512
+// const MINIMAPSIZE_HALF = 256
 
+// with frame
 const minimapImage = new Image();
 minimapImage.src = "/minimap_map1.png"
+const MINIMAPFRAMESIZE = 550
+const MINIMAPFRAMESIZE_HALF = 275
 const MINIMAPSIZE = 512
 const MINIMAPSIZE_HALF = 256
+
 
 // resolution upgrade - retina display gives value 2
 //const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
@@ -1016,9 +1025,9 @@ function loop(){
       canvas.drawImage(minimapImage, 
         0,
         0,
-        MINIMAPSIZE,MINIMAPSIZE,
-        centerX - MINIMAPSIZE_HALF, centerY - MINIMAPSIZE_HALF, 
-        MINIMAPSIZE,MINIMAPSIZE
+        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE,
+        centerX - MINIMAPFRAMESIZE_HALF, centerY - MINIMAPFRAMESIZE_HALF, 
+        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE
         )
         const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
         const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
