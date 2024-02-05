@@ -112,3 +112,26 @@ class Armor extends Item {
   }
 }
 
+let scopeImages = {}
+const scopeKeys = ["1","2","3","4"]
+for (scopekey in scopeKeys){
+  scopeImages[scopekey] = new Image()
+  scopeImages[scopekey].src = `/images/${scopekey}.png`
+}
+
+class Scope extends Item {
+  constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {scopeDist}}) {
+      super({groundx, groundy, size, name, onground, color})
+      this.scopeDist = iteminfo.scopeDist
+      this.itemtype = 'scope'
+  }
+  draw(canvas, camX, camY, {img,offset}) { // on the ground
+    if (this.onground){
+      canvas.drawImage(scopeImages[this.name], this.groundx-camX-offset, this.groundy-camY-offset)
+
+    }
+  }
+
+}
+
+

@@ -165,10 +165,14 @@ if (GROUNDITEMFLAG){
   }
 
   if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
+
+    makeObjects("wall", 30, {orientation: 'vertical',start:{x:500,y:1000}, end:{x:500,y:2000}, width:20, color: 'gray'})
+
+
     // special tile locations in map1
     const TILESLOC = {"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
     function getCoordTiles(location){
-      return {x:location.col*TILE_SIZE + parseInt(TILE_SIZE/2), y:location.row*TILE_SIZE + parseInt(TILE_SIZE/2)}
+      return {x:location.col*TILE_SIZE + Math.round(TILE_SIZE/2), y:location.row*TILE_SIZE + Math.round(TILE_SIZE/2)}
     }
 
     // some guns 
@@ -196,6 +200,10 @@ if (GROUNDITEMFLAG){
 
     const forest2loc = getCoordTiles(TILESLOC["forest2"])
     makeNdropItem( 'armor', 'reduce', forest2loc.x, forest2loc.y)
+
+    makeNdropItem('scope', "1", forest2loc.x+50, forest2loc.y)
+    makeNdropItem('scope', "2", forest2loc.x+50, forest2loc.y-50)
+    makeNdropItem('scope', "3", forest2loc.x+50, forest2loc.y+50)
 
 
   }
@@ -311,7 +319,7 @@ async function main(){
         })
 
         // player death => put ammos to the ground!
-        socket.on('playerdeath',({playerId,armorID})=>{
+        socket.on('playerdeath',({playerId,armorID,scopeID})=>{
           let deadplayerGET = deadPlayerPos[playerId]
           if (!deadplayerGET){return}
           // DROP armor
@@ -321,6 +329,14 @@ async function main(){
             itemToUpdate.groundx = deadplayerGET.x
             itemToUpdate.groundy = deadplayerGET.y
           }
+          // DROP scope
+          if (scopeID>0){
+            let itemToUpdate = backEndItems[scopeID]
+            itemToUpdate.onground = true
+            itemToUpdate.groundx = deadplayerGET.x
+            itemToUpdate.groundy = deadplayerGET.y
+          }
+
           delete deadPlayerPos[playerId]
 
         })
@@ -351,7 +367,8 @@ async function main(){
                 inventory, // size 4
                 currentSlot: 1, // 1~4
                 mousePos: {x:0,y:0},
-                wearingarmorID: -1
+                wearingarmorID: -1,
+                wearingscopeID: -1
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
@@ -426,7 +443,10 @@ async function main(){
           } else if (requesttype === 'weararmor'){
             backEndPlayers[playerId].wearingarmorID = itemid
             itemToUpdate.onground = false
-          }
+          }  else if (requesttype === 'scopeChange'){
+            backEndPlayers[playerId].wearingscopeID = itemid
+            itemToUpdate.onground = false
+          } 
         })
 
         socket.on('updateitemrequestDROP', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
@@ -783,6 +803,10 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
     color = armorinfoGET.color
     const amount = armorinfoGET.amount
     iteminfo = {amount}
+  } else if(itemtype==='scope'){
+    size = {length:12, width:12}
+    color = 'white'
+    iteminfo = {scopeDist:parseInt(name)}
   } 
   
   else{

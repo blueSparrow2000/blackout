@@ -41,6 +41,12 @@ charImage.src = "/character.png"
 // resolution upgrade - retina display gives value 2
 //const devicePixelRatio = window.devicePixelRatio || 1 //defaut 1
 
+// function resizeIt(){
+//   window.resizeTo(640,640)
+// }
+// window.on_load = resizeIt
+// window.onresize = resizeIt
+
 const canvasEl = document.getElementById('canvas');
 canvasEl.width = window.innerWidth//SCREENWIDTH* devicePixelRatio//window.innerWidth* devicePixelRatio
 canvasEl.height = window.innerHeight//SCREENHEIGHT* devicePixelRatio//window.innerHeight* devicePixelRatio
@@ -95,7 +101,7 @@ socket.on('serverVars',( {gunInfo, consumableInfo, PLAYERSPEED})=>{
 
       // load images
       gunImages[gunkey] = new Image()
-      gunImages[gunkey].src = `/gunImages/${gunkey}.png`
+      gunImages[gunkey].src = `/images/${gunkey}.png`
 
     }
   
@@ -497,6 +503,23 @@ function interactItem(itemId,backEndItems){
     }
     frontEndPlayer.wearingarmorID = itemId
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'weararmor',playerId:socket.id})
+
+  } else if (pickingItem.itemtype === 'scope'){
+    //drop current armor - to be updated
+    const currentwearingscopeID = frontEndPlayer.wearingscopeID
+    //console.log(currentwearingscopeID)
+    if (currentwearingscopeID > 0 ){
+      // get item id and drop it
+      socket.emit('updateitemrequestDROP',{itemid:currentwearingscopeID,
+        requesttype:'dropitem',
+        groundx:frontEndPlayer.x, 
+        groundy:frontEndPlayer.y
+      })
+    }
+    frontEndPlayer.wearingscopeID = itemId
+    // console.log(pickingItem.iteminfo.scopeDist)
+    updateSightChunk(pickingItem.iteminfo.scopeDist) // change scope!
+    socket.emit('updateitemrequest',{itemid:itemId, requesttype:'scopeChange',playerId:socket.id})
   }
 
   interactTimeout = window.setTimeout(function(){
@@ -565,7 +588,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           inventory: frontEndInventory,
           currentPos: {x:cursorX,y:cursorY}, // client side prediction mousepos
           score: backEndPlayer.score,
-          wearingarmorID: backEndPlayer.wearingarmorID
+          wearingarmorID: backEndPlayer.wearingarmorID,
+          wearingscopeID: backEndPlayer.wearingscopeID // do not have to keep track of this though
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -573,14 +597,15 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else {      // player already exists
             let frontEndPlayerOthers = frontEndPlayers[id] 
 
-            frontEndPlayerOthers.x = parseInt(backEndPlayer.x)
-            frontEndPlayerOthers.y = parseInt(backEndPlayer.y)
+            frontEndPlayerOthers.x = Math.round(backEndPlayer.x)
+            frontEndPlayerOthers.y = Math.round(backEndPlayer.y)
 
             // update players attributes
             frontEndPlayerOthers.health = backEndPlayer.health
             frontEndPlayerOthers.score = backEndPlayer.score
             frontEndPlayerOthers.wearingarmorID = backEndPlayer.wearingarmorID
-    
+            frontEndPlayerOthers.wearingscopeID = backEndPlayer.wearingscopeID
+
             // inventory attributes
             frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
             // Item: inventory management
@@ -615,7 +640,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
                 pointEl.innerHTML = mePlayer.score
                 playerdeathsound.play()
                 document.querySelector('#usernameForm').style.display = 'block'
-                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID})
+                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID, scopeID: mePlayer.wearingscopeID})
                 LobbyBGM.play()
             }
             else{ // other player died
@@ -764,13 +789,22 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
 let camX = 100
 let camY = 100
 
-const centerX = parseInt(canvasEl.width/2)
-const centerY = parseInt(canvasEl.height/2)
+const centerX = Math.round(canvasEl.width/2)
+const centerY = Math.round(canvasEl.height/2)
 
 canvas.font ='italic bold 12px sans-serif'
 let chunkInfo 
 let sightChunk = 3
-let sightdistance = (sightChunk+1)*TILE_SIZE
+let sightdistance = (sightChunk)*TILE_SIZE // using tile based
+let sightdistanceProjectile = (sightChunk+2)*TILE_SIZE // using tile based
+
+
+function updateSightChunk(scopeDist){
+  sightChunk = 3+scopeDist
+  sightdistance = (sightChunk)*TILE_SIZE 
+  sightdistanceProjectile = (sightChunk+2)*TILE_SIZE 
+}
+
 
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
@@ -845,7 +879,7 @@ function loop(){
     canvas.strokeStyle = 'black'
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
-        if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistance) ){
+        if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistanceProjectile) ){
           frontEndProjectile.draw(canvas, camX, camY)
         }
     }
@@ -998,6 +1032,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     // init player info
     resetKeys()
     listen = true // initialize the semaphore
+    updateSightChunk(0) // scope to 0
     const playerX = MAPWIDTH * Math.random()
     const playerY = MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
@@ -1049,7 +1084,16 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       color: backendItem.color,
       iteminfo:{amount:backendItem.iteminfo.amount }
     })
-  }else{
+  } else if (backendItem.itemtype==='scope') {
+    frontEndItems[id] = new Scope({groundx:backendItem.groundx, 
+      groundy:backendItem.groundy, 
+      size:backendItem.size, 
+      name:backendItem.name, 
+      onground: backendItem.onground, 
+      color: backendItem.color,
+      iteminfo:{scopeDist:backendItem.iteminfo.scopeDist}
+    })
+  } else{
     console.log("not implemented item or invalid name")
     // undefined or etc.
     return false

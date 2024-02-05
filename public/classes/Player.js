@@ -1,7 +1,7 @@
 const HEALTHBARHALFLEN = 16
 
 class Player{
-    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1}) {
+    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1,wearingscopeID=-1}) {
       this.x = x
       this.y = y
       this.radius = radius
@@ -15,12 +15,19 @@ class Player{
       this.reloading = false
       this.score = score
       this.wearingarmorID = wearingarmorID
+      this.wearingscopeID = wearingscopeID
     }
 
     IsVisible(x,y,refDistance){
-      return Math.hypot(this.x-x,this.y-y) < refDistance
+      if (Math.abs(this.x-x) <= refDistance && Math.abs(this.y-y) <= refDistance){
+        return true
+      }else{
+        return false
+      }
     }
-
+    // IsVisible(x,y,refDistance){
+    //   return Math.hypot(this.x-x,this.y-y) < refDistance
+    // }
     displayName(canvas, camX, camY) {
       canvas.fillText(this.username,this.x - 2*this.username.length - camX ,this.y - this.radius*3 - camY)
     }
