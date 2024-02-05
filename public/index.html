@@ -11,10 +11,14 @@
                 margin:0;
                 background: gray;
             }
-            /* canvas { 
-                width:  1024px; 
-                height: 576px;
-            } */
+            .blink{
+              animation: blinker 0.2s step-start 2;
+            }
+            @keyframes blinker{
+              50%{
+                opacity: 0;
+              }
+            }
         </style>
     </head>
     <body>
@@ -51,7 +55,7 @@
             >
             <form id="usernameForm">
 
-              <p style="text-align: center;font-size:50px"><b>BLACK OUT</b></p>
+              <p class="blink" style="text-align: center;font-size:50px"><b>BLACK OUT</b></p>
 
               <div style="text-align: center; margin-top: 20%">
                 <input
