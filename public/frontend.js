@@ -46,15 +46,11 @@ mapImage.src = "/tiles1.png"
 const charImage = new Image();
 charImage.src = "/character.png"
 
-// no frame
-// const minimapImage = new Image();
-// minimapImage.src = "/minimap_map1_no_frame.png"
-// const MINIMAPSIZE = 512
-// const MINIMAPSIZE_HALF = 256
 
 // with frame
 const minimapImage = new Image();
 minimapImage.src = "/minimap_map1.png"
+// minimapImage.src = "/minimap_map1_no_frame.png"   // no frame
 const MINIMAPFRAMESIZE = 550
 const MINIMAPFRAMESIZE_HALF = 275
 const MINIMAPSIZE = 512
