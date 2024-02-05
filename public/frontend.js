@@ -522,6 +522,10 @@ function interactItem(itemId,backEndItems){
   } else if (pickingItem.itemtype === 'scope'){
     //drop current armor - to be updated
     const currentwearingscopeID = frontEndPlayer.wearingscopeID
+
+    // IMPORTANT: Should check in-house again if scope is picked up inside the house!
+    getInHouse = false 
+
     //console.log(currentwearingscopeID)
     if (currentwearingscopeID > 0 ){
       // get item id and drop it
@@ -816,14 +820,14 @@ function updateSightChunk(scopeDist){
   sightdistanceProjectile = (sightChunk+1)*TILE_SIZE 
 }
 
+let getInHouse = false
+
 function loop(){
     canvas.clearRect(0,0,canvasEl.width, canvasEl.height)  
-
 
     if (!frontEndPlayer){ // if not exists - draw nothing
       canvas.fillStyle = 'black'
       canvas.fillText("loading...",centerX - 50,centerY + 50)
-
       window.requestAnimationFrame(loop);
       return
     }
@@ -857,6 +861,24 @@ function loop(){
       //   chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
       // }
       chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
+
+      
+      // SIGHT DISTANCE IS CHANGED IF PLAYER IS IN THE HOUSE CHUNK - house chunk has id===50
+      const { id } =groundMap[chunkInfo.rowNum][chunkInfo.colNum]
+      if (!getInHouse && id === 50){ //  get in house for the first time
+        getInHouse = true
+        updateSightChunk(-1)
+      }
+      if (getInHouse && id !== 50){ // get out of the house for the first time
+        getInHouse = false
+        if (frontEndPlayer.wearingscopeID>0){// if scope
+          updateSightChunk(frontEndItems[frontEndPlayer.wearingscopeID].scopeDist)
+        } else{ // default scope: 0
+          updateSightChunk(0) 
+        }
+      }
+
+
       for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
         for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
             if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
@@ -1048,8 +1070,8 @@ function loop(){
 }
 window.requestAnimationFrame(loop);
 
-function getChunk(x,y){
-  return {rowNum:Math.round(y/TILE_SIZE), colNum:Math.round(x/TILE_SIZE)}
+function getChunk(x,y){ // returns the tile row and col where player is standing at
+  return {rowNum:Math.floor(y/TILE_SIZE), colNum:Math.floor(x/TILE_SIZE)}
 }
 
 function resetKeys(){
