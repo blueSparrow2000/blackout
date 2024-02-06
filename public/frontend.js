@@ -327,7 +327,7 @@ function shootCheck(event){
     return
   }
 
-  ///////////////////////////// If inside vehicle 
+  ///////////////////////////// If inside a vehicle 
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
     if (frontEndVehicles[vehicleID].type==="APC"){
