@@ -23,6 +23,7 @@ const frontEndProjectiles = {}
 const frontEndItems = {}
 const frontEndEnemies = {}
 const frontEndObjects = {}
+const frontEndVehicles = {}
 
 // player info 
 let frontEndPlayer
@@ -577,7 +578,7 @@ socket.on('interact',(backEndItems)=>{
 
 
 // backend -> front end signaling
-socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems})=>{
+socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles})=>{
     /////////////////////////////////////////////////// 1.PLAYER //////////////////////////////////////////////////
     const myPlayerID = socket.id
 
@@ -802,7 +803,38 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
        delete frontEndItems[frontEndItemId]
       }
     }
+
+    /////////////////////////////////////////////////// 6.VEHICLES //////////////////////////////////////////////////
+    for (const id in backEndVehicles) {
+      const backEndVehicle = backEndVehicles[id]
   
+      if (!frontEndVehicles[id]){ // new 
+        frontEndVehicles[id] = new Car({ // should be similar to instantiate item
+          x: backEndVehicle.x, 
+          y: backEndVehicle.y, 
+          radius: backEndVehicle.radius, 
+          color: backEndVehicle.color, 
+          velocity: backEndVehicle.velocity,
+          damage: backEndVehicle.damage,
+          health: backEndVehicle.health,
+        })
+  
+      } else { // already exist
+        let frontEndVehicle = frontEndVehicles[id]
+        frontEndVehicle.health = backEndVehicle.health
+        frontEndVehicle.x = backEndVehicle.x
+        frontEndVehicle.y = backEndVehicle.y
+      }
+    
+    }
+    // remove deleted vehicles
+    for (const frontEndVehicleId in frontEndVehicles){
+      if (!backEndVehicles[frontEndVehicleId]){
+       delete frontEndVehicles[frontEndVehicleId]
+      }
+    }
+
+
 })
 
 // init cam
@@ -931,6 +963,14 @@ function loop(){
       const frontEndEnemy = frontEndEnemies[id]
       if (frontEndPlayer.IsVisible(frontEndEnemy.x,frontEndEnemy.y,sightdistance) ){
         frontEndEnemy.draw(canvas, camX, camY)
+      }
+    }
+
+    // VEHICLES
+    for (const id in frontEndVehicles){ 
+      const frontEndVehicle = frontEndVehicles[id]
+      if (frontEndPlayer.IsVisible(frontEndVehicle.x,frontEndVehicle.y,sightdistance) ){
+        frontEndVehicle.draw(canvas, camX, camY)
       }
     }
 

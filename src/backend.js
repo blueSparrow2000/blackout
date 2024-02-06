@@ -29,14 +29,17 @@ const deadPlayerPos = {}
 const backEndEnemies = {}
 const backEndProjectiles = {}
 const backEndItems = {}
+const backEndVehicles = {}
 backEndItems[0] = {
     itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'fist', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
 }
 const backEndObjects = {}
 let enemyId = 0
 let projectileId = 0
-let itemsId = 0
+let itemsId = 0 
 let objectId = 0
+let vehicleId = 0
+
 
 // player attributes
 const INVENTORYSIZE = 4
@@ -182,6 +185,9 @@ if (GROUNDITEMFLAG){
     function getCoordTiles(location){
       return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
     }
+
+    spawnVehicle({x:100,y:100})
+
 
     makeHouse(getCoordTiles(TILESLOC["house1"]))
     makeHouse(getCoordTiles(TILESLOC["house2"]))
@@ -749,6 +755,27 @@ setInterval(() => {
       continue
     }
 
+    // collision check with vehicles
+    for (const vehicleId in backEndVehicles) {
+      let backEndVehicle = backEndVehicles[vehicleId]
+      const DISTANCE = Math.hypot(projGET.x - backEndVehicle.x, projGET.y - backEndVehicle.y)
+      if ((DISTANCE < PROJECTILERADIUS + backEndVehicle.radius + COLLISIONTOLERANCE)) {
+        // who got hit
+        if (backEndVehicle){ // safe
+            backEndVehicle.health -= projGET.projDamage
+            if (backEndVehicle.health <= 0){ //check again
+              safeDeleteVehicle(vehicleId)} 
+        }
+        // delete projectile after inspecting who shot the projectile & calculating damage
+        BULLETDELETED = true
+        safeDeleteProjectile(id)
+        break // only one enemy can get hit by a projectile
+      }
+    }
+    if (BULLETDELETED){ // dont check below
+      continue
+    }
+    // other
 
   }
 
@@ -767,6 +794,12 @@ setInterval(() => {
     }
   }
 
+  // update vehicles
+  // for (const id in backEndVehicles){
+  //   if (backEndVehicles[id].health <= 0){
+  //     safeDeleteVehicle(id)
+  //   }
+  // }
 
   // update enemies
   for (const id in backEndEnemies){
@@ -824,7 +857,7 @@ setInterval(() => {
     }
   }
 
-    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems})
+    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles})
 }, TICKRATE)
 
 
@@ -1085,4 +1118,26 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
   } 
   ENEMYCOUNT--
   delete backEndEnemies[enemyid]
+}
+
+function spawnVehicle(location){ // currently only makes cars
+  vehicleId++
+
+  const type = 'car'
+  
+  const radius = 32
+  const x = location.x
+  const y = location.y
+  const color = "MintCream"
+  const damage = 5 // bump into damage
+  const health = 30
+  const speed = 6 // for a car
+
+  backEndVehicles[vehicleId] = {
+    x,y,radius,velocity:0, myID:vehicleId, color, damage, health, speed, type
+  }
+}
+
+function safeDeleteVehicle(vehicleid){
+  delete backEndVehicles[vehicleid]
 }
