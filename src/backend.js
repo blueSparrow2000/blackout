@@ -334,6 +334,7 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     if (vehicleID>0){ // if riding something
       const maxSpeedVehicle = backEndVehicles[vehicleID].speed
       playerGIVEN.speed = Math.min(maxSpeedVehicle, playerGIVEN.speed + 0.11)
+      // console.log(playerGIVEN.speed )
     }
 
     if (WW){
@@ -348,6 +349,10 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     if (DD){
       playerGIVEN.x += playerGIVEN.speed
     }
+
+    // check boundary with objects also
+    borderCheckWithObjects(playerGIVEN)
+    
     const playerSides = {
       left: playerGIVEN.x - playerGIVEN.radius,
       right: playerGIVEN.x + playerGIVEN.radius,
@@ -367,9 +372,21 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     if (playerSides.bottom>MAPHEIGHT){ // restore position for backend
       playerGIVEN.y = MAPHEIGHT - playerGIVEN.radius
     }
-  
-    // check boundary with objects also
-    borderCheckWithObjects(playerGIVEN)
+
+    // NEW BORDER for player
+    // const borderTolerance = playerGIVEN.radius*2
+    // if (playerSides.left < borderTolerance){ // restore position for backend
+    //   playerGIVEN.x = borderTolerance + playerGIVEN.radius
+    // }
+    // if (playerSides.right>MAPWIDTH - borderTolerance){ // restore position for backend
+    //   playerGIVEN.x = MAPWIDTH - borderTolerance - playerGIVEN.radius
+    // }
+    // if (playerSides.top < borderTolerance){ // restore position for backend
+    //   playerGIVEN.y = borderTolerance + playerGIVEN.radius
+    // }
+    // if (playerSides.bottom>MAPHEIGHT - borderTolerance){ // restore position for backend
+    //   playerGIVEN.y = MAPHEIGHT - borderTolerance - playerGIVEN.radius
+    // }
   }
   
 
@@ -447,6 +464,7 @@ async function main(){
                 getinhouse: false,
                 speed:PLAYERSPEED, // not passed to frontend
                 ridingVehicleID:-1,
+                entityType:'player', // not passed to frontend
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
@@ -637,7 +655,11 @@ setInterval(() => {
     if (playerGET.ridingVehicleID>0){// riding something
       // lower the speed!
       playerGET.speed = Math.max(0, playerGET.speed - 0.1)
+    }else{ // not riding 
+      Moveplayer(playerGET, false, false, false, false)
     }
+    playerGET.x = Math.round(playerGET.x)
+    playerGET.y = Math.round(playerGET.y)
   }
 
 
@@ -1006,6 +1028,9 @@ function safeDeleteObject(id){
   delete backEndObjects[id]
 }
 
+
+// only entity checking border here is: player & enemy
+const VehicleTolerance = 5
 function borderCheckWithObjects(entity){
   if (!entity) {return} // no need to check
   for (const id in backEndObjects){
@@ -1059,6 +1084,31 @@ function borderCheckWithObjects(entity){
         entity.y = objinfoGET.center.y + Math.sin(angle) * radiusSum
       }
     }
+  }
+
+  // vehicle hitbox check
+  for (const id in backEndVehicles){
+    const obj = backEndVehicles[id]
+
+    if (entity.entityType==="player"){
+      if (entity.ridingVehicleID === id){
+        continue 
+      }
+    }
+    const radiusSum = obj.radius + entity.radius - VehicleTolerance
+    const xDist = entity.x - obj.x
+    const yDist = entity.y - obj.y 
+    const Dist = Math.hypot(xDist,yDist)
+
+    if (Dist < radiusSum){
+      const angle = Math.atan2(
+        yDist,
+        xDist
+      )
+      entity.x = obj.x + Math.cos(angle) * radiusSum
+      entity.y = obj.y + Math.sin(angle) * radiusSum
+    }
+
   }
 
 }
@@ -1121,7 +1171,7 @@ function spawnEnemies(){
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {
-    x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID
+    x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID, entityType: 'enemy'
   }
   //console.log(`spawned enemy ID: ${enemyId}`)
 }
@@ -1206,6 +1256,20 @@ function getOffVehicle(playerID,vehicleID=-1){ // vehicleID should be given if p
     }
     backEndPlayers[playerID].ridingVehicleID = -1
     backEndPlayers[playerID].speed = PLAYERSPEED
+
+    // for safe get off
+    let getoffdirectionX = 10
+    let getoffdirectionY = 10
+    if (backEndPlayers[playerID].x > MAPWIDTH/2){
+      getoffdirectionX = -10
+    } 
+    if (backEndPlayers[playerID].y > MAPHEIGHT/2){
+      getoffdirectionY = -10
+    } 
+    backEndPlayers[playerID].x = backEndVehicles[vehicleID].x + getoffdirectionX
+    backEndPlayers[playerID].y = backEndVehicles[vehicleID].y + getoffdirectionY
+    //Moveplayer(backEndPlayers[playerID], false, false, false, false) // border check
+
   }
 
   if (TrueVehicleID===-1){ // use vehicleID given instead - when we cannot get id from player

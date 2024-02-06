@@ -658,8 +658,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else {      // player already exists
             let frontEndPlayerOthers = frontEndPlayers[id] 
 
-            frontEndPlayerOthers.x = Math.round(backEndPlayer.x)
-            frontEndPlayerOthers.y = Math.round(backEndPlayer.y)
+            frontEndPlayerOthers.x = backEndPlayer.x
+            frontEndPlayerOthers.y = backEndPlayer.y
 
             // update players attributes
             frontEndPlayerOthers.health = backEndPlayer.health
@@ -733,8 +733,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else { // already exist
         let frontEndEnemy = frontEndEnemies[id]
         frontEndEnemy.health = backEndEnemy.health
-        frontEndEnemy.x = Math.round(backEndEnemy.x)
-        frontEndEnemy.y = Math.round(backEndEnemy.y)
+        frontEndEnemy.x = backEndEnemy.x
+        frontEndEnemy.y = backEndEnemy.y
       }
     
     }
@@ -778,8 +778,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
   
       } else { // already exist
         let frontEndProj = frontEndProjectiles[id]
-        frontEndProj.x = Math.round(backEndProjectile.x)
-        frontEndProj.y = Math.round(backEndProjectile.y)
+        frontEndProj.x = backEndProjectile.x
+        frontEndProj.y = backEndProjectile.y
 
       }
     
@@ -834,8 +834,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         // update items attributes
         const backEndItem = backEndItems[id]
         let frontEndItem = frontEndItems[id]
-        frontEndItem.groundx = Math.round(backEndItem.groundx)
-        frontEndItem.groundy = Math.round(backEndItem.groundy)
+        frontEndItem.groundx = backEndItem.groundx
+        frontEndItem.groundy = backEndItem.groundy
         frontEndItem.onground = backEndItem.onground
       }
     }
@@ -856,8 +856,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else { // already exist
         let frontEndVehicle = frontEndVehicles[id]
         frontEndVehicle.health = backEndVehicle.health
-        frontEndVehicle.x = Math.round(backEndVehicle.x)
-        frontEndVehicle.y = Math.round(backEndVehicle.y)
+        frontEndVehicle.x = backEndVehicle.x
+        frontEndVehicle.y = backEndVehicle.y
         frontEndVehicle.occupied = backEndVehicle.occupied
         frontEndVehicle.ridingPlayerID = backEndVehicle.ridingPlayerID
       }
@@ -907,8 +907,6 @@ function loop(){
     // CAMERA 
     camX = frontEndPlayer.x - centerX
     camY = frontEndPlayer.y - centerY
-    // camX = Math.round(frontEndPlayer.x - centerX)
-    // camY = Math.round(frontEndPlayer.y - centerY)
 
 
     // GROUND TILES
@@ -936,8 +934,8 @@ function loop(){
       // }
       chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
 
-
       // SIGHT DISTANCE IS CHANGED IF PLAYER IS IN THE HOUSE CHUNK - house chunk has id===50
+
       const { id } =groundMap[chunkInfo.rowNum][chunkInfo.colNum]
       
       if (!frontEndPlayer.getinhouse && id === 50){ //  get in house for the first time

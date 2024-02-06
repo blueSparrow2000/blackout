@@ -15,6 +15,7 @@
 
                 speed:PLAYERSPEED, // not passed to frontend
                 ridingVehicleID:-1,
+                entityType:'player', // not passed to frontend
             };
 
   backEndVehicles[vehicleId] = {
@@ -22,7 +23,9 @@
   }
 
 
-
+  backEndEnemies[enemyId] = {
+    x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID, entityType: 'enemy'
+  }
 
 
 
