@@ -45,3 +45,9 @@ class Tank extends Vehicle{
       super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
   }
 }
+
+// class Bus extends Vehicle{
+//   constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
+//       super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+//   }
+// }

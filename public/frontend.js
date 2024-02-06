@@ -884,13 +884,13 @@ canvas.font ='italic bold 24px sans-serif'
 const defaultSightChunk = 2
 let chunkInfo 
 let sightChunk = defaultSightChunk
-let sightdistance = (sightChunk)*TILE_SIZE + TILE_SIZE_HALF  // using tile based
+let sightdistance = (sightChunk)*TILE_SIZE  // using tile based
 let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF // using tile based
 
 
 function updateSightChunk(scopeDist){
   sightChunk = defaultSightChunk + scopeDist
-  sightdistance = (sightChunk)*TILE_SIZE + TILE_SIZE_HALF 
+  sightdistance = (sightChunk)*TILE_SIZE
   sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF 
 }
 
