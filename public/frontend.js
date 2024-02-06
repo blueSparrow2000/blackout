@@ -375,7 +375,8 @@ setInterval(()=>{
   }
   // dont have to emit since they are seen by me(a client, not others)
   if (keys.g.pressed){
-      socket.emit('keydown',{keycode:'KeyG'})
+      // not emitting when G
+      //socket.emit('keydown',{keycode:'KeyG'})
 
   }
   if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
@@ -732,8 +733,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else { // already exist
         let frontEndEnemy = frontEndEnemies[id]
         frontEndEnemy.health = backEndEnemy.health
-        frontEndEnemy.x = backEndEnemy.x
-        frontEndEnemy.y = backEndEnemy.y
+        frontEndEnemy.x = Math.round(backEndEnemy.x)
+        frontEndEnemy.y = Math.round(backEndEnemy.y)
       }
     
     }
@@ -777,8 +778,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
   
       } else { // already exist
         let frontEndProj = frontEndProjectiles[id]
-        frontEndProj.x = backEndProjectile.x
-        frontEndProj.y = backEndProjectile.y
+        frontEndProj.x = Math.round(backEndProjectile.x)
+        frontEndProj.y = Math.round(backEndProjectile.y)
 
       }
     
@@ -833,8 +834,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         // update items attributes
         const backEndItem = backEndItems[id]
         let frontEndItem = frontEndItems[id]
-        frontEndItem.groundx = backEndItem.groundx
-        frontEndItem.groundy = backEndItem.groundy
+        frontEndItem.groundx = Math.round(backEndItem.groundx)
+        frontEndItem.groundy = Math.round(backEndItem.groundy)
         frontEndItem.onground = backEndItem.onground
       }
     }
@@ -855,8 +856,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       } else { // already exist
         let frontEndVehicle = frontEndVehicles[id]
         frontEndVehicle.health = backEndVehicle.health
-        frontEndVehicle.x = backEndVehicle.x
-        frontEndVehicle.y = backEndVehicle.y
+        frontEndVehicle.x = Math.round(backEndVehicle.x)
+        frontEndVehicle.y = Math.round(backEndVehicle.y)
         frontEndVehicle.occupied = backEndVehicle.occupied
         frontEndVehicle.ridingPlayerID = backEndVehicle.ridingPlayerID
       }
@@ -906,6 +907,8 @@ function loop(){
     // CAMERA 
     camX = frontEndPlayer.x - centerX
     camY = frontEndPlayer.y - centerY
+    // camX = Math.round(frontEndPlayer.x - centerX)
+    // camY = Math.round(frontEndPlayer.y - centerY)
 
 
     // GROUND TILES

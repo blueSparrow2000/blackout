@@ -15,7 +15,7 @@ class Vehicle {
   
     draw(canvas, camX, camY) {
       canvas.beginPath()
-      if (this.health<5){
+      if (this.health<8){
         canvas.fillStyle = this.warningcolor
       }else{
         canvas.fillStyle = this.color

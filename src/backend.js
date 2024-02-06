@@ -330,6 +330,12 @@ function safeDeletePlayer(playerId){
 
 
 function Moveplayer(playerGIVEN, WW, AA, SS, DD){
+    const vehicleID = playerGIVEN.ridingVehicleID
+    if (vehicleID>0){ // if riding something
+      const maxSpeedVehicle = backEndVehicles[vehicleID].speed
+      playerGIVEN.speed = Math.min(maxSpeedVehicle, playerGIVEN.speed + 0.11)
+    }
+
     if (WW){
       playerGIVEN.y -= playerGIVEN.speed
     }
@@ -625,6 +631,14 @@ setInterval(() => {
     GLOBALCLOCK = 0 // init
   }
 
+  // update players - speed info
+  for (const id in backEndPlayers){
+    let playerGET = backEndPlayers[id]
+    if (playerGET.ridingVehicleID>0){// riding something
+      // lower the speed!
+      playerGET.speed = Math.max(0, playerGET.speed - 0.1)
+    }
+  }
 
 
   // update projectiles
@@ -1170,7 +1184,7 @@ function getOnVehicle(playerID,vehicleID){
     return
   }
   backEndPlayers[playerID].ridingVehicleID = vehicleID
-  backEndPlayers[playerID].speed = backEndVehicles[vehicleID].speed
+  // backEndPlayers[playerID].speed = backEndVehicles[vehicleID].speed
 
   // transport to vehicle center
   backEndPlayers[playerID].x = backEndVehicles[vehicleID].x
