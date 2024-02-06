@@ -1,5 +1,5 @@
 class Vehicle {
-    constructor({x, y, radius, color, velocity, damage, health=1}) {
+    constructor({x, y, radius, color, velocity, damage, health=1,occupied,ridingPlayerID}) {
       this.x = x
       this.y = y
       this.radius = radius
@@ -7,6 +7,8 @@ class Vehicle {
       this.velocity = velocity
       this.damage = damage
       this.health = health
+      this.occupied = occupied
+      this.ridingPlayerID = ridingPlayerID
     }
   
     draw(canvas, camX, camY) {
@@ -18,8 +20,8 @@ class Vehicle {
   }
 
 class Car extends Vehicle{
-    constructor({x, y, radius, color, velocity, damage, health=1}) {
-        super({x, y, radius, color, velocity, damage, health})
+    constructor({x, y, radius, color, velocity, damage, health=1,occupied,ridingPlayerID}) {
+        super({x, y, radius, color, velocity, damage, health,occupied,ridingPlayerID})
     }
 
 }

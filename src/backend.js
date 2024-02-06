@@ -332,16 +332,16 @@ function safeDeletePlayer(playerId){
 
 function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     if (WW){
-      playerGIVEN.y -= PLAYERSPEED
+      playerGIVEN.y -= playerGIVEN.speed
     }
     if (AA){
-      playerGIVEN.x -= PLAYERSPEED
+      playerGIVEN.x -= playerGIVEN.speed
     }
     if (SS){
-      playerGIVEN.y += PLAYERSPEED
+      playerGIVEN.y += playerGIVEN.speed
     }
     if (DD){
-      playerGIVEN.x += PLAYERSPEED
+      playerGIVEN.x += playerGIVEN.speed
     }
     const playerSides = {
       left: playerGIVEN.x - playerGIVEN.radius,
@@ -375,7 +375,7 @@ async function main(){
         console.log("user connected",socket.id);
         socket.emit('map',{ground:ground2D, decals: decals2D})
         // give server info to a frontend
-        socket.emit('serverVars', {gunInfo, consumableInfo, PLAYERSPEED})
+        socket.emit('serverVars', {gunInfo, consumableInfo})
 
         // remove player when disconnected (F5 etc.)
         socket.on('disconnect',(reason) => {
@@ -384,7 +384,7 @@ async function main(){
         })
 
         // player death => put ammos to the ground!
-        socket.on('playerdeath',({playerId,armorID,scopeID})=>{
+        socket.on('playerdeath',({playerId,armorID,scopeID,vehicleID})=>{
           let deadplayerGET = deadPlayerPos[playerId]
           if (!deadplayerGET){return}
           // DROP armor
@@ -401,6 +401,11 @@ async function main(){
             itemToUpdate.groundx = deadplayerGET.x
             itemToUpdate.groundy = deadplayerGET.y
           }
+          // vehicle unoccupy
+          if (backEndVehicles[vehicleID]){//exist
+            getOffVehicle(playerId,vehicleID)
+          }
+
 
           delete deadPlayerPos[playerId]
 
@@ -435,7 +440,8 @@ async function main(){
                 wearingarmorID: -1,
                 wearingscopeID: -1,
                 getinhouse: false,
-                myspeed:PLAYERSPEED // not passed to frontend
+                speed:PLAYERSPEED, // not passed to frontend
+                ridingVehicleID:-1,
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
@@ -518,6 +524,12 @@ async function main(){
           backEndPlayers[socket.id].getinhouse = false
         })
 
+        socket.on('getOffVehicle',({vehicleID})=>{
+          getOffVehicle(socket.id,vehicleID)
+        })
+        socket.on('getOnVehicle',({vehicleID})=>{
+          getOnVehicle(socket.id,vehicleID)
+        })
         ///////////////////////////////// Frequent key-downs update ///////////////////////////////////////////////
         // update frequent keys at once (Movement & hold shoot)  //always fire hold = true since space was pressed
         socket.on('moveNshootUpdate', ({WW, AA, SS, DD, x, y})=>{
@@ -578,7 +590,7 @@ async function main(){
                 break
             case 'KeyF':
                 //console.log('f presssed')
-                socket.emit('interact',backEndItems)
+                socket.emit('interact',{backEndItems,backEndVehicles})
                 break
             case 'KeyG':
                 //console.log('g presssed')
@@ -634,7 +646,6 @@ setInterval(() => {
         projGET.velocity.y *= FRICTION
         myspeed *= FRICTION
       }
-
     }
 
     projGET.x += projGET.velocity.x
@@ -795,11 +806,14 @@ setInterval(() => {
   }
 
   // update vehicles
-  // for (const id in backEndVehicles){
-  //   if (backEndVehicles[id].health <= 0){
-  //     safeDeleteVehicle(id)
-  //   }
-  // }
+  for (const id in backEndVehicles){
+    let vehicle = backEndVehicles[id]
+    if (vehicle){ 
+      if (vehicle.occupied){ // occupied then update position accordingly to the player who is riding
+        updateVehiclePos(vehicle)
+      }
+    }
+  }
 
   // update enemies
   for (const id in backEndEnemies){
@@ -1128,16 +1142,65 @@ function spawnVehicle(location){ // currently only makes cars
   const radius = 32
   const x = location.x
   const y = location.y
-  const color = "MintCream"
+  const color = "CadetBlue"
   const damage = 5 // bump into damage
   const health = 30
   const speed = 6 // for a car
 
   backEndVehicles[vehicleId] = {
-    x,y,radius,velocity:0, myID:vehicleId, color, damage, health, speed, type
+    x,y,radius,velocity:0, myID:vehicleId, color, damage, health, speed, type,occupied:false,ridingPlayerID:-1
   }
 }
 
+function getOnVehicle(playerID,vehicleID){
+  if (backEndVehicles[vehicleID].occupied){ // if already occupied, block others 
+    return 
+  }
+  backEndPlayers[playerID].ridingVehicleID = vehicleID
+  backEndPlayers[playerID].speed = backEndVehicles[vehicleID].speed
+
+  // transport to vehicle center
+  backEndPlayers[playerID].x = backEndVehicles[vehicleID].x
+  backEndPlayers[playerID].y = backEndVehicles[vehicleID].y
+
+  backEndVehicles[vehicleID].occupied = true
+  backEndVehicles[vehicleID].ridingPlayerID = playerID
+  //console.log(`player ${playerID} got on ${vehicleID}`)
+}
+
+function getOffVehicle(playerID,vehicleID){
+  if (backEndPlayers[playerID]){ // if player alive
+    backEndPlayers[playerID].ridingVehicleID = -1
+    backEndPlayers[playerID].speed = PLAYERSPEED
+  }
+
+  backEndVehicles[vehicleID].occupied = false
+  backEndVehicles[vehicleID].ridingPlayerID = -1
+  //console.log(`player ${playerID} got off ${vehicleID}`)
+}
+
 function safeDeleteVehicle(vehicleid){
+  const vehicle = backEndVehicles[vehicleid]
+  if (vehicle.occupied){ // vehicle.ridingPlayerID must exist
+    getOffVehicle(vehicle.ridingPlayerID,vehicleid)
+  }
+
+  // explode
+  const BLASTNUM = 36
+  for (let i=0;i< BLASTNUM;i++){
+    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',0, vehicle)
+  }
+
+
   delete backEndVehicles[vehicleid]
+}
+
+function updateVehiclePos(vehicle){
+  const riderID = vehicle.ridingPlayerID
+  const rider = backEndPlayers[riderID]
+  if (rider){ // rider exist
+    vehicle.x = rider.x
+    vehicle.y = rider.y
+  }
+
 }

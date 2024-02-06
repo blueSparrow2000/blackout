@@ -28,7 +28,6 @@ const frontEndVehicles = {}
 // player info 
 let frontEndPlayer
 let listen = true // very important for event listener 
-let PLAYERSPEEDFRONTEND = 0
 const PLAYERRADIUS = 16 
 // semaphores
 let fireTimeout
@@ -100,9 +99,7 @@ let gunImages = {}
 
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
-socket.on('serverVars',( {gunInfo, consumableInfo, PLAYERSPEED})=>{
-    PLAYERSPEEDFRONTEND = PLAYERSPEED
-  
+socket.on('serverVars',( {gunInfo, consumableInfo})=>{
     // gun infos
     gunInfoKeysFrontEnd = Object.keys(gunInfo)
     for (let i=0;i<gunInfoKeysFrontEnd.length;i++){
@@ -479,6 +476,32 @@ function dropItem(currentHoldingItemId, backEndItems){
 
 }
 
+
+function interactVehicle(id,backEndVehicles){
+  if (!listen) {return} // not ready to interact
+  listen = false 
+
+
+
+  let currentVehicle = backEndVehicles[id]
+  if (frontEndPlayer.ridingVehicleID>0){ // already riding a vehicle
+    interactSound.play()
+    socket.emit('getOffVehicle',{vehicleID: id})
+  }else{ // not riding a vehicle
+    if (!currentVehicle.occupied){ // play sound when you can get in
+      interactSound.play()
+    }
+    socket.emit('getOnVehicle',{vehicleID: id})
+  }
+
+  interactTimeout = window.setTimeout(function(){
+    clearTimeout(interactTimeout);
+    if (frontEndPlayer){listen = true;    // reload when pick up
+    }}, INTERACTTIME)
+
+}
+
+
 function interactItem(itemId,backEndItems){
   //console.log(frontEndPlayers[socket.id].inventory)
   // current slot item 
@@ -553,10 +576,18 @@ function interactItem(itemId,backEndItems){
 }
 
 // iteract
-socket.on('interact',(backEndItems)=>{
+socket.on('interact',({backEndItems,backEndVehicles})=>{
     if (!frontEndPlayer){return}
 
     // client collision check - reduce server load
+    for (const id in backEndVehicles){
+      const vehicle = backEndVehicles[id]
+      const DISTANCE = Math.hypot(vehicle.x - frontEndPlayer.x, vehicle.y - frontEndPlayer.y)
+      if ((DISTANCE < vehicle.radius + frontEndPlayer.radius)) {
+        interactVehicle(id,backEndVehicles)
+        break
+      }
+    }
     for (const id in backEndItems){
       // Among frontEndItems: pick the first item that satisfies the below conditions
       // only when item is near - collision check with player and item!
@@ -569,9 +600,8 @@ socket.on('interact',(backEndItems)=>{
         interactItem(id,backEndItems)
         break
       }
-
-
     }
+
 
 })
 
@@ -609,7 +639,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           score: backEndPlayer.score,
           wearingarmorID: backEndPlayer.wearingarmorID,
           wearingscopeID: backEndPlayer.wearingscopeID, 
-          getinhouse:backEndPlayer.getinhouse 
+          getinhouse:backEndPlayer.getinhouse,
+          ridingVehicleID:backEndPlayer.ridingVehicleID
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -626,6 +657,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             frontEndPlayerOthers.wearingarmorID = backEndPlayer.wearingarmorID
             frontEndPlayerOthers.wearingscopeID = backEndPlayer.wearingscopeID
             frontEndPlayerOthers.getinhouse = backEndPlayer.getinhouse 
+            frontEndPlayerOthers.ridingVehicleID = backEndPlayer.ridingVehicleID
 
             // inventory attributes
             frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
@@ -661,7 +693,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
                 pointEl.innerHTML = mePlayer.score
                 playerdeathsound.play()
                 document.querySelector('#usernameForm').style.display = 'block'
-                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID, scopeID: mePlayer.wearingscopeID})
+                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID, scopeID: mePlayer.wearingscopeID,vehicleID:mePlayer.ridingVehicleID})
                 LobbyBGM.play()
             }
             else{ // other player died
@@ -817,6 +849,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           velocity: backEndVehicle.velocity,
           damage: backEndVehicle.damage,
           health: backEndVehicle.health,
+          occupied: backEndVehicle.occupied,
+          ridingPlayerID: backEndVehicle.ridingPlayerID
         })
   
       } else { // already exist
@@ -824,6 +858,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         frontEndVehicle.health = backEndVehicle.health
         frontEndVehicle.x = backEndVehicle.x
         frontEndVehicle.y = backEndVehicle.y
+        frontEndVehicle.occupied = backEndVehicle.occupied
+        frontEndVehicle.ridingPlayerID = backEndVehicle.ridingPlayerID
       }
     
     }
