@@ -1203,6 +1203,21 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       type: backEndVehicle.type
     })
     return true
+  } else if(backEndVehicle.type === 'tank'){
+    frontEndVehicles[id] = new Tank({ // should be similar to instantiate item
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type
+    })
+    return true
   } else{
     console.log("not implemented vehicle or invalid name")
     return false

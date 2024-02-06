@@ -37,6 +37,11 @@ class Car extends Vehicle{
     constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
         super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
     }
-
 }
-  
+
+
+class Tank extends Vehicle{
+  constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
+      super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+  }
+}

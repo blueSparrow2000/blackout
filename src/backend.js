@@ -186,8 +186,10 @@ if (GROUNDITEMFLAG){
       return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
     }
 
-    spawnVehicle({x:100,y:100})
+    spawnVehicle({x:200,y:400})
     spawnVehicle({x:500,y:3000})
+    spawnVehicle({x:200+100,y:400},'tank')
+    spawnVehicle({x:500+100,y:3000},'tank')
 
 
     makeHouse(getCoordTiles(TILESLOC["house1"]))
@@ -1071,11 +1073,11 @@ function spawnEnemies(){
 
   let homing = false
   let homingTargetId = -1
-  let colorfactor = 100 + Math.round(factor*40)
+  //let colorfactor = 100 + Math.round(factor*40)
 
   if (Math.random() > 0.5){ // 50% chance of homing!
     homing = true
-    colorfactor = Math.round(factor*40)
+    //colorfactor = Math.round(factor*40)
     const backEndPlayersKey = Object.keys(backEndPlayers)
     const playerNum = backEndPlayersKey.length
 
@@ -1091,7 +1093,7 @@ function spawnEnemies(){
   }
   // back ticks: ~ type this without shift!
 
-  const color = `hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
+  const color = "CadetBlue" //`hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
   const angle = Math.atan2(MAPHEIGHT/2 - y, MAPWIDTH/2 - x)
   const velocity = {
       x: Math.cos(angle)*speed,
@@ -1131,19 +1133,29 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
   delete backEndEnemies[enemyid]
 }
 
-function spawnVehicle(location){ // currently only makes cars
+function spawnVehicle(location, type='car'){ // currently only makes cars
   vehicleId++
-
-  const type = 'car'
-  
-  const radius = 32
   const x = location.x
   const y = location.y
-  const color = "Olive"
-  const warningcolor = "IndianRed"
-  const damage = 5 // bump into damage
-  const health = 30
-  const speed = 6 // for a car
+  
+  let radius = 24
+  let color = "Aquamarine"
+  let warningcolor = "Crimson"
+  let damage = 5 // bump into damage
+  let health = 30
+  let speed = 6 // for a car
+
+  if (type==='car'){
+    // do nothing
+  } else if(type==='tank'){
+    radius = 32
+    color = "Olive"
+    warningcolor = "IndianRed"
+    damage = 10 // bump into damage
+    health = 60
+    speed = 3 
+  }
+
 
   backEndVehicles[vehicleId] = {
     x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1
