@@ -43,17 +43,17 @@ or
  for example: 192.168.0.27:5000
 
  ## Sample run
-<p align="center">**Start screen**<br /></p>
+<p align="center">Start screen<br /></p>
 
 
 ![interface](../main/run_images/intro.png)
 
-<p align="center">**Ingame**<br /></p>
+<p align="center">Ingame<br /></p>
 
 
 ![interface](../main/run_images/ingame.png)
 
-<p align="center">**map**<br /></p>
+<p align="center">map<br /></p>
 
 
 ![interface](../main/run_images/minimap_map1_no_frame.png)
