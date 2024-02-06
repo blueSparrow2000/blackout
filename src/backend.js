@@ -296,11 +296,7 @@ function safeDeleteProjectile(projID){
   // if name is grenadeLauncher, explode and damage surrounding enemies and players!backEndProjectile.name
   // console.log(backEndProjectile.gunName)
   if (backEndProjectile.gunName==='grenadeLauncher'){
-    const BLASTNUM = 12
-    for (let i=0;i< BLASTNUM;i++){
-      addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',backEndProjectile.playerId, backEndProjectile)
-    }
-
+    explosion(backEndProjectile,12,backEndProjectile.playerId)
   }
 
   delete backEndProjectiles[projID]
@@ -1170,7 +1166,7 @@ function getOnVehicle(playerID,vehicleID){
 
   backEndVehicles[vehicleID].occupied = true
   backEndVehicles[vehicleID].ridingPlayerID = playerID
-  console.log(`player ${playerID} got on ${vehicleID}`)
+  //console.log(`player ${playerID} got on ${vehicleID}`)
 }
 
 function getOffVehicle(playerID,vehicleID=-1){ // vehicleID should be given if player cannot give vehicle id (e.g. death)
@@ -1192,7 +1188,7 @@ function getOffVehicle(playerID,vehicleID=-1){ // vehicleID should be given if p
 
   backEndVehicles[TrueVehicleID].occupied = false
   backEndVehicles[TrueVehicleID].ridingPlayerID = -1
-  console.log(`player ${playerID} got off ${TrueVehicleID}`)
+  //console.log(`player ${playerID} got off ${TrueVehicleID}`)
 }
 
 function safeDeleteVehicle(vehicleid){
@@ -1202,12 +1198,7 @@ function safeDeleteVehicle(vehicleid){
   }
 
   // explode
-  const BLASTNUM = 18
-  for (let i=0;i< BLASTNUM;i++){
-    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',0, vehicle)// damaging all players nearby
-  }
-
-
+  explosion(vehicle, 18)
 
   delete backEndVehicles[vehicleid]
 }
@@ -1220,4 +1211,10 @@ function updateVehiclePos(vehicle){
     vehicle.y = rider.y
   }
 
+}
+
+function explosion(location,BLASTNUM,playerID=0){
+  for (let i=0;i< BLASTNUM;i++){
+    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location)// damaging all players nearby
+  }
 }

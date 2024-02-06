@@ -850,19 +850,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       const backEndVehicle = backEndVehicles[id]
   
       if (!frontEndVehicles[id]){ // new 
-        frontEndVehicles[id] = new Car({ // should be similar to instantiate item
-          x: backEndVehicle.x, 
-          y: backEndVehicle.y, 
-          radius: backEndVehicle.radius, 
-          color: backEndVehicle.color, 
-          warningcolor: backEndVehicle.warningcolor,
-          velocity: backEndVehicle.velocity,
-          damage: backEndVehicle.damage,
-          health: backEndVehicle.health,
-          occupied: backEndVehicle.occupied,
-          ridingPlayerID: backEndVehicle.ridingPlayerID,
-          type: backEndVehicle.type
-        })
+        instantiateVehicle(backEndVehicle,id)
   
       } else { // already exist
         let frontEndVehicle = frontEndVehicles[id]
@@ -1197,6 +1185,32 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     socket.emit('initGame', {username: document.querySelector('#usernameInput').value, playerX, playerY, playerColor})
  })
   
+
+
+ function instantiateVehicle(backEndVehicle,id){
+  if (backEndVehicle.type === 'car'){
+    frontEndVehicles[id] = new Car({ // should be similar to instantiate item
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type
+    })
+    return true
+  } else{
+    console.log("not implemented vehicle or invalid name")
+    return false
+  }
+
+ }
+
+
 
  function instantiateItem(backendItem,id){ // switch case
   if (backendItem.itemtype==='gun'){

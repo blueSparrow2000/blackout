@@ -18,7 +18,7 @@
             };
 
   backEndVehicles[vehicleId] = {
-    x,y,radius,velocity:0, myID:vehicleId, color, damage, health, speed, type,occupied:false,ridingPlayerID:-1
+    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1
   }
 
 
