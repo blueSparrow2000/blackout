@@ -1219,6 +1219,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
   let damage = 5 // bump into damage
   let health = 30
   let speed = 6 // for a car
+  let info = {}
 
   if (type==='car'){
     // do nothing
@@ -1236,11 +1237,12 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     damage = 10 // bump into damage
     health = 50
     speed = 4 
+    info = {turretName:"FAMAS"}
   }
 
 
   backEndVehicles[vehicleId] = {
-    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1
+    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1,info
   }
 }
 
