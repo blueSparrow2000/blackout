@@ -7,6 +7,9 @@
         <title>BLACKOUT</title>
 
         <style>
+            #image {
+            display: none;
+            }
             body{
                 margin:0;
                 background: gray;
@@ -118,14 +121,53 @@
                   Interact/ pickup item/ drive: F <br>
                   See minimap: G <br>
                 </p>
-    
               </div>  
 
+              <div style="text-align: center;">
+                <button type="button" onclick="show()" id="btnID" style="
+                padding: 8px 20px;
+                border-radius: 100px;
+                border: none;
+                margin: auto;
+                background-image: linear-gradient(
+                  to right,
+                  rgb(6, 182, 212),
+                  rgb(59, 130, 246)
+                );
+                color: white;
+                cursor: pointer;
+              ">
+                    Show Help
+                </button>
+              </div>
+
+              <div>
+                <!-- Add id to image -->
+                <img id="HELP" src="help.png" alt="help" style="position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                display:none">
+              </div>
+
+          
+              <script>
+                  function show() {
+                      /* Access image by id and change 
+                      the display property to block*/
+                      document.getElementById('HELP')
+                          .style.display = "block";
+                      document.getElementById('btnID')
+                          .style.display = "none";
+                  }
+              </script>
+              <!-- 
               <img src="help.png" alt="help" style="position: absolute;
               top: 0;
               right: 0;
               bottom: 0;
-              left: 0;">
+              left: 0;"> -->
               
               
             </form>

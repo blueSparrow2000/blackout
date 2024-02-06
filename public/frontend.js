@@ -673,7 +673,9 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           wearingarmorID: backEndPlayer.wearingarmorID,
           wearingscopeID: backEndPlayer.wearingscopeID, 
           getinhouse:backEndPlayer.getinhouse,
-          ridingVehicleID:backEndPlayer.ridingVehicleID
+          ridingVehicleID:backEndPlayer.ridingVehicleID,
+          canvasHeight:backEndPlayer.canvasHeight,
+          canvasWidth:backEndPlayer.canvasWidth
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -691,6 +693,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             frontEndPlayerOthers.wearingscopeID = backEndPlayer.wearingscopeID
             frontEndPlayerOthers.getinhouse = backEndPlayer.getinhouse 
             frontEndPlayerOthers.ridingVehicleID = backEndPlayer.ridingVehicleID
+            // canvas width and height changed => init Game!
 
             // inventory attributes
             frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
@@ -1042,7 +1045,7 @@ function loop(){
         frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
         if (gunInfoFrontEnd){
           const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
-          frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo,canvasEl)
+          frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo)
         }
         canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
         // canvas.drawImage(gunImages['AWM'], centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
@@ -1058,7 +1061,7 @@ function loop(){
           const currentHoldingItem = getCurItem(currentPlayer)
           if (gunInfoFrontEnd){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
-            currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo,canvasEl)
+            currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo)
           }
           if (!currentPlayer.getinhouse){ // display player info only if they are not inside the house!
             currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
@@ -1205,8 +1208,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     const playerX = MAPWIDTH * Math.random()
     const playerY = MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
-    
-    socket.emit('initGame', {username: document.querySelector('#usernameInput').value, playerX, playerY, playerColor})
+    socket.emit('initGame', {username: document.querySelector('#usernameInput').value, playerX, playerY, playerColor,canvasHeight:canvasEl.height,canvasWidth:canvasEl.width})
  })
   
 

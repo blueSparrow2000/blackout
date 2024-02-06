@@ -448,7 +448,7 @@ async function main(){
 
 
         // initialize game when clicking button (submit name)
-        socket.on('initGame',({username,playerX, playerY, playerColor})=>{
+        socket.on('initGame',({username,playerX, playerY, playerColor,canvasHeight,canvasWidth})=>{
             // initialize inventory with fist
             let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
@@ -477,6 +477,8 @@ async function main(){
                 speed:PLAYERSPEED, // not passed to frontend
                 ridingVehicleID:-1,
                 entityType:'player', // not passed to frontend
+                canvasHeight,
+                canvasWidth,
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)

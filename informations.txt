@@ -16,6 +16,8 @@
                 speed:PLAYERSPEED, // not passed to frontend
                 ridingVehicleID:-1,
                 entityType:'player', // not passed to frontend
+                canvasHeight,
+                canvasWidth,
             };
 
   backEndVehicles[vehicleId] = {

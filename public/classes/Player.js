@@ -1,7 +1,7 @@
 const HEALTHBARHALFLEN = 16
 
 class Player{
-    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1,wearingscopeID=-1,ridingVehicleID=-1,getinhouse}) {
+    constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:0,x:0}, score, wearingarmorID=-1,wearingscopeID=-1,ridingVehicleID=-1,getinhouse,canvasHeight,canvasWidth}) {
       this.x = x
       this.y = y
       this.radius = radius
@@ -18,6 +18,8 @@ class Player{
       this.wearingscopeID = wearingscopeID
       this.ridingVehicleID = ridingVehicleID
       this.getinhouse = getinhouse // in house initially false
+      this.canvasHeight = canvasHeight
+      this.canvasWidth = canvasWidth
     }
 
     getMinimapLoc(MiniMapRatio){
@@ -64,7 +66,7 @@ class Player{
       canvas.stroke()
     }
 
-    drawGun(canvas, camX, camY, locX, locY, currentHoldingItem, thisguninfo,canvasEl){
+    drawGun(canvas, camX, camY, locX, locY, currentHoldingItem, thisguninfo){
       canvas.strokeStyle = 'black'
       // player with socket.id (me)
       let xReal = locX
@@ -79,8 +81,8 @@ class Player{
         const itemlength = itemSize.length*2
         const gunmainwidth = itemSize.width*2
         let angle = Math.atan2(
-          (this.cursorPos.y) - canvasEl.height/2,
-          (this.cursorPos.x) - canvasEl.width/2
+          (this.cursorPos.y) - this.canvasHeight/2,
+          (this.cursorPos.x) - this.canvasWidth/2
         )
         const direction = { 
           x: Math.cos(angle) ,
