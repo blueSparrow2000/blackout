@@ -42,7 +42,13 @@ or
 
  for example: 192.168.0.27:5000
 
- 
+ ## Sample run
+![interface](../main/run_images/intro.png)
+![interface](../main/run_images/ingame.png)
+![interface](../main/run_images/minimap_map1_no_frame.png)
+
+
+
  ## Version history
 2024.2.3 Basic multiplayer with camera
 
