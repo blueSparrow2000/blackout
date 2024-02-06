@@ -969,6 +969,17 @@ function loop(){
       }
     }
 
+    // WALLS
+    canvas.strokeStyle ='gray'
+    canvas.fillStyle = 'gray'
+    for (const id in frontEndObjects){
+      const obj = frontEndObjects[id]
+      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistance*2) ){
+        obj.draw(canvas, camX, camY)
+      }
+    }
+
+
     // PLANTS AND BUSHES - indexing starts from 0, top left 
     // for (let row = 0;row < groundMap.length;row++){
     //     for (let col = 0;col < groundMap[0].length;col++){
@@ -1043,22 +1054,10 @@ function loop(){
               TILE_SIZE,TILE_SIZE
               );
           }
-
-
         }
       }
     }
     //ADVANCED PLANTS
-
-    // WALLS
-    canvas.strokeStyle ='gray'
-    canvas.fillStyle = 'gray'
-    for (const id in frontEndObjects){
-      const obj = frontEndObjects[id]
-      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistance*2) ){
-        obj.draw(canvas, camX, camY)
-      }
-    }
 
     // OTHERS
     if (keys.g.pressed){ // draw minimap
