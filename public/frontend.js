@@ -331,8 +331,7 @@ function shootCheck(event){
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
     if (frontEndVehicles[vehicleID].type==="APC"){
-
-      const currentGunName = 'FAMAS'//'FAMAS'
+      const currentGunName = frontEndVehicles[vehicleID].turretName
       const guninfGET = gunInfoFrontEnd[currentGunName]
       const GUNFIRERATE = guninfGET.fireRate
 
@@ -1255,7 +1254,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       health: backEndVehicle.health,
       occupied: backEndVehicle.occupied,
       ridingPlayerID: backEndVehicle.ridingPlayerID,
-      type: backEndVehicle.type
+      type: backEndVehicle.type,
+      turretName: backEndVehicle.info.turretName
     })
     return true
   } else{
