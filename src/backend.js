@@ -13,7 +13,8 @@ let MAPTILENUM = MAPDICT[MAPNAME] // can vary, but map is SQUARE!
 
 // map info
 const TILES_IN_ROW = 23 // only use designated tileset: 23 kinds of tiles are in a row
-const TILE_SIZE = 128 // fixed for the tileset
+const TILE_SIZE_HALF = 64;
+const TILE_SIZE = TILE_SIZE_HALF*2 //128;
 let MAPWIDTH = TILE_SIZE*MAPTILENUM
 let MAPHEIGHT =TILE_SIZE*MAPTILENUM
 const loadMap = require("./mapLoader")
