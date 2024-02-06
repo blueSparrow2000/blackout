@@ -82,12 +82,6 @@ class Player{
           (this.cursorPos.y) - canvasEl.height/2,
           (this.cursorPos.x) - canvasEl.width/2
         )
-        if (locX===-1){// other player
-          let angle = Math.atan2(
-            (this.cursorPos.y) - this.y,
-            (this.cursorPos.x) - this.x
-          )
-        }
         const direction = { 
           x: Math.cos(angle) ,
           y: Math.sin(angle) 

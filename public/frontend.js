@@ -281,6 +281,8 @@ function getCurItem(currentPlayer){
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
   return currentHoldingItem
 }
+
+
 function shootCheck(event){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not fire bullet
     return
@@ -329,6 +331,7 @@ function shootCheck(event){
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
     if (frontEndVehicles[vehicleID].type==="APC"){
+      
       const currentGunName = 'M249'
       const guninfGET = gunInfoFrontEnd[currentGunName]
       const GUNFIRERATE = guninfGET.fireRate
