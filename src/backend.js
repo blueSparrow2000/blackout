@@ -74,8 +74,8 @@ const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
-    'grenadeLauncher':{travelDistance:576, damage: 2, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
-    'fragment':{travelDistance:192, damage: 1, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
+    'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
+    'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1088, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -187,6 +187,7 @@ if (GROUNDITEMFLAG){
     }
 
     spawnVehicle({x:100,y:100})
+    spawnVehicle({x:500,y:3000})
 
 
     makeHouse(getCoordTiles(TILESLOC["house1"]))
@@ -1142,19 +1143,23 @@ function spawnVehicle(location){ // currently only makes cars
   const radius = 32
   const x = location.x
   const y = location.y
-  const color = "CadetBlue"
+  const color = "Olive"
+  const warningcolor = "IndianRed"
   const damage = 5 // bump into damage
   const health = 30
   const speed = 6 // for a car
 
   backEndVehicles[vehicleId] = {
-    x,y,radius,velocity:0, myID:vehicleId, color, damage, health, speed, type,occupied:false,ridingPlayerID:-1
+    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1
   }
 }
 
 function getOnVehicle(playerID,vehicleID){
   if (backEndVehicles[vehicleID].occupied){ // if already occupied, block others 
     return 
+  }
+  if (backEndPlayers[playerID].ridingVehicleID>0){ // if player is already riding a vehicle, dont ride again
+    return
   }
   backEndPlayers[playerID].ridingVehicleID = vehicleID
   backEndPlayers[playerID].speed = backEndVehicles[vehicleID].speed
@@ -1165,18 +1170,29 @@ function getOnVehicle(playerID,vehicleID){
 
   backEndVehicles[vehicleID].occupied = true
   backEndVehicles[vehicleID].ridingPlayerID = playerID
-  //console.log(`player ${playerID} got on ${vehicleID}`)
+  console.log(`player ${playerID} got on ${vehicleID}`)
 }
 
-function getOffVehicle(playerID,vehicleID){
+function getOffVehicle(playerID,vehicleID=-1){ // vehicleID should be given if player cannot give vehicle id (e.g. death)
+  let TrueVehicleID =-1
+
   if (backEndPlayers[playerID]){ // if player alive
+    TrueVehicleID = backEndPlayers[playerID].ridingVehicleID // get the true vehicle ID since we can get one
+
+    if (!(backEndPlayers[playerID].ridingVehicleID>0)){ // if player is not riding a vehicle (false alarm)
+      return
+    }
     backEndPlayers[playerID].ridingVehicleID = -1
     backEndPlayers[playerID].speed = PLAYERSPEED
   }
 
-  backEndVehicles[vehicleID].occupied = false
-  backEndVehicles[vehicleID].ridingPlayerID = -1
-  //console.log(`player ${playerID} got off ${vehicleID}`)
+  if (TrueVehicleID===-1){ // use vehicleID given instead - when we cannot get id from player
+    TrueVehicleID = vehicleID
+  }
+
+  backEndVehicles[TrueVehicleID].occupied = false
+  backEndVehicles[TrueVehicleID].ridingPlayerID = -1
+  console.log(`player ${playerID} got off ${TrueVehicleID}`)
 }
 
 function safeDeleteVehicle(vehicleid){
@@ -1186,10 +1202,11 @@ function safeDeleteVehicle(vehicleid){
   }
 
   // explode
-  const BLASTNUM = 36
+  const BLASTNUM = 18
   for (let i=0;i< BLASTNUM;i++){
-    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',0, vehicle)
+    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',0, vehicle)// damaging all players nearby
   }
+
 
 
   delete backEndVehicles[vehicleid]

@@ -488,10 +488,10 @@ function interactVehicle(id,backEndVehicles){
     interactSound.play()
     socket.emit('getOffVehicle',{vehicleID: id})
   }else{ // not riding a vehicle
-    if (!currentVehicle.occupied){ // play sound when you can get in
+    if (!currentVehicle.occupied){ // interact when you can get in
       interactSound.play()
+      socket.emit('getOnVehicle',{vehicleID: id})
     }
-    socket.emit('getOnVehicle',{vehicleID: id})
   }
 
   interactTimeout = window.setTimeout(function(){
@@ -579,14 +579,20 @@ function interactItem(itemId,backEndItems){
 socket.on('interact',({backEndItems,backEndVehicles})=>{
     if (!frontEndPlayer){return}
 
+    let foundOneFlag = false
+
     // client collision check - reduce server load
     for (const id in backEndVehicles){
       const vehicle = backEndVehicles[id]
       const DISTANCE = Math.hypot(vehicle.x - frontEndPlayer.x, vehicle.y - frontEndPlayer.y)
       if ((DISTANCE < vehicle.radius + frontEndPlayer.radius)) {
         interactVehicle(id,backEndVehicles)
+        foundOneFlag = true
         break
       }
+    }
+    if (foundOneFlag){
+      return
     }
     for (const id in backEndItems){
       // Among frontEndItems: pick the first item that satisfies the below conditions
@@ -598,10 +604,13 @@ socket.on('interact',({backEndItems,backEndVehicles})=>{
       const DISTANCE = Math.hypot(item.groundx - frontEndPlayer.x, item.groundy - frontEndPlayer.y)
       if (item.onground && (DISTANCE < ITEMRADIUS + frontEndPlayer.radius)) {
         interactItem(id,backEndItems)
+        foundOneFlag = true
         break
       }
     }
-
+    if (foundOneFlag){
+      return
+    }
 
 })
 
@@ -846,11 +855,13 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           y: backEndVehicle.y, 
           radius: backEndVehicle.radius, 
           color: backEndVehicle.color, 
+          warningcolor: backEndVehicle.warningcolor,
           velocity: backEndVehicle.velocity,
           damage: backEndVehicle.damage,
           health: backEndVehicle.health,
           occupied: backEndVehicle.occupied,
-          ridingPlayerID: backEndVehicle.ridingPlayerID
+          ridingPlayerID: backEndVehicle.ridingPlayerID,
+          type: backEndVehicle.type
         })
   
       } else { // already exist
