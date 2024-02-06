@@ -331,8 +331,8 @@ function shootCheck(event){
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
     if (frontEndVehicles[vehicleID].type==="APC"){
-      
-      const currentGunName = 'M249'
+
+      const currentGunName = 'FAMAS'//'FAMAS'
       const guninfGET = gunInfoFrontEnd[currentGunName]
       const GUNFIRERATE = guninfGET.fireRate
 
