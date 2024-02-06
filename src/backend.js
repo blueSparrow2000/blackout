@@ -7,7 +7,7 @@ const ITEMRADIUS = 16
 
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
 const MAPDICT = {'map1':30, 'Sahara':50} // mapName : map tile number
-let MAPNAME = 'Sahara' //'map1'
+let MAPNAME = 'Sahara' //'Sahara' //'map1'
 let MAPTILENUM = MAPDICT[MAPNAME] // can vary, but map is SQUARE!
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
 
@@ -108,7 +108,11 @@ const gunInfo = {
     'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
     'bat':{travelDistance:48, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
 }
-const defaultGuns = ['pistol']//[] 
+let defaultGuns = []//[] 
+
+// 'guntypes' is except for grenade launcher and fragments! Since they are OP
+const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+const meleeTypes = ['knife','bat']
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -121,6 +125,10 @@ const armorInfo = {
 'absorb':{color: 'DarkTurquoise',size:{length:12, width:12}, amount:5, radius:1},
 'reduce':{color: 'DeepSkyBlue',size:{length:12, width:12}, amount:5, radius:2},
 }
+
+const scopeTypes = ['1','2'] // currently available scope!
+
+const vehicleTypes = ['car','Fennek','APC']
 
 function armorEffect(armorID, damage){
   if (armorID <= 0){ // no armor
@@ -144,6 +152,16 @@ function armorEffect(armorID, damage){
       console.log("Item ID is malfunctioning")
       return damage
   }
+}
+
+
+// For item drops
+function getCoordTilesCenter(location){
+  return {x:location.col*TILE_SIZE + Math.round(TILE_SIZE/2), y:location.row*TILE_SIZE + Math.round(TILE_SIZE/2)}
+}
+
+function getCoordTiles(location){
+  return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
 }
 
 // GROUND drop items
@@ -185,6 +203,8 @@ if (GROUNDITEMFLAG){
   ///////////////////////////////////////// BATTLE ROYALE DROPS /////////////////////////////////////////
   else if (MAPNAME==='map1' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
     // special tile locations in map1
+    defaultGuns = ['pistol'] // give additional pistol
+
     const TILESLOC = {"center":{row:14,col:14},"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},
     "rock1":{row:0,col:29},"rock2":{row:6,col:15}, "rockMiddle":{row:0,col:14},
     "forest1":{row:21,col:27},"forest2":{row:22,col:25},"forestMiddle":{row:14,col:27},
@@ -192,22 +212,15 @@ if (GROUNDITEMFLAG){
     "sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29},"sandroadMiddle":{row:28,col:14}}
     
 
-    function getCoordTilesCenter(location){
-      return {x:location.col*TILE_SIZE + Math.round(TILE_SIZE/2), y:location.row*TILE_SIZE + Math.round(TILE_SIZE/2)}
-    }
-
-    function getCoordTiles(location){
-      return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
-    }
-
     spawnVehicle(getCoordTilesCenter(TILESLOC["center"]))
     spawnVehicle(getCoordTilesCenter(TILESLOC["forestMiddle"]))
     spawnVehicle(getCoordTilesCenter(TILESLOC["sandroadMiddle"]),'APC')
     spawnVehicle(getCoordTilesCenter(TILESLOC["rockMiddle"]),'Fennek')
 
-    makeHouse(getCoordTiles(TILESLOC["house1"]))
-    makeHouse(getCoordTiles(TILESLOC["house2"]))
-    makeHouse(getCoordTiles(TILESLOC["house3"]))
+    makeHouse_2Tiles(getCoordTiles(TILESLOC["house1"]))
+    makeHouse_2Tiles(getCoordTiles(TILESLOC["house2"]))
+    makeHouse_2Tiles(getCoordTiles(TILESLOC["house3"]))
+
     makeNdropItem('gun', 'ump45', getCoordTilesCenter(TILESLOC["house1"]))
     makeNdropItem('scope', "1", getCoordTilesCenter(TILESLOC["house1"]))
     makeNdropItem('gun', 'vector', getCoordTilesCenter(TILESLOC["house2"]))
@@ -253,6 +266,110 @@ if (GROUNDITEMFLAG){
   }
 
   else if (MAPNAME==='Sahara' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
+    const TILESLOC_N_REQUEST = {
+      'APCLocation1':{row: 24, col:5, request:['vehicle','APC']},
+      'APCLocation2':{row: 27, col:5, request:['vehicle','APC']},
+      'APCLocation3':{row: 43, col:11, request:['vehicle','APC']},
+      'APCLocation4':{row: 8, col:11, request:['vehicle','APC']},
+      'CarLoc1':{row: 20, col:22, request:['vehicle','car']},
+      'CarLoc2':{row: 12, col:30, request:['vehicle','car']},
+      'CarLoc3':{row: 12, col:34, request:['vehicle','car']},
+      'CarLoc4':{row: 12, col:45, request:['vehicle','car']},
+      'CarLoc5':{row: 29, col:42, request:['vehicle','car']},
+      'CarLoc6':{row: 32, col:42, request:['vehicle','car']},
+      'CarLoc7':{row: 29, col:29, request:['vehicle','car']},
+      'CarLoc8':{row: 32, col:29, request:['vehicle','car']},
+      'RandomTreeLoc1':{row: 8, col:15, request:['gun','random']},
+      'RandomTreeLoc2':{row: 11, col:11, request:['gun','random']},
+      'RandomTreeLoc3':{row: 14, col:13, request:['gun','random']},
+      'RandomTreeLoc4':{row: 17, col:9, request:['gun','random']},
+      'RandomTreeLoc5':{row: 19, col:14, request:['gun','random']},
+      'RandomTreeLoc6':{row: 22, col:12, request:['gun','random']},
+      'RandomTreeLoc7':{row: 25, col:8, request:['gun','random']},
+      'RandomTreeLoc8':{row: 27, col:12, request:['gun','random']},
+      'RandomTreeLoc9':{row: 27, col:14, request:['gun','random']},
+      'RandomTreeLoc10':{row: 30, col:9, request:['gun','random']},
+      'RandomTreeLoc11':{row: 32, col:12, request:['gun','random']},
+      'RandomTreeLoc12':{row: 36, col:12, request:['gun','random']},
+      'RandomTreeLoc13':{row: 37, col:10, request:['gun','random']},
+      'RandomTreeLoc14':{row: 39, col:14, request:['gun','random']},
+      'RandomTreeLoc15':{row: 42, col:13, request:['gun','random']},
+      'RandomTreeLoc16':{row: 44, col:15, request:['gun','random']},
+      'House_15TilesRoof1':{row: 46, col:24, request:['consumable','bandage']},
+      'House_15TilesRoof2':{row: 46, col:29, request:['consumable','bandage']},
+      'House_15TilesRoof3':{row: 46, col:34, request:['consumable','bandage']},
+      'House_15TilesRoof4':{row: 46, col:39, request:['consumable','bandage']},
+      'House_15TilesRoof5':{row: 46, col:44, request:['consumable','bandage']},
+      'House_15TilesCenter1':{row: 44, col:23, request:['gun','random']},
+      'House_15TilesCenter2':{row: 44, col:28, request:['gun','random']},
+      'House_15TilesCenter3':{row: 44, col:33, request:['gun','random']},
+      'House_15TilesCenter4':{row: 44, col:38, request:['gun','random']},
+      'House_15TilesCenter5':{row: 44, col:43, request:['gun','random']},
+      'House_CourtyardCorner1':{row: 28, col:38, request:['consumable','medkit']},
+      'House_CourtyardCorner2':{row: 28, col:33, request:['consumable','medkit']},
+      'House_CourtyardCorner3':{row: 33, col:33, request:['consumable','medkit']},
+      'House_CourtyardCorner4':{row: 33, col:38, request:['consumable','medkit']},
+      'CourtyardCorner1':{row: 30, col:35, request:['scope','random']},
+      'CourtyardCorner2':{row: 30, col:36, request:['scope','random']},
+      'CourtyardCorner3':{row: 31, col:35, request:['scope','random']},
+      'CourtyardCorner4':{row: 31, col:36, request:['scope','random']},
+      'GardenCenter1':{row: 19, col:37, request:['gun','grenadeLauncher']},
+      'House_36TilesRoof1':{row: 18, col:28, request:['gun','grenadeLauncher']},
+      'House_36TilesItemPoints1':{row: 13, col:23, request:['armor','random']},
+      'House_36TilesItemPoints2':{row: 13, col:28, request:['armor','random']},
+      'House_36TilesItemPoints3':{row: 18, col:23, request:['armor','random']},
+      'House_42TilesRoof1':{row: 21, col:43, request:['gun','grenadeLauncher']},
+      'House_42TilesItemPoints1':{row: 14, col:36, request:['armor','random']},
+      'House_42TilesItemPoints2':{row: 13, col:43, request:['armor','random']},
+      'RockyItempoints1':{row: 1, col:29, request:['melee','random']},
+      'RockyItempoints2':{row: 0, col:32, request:['melee','random']},
+      'RockyItempoints3':{row: 1, col:37, request:['melee','random']},
+      'RockyItempoints4':{row: 2, col:48, request:['melee','random']},
+      'ForestItemPoints1':{row: 30, col:49, request:['gun','random']},
+      'ForestItemPoints2':{row: 28, col:49, request:['gun','random']},
+      'ForestItemPoints3':{row: 24, col:49, request:['gun','random']},
+      'ForestItemPoints4':{row: 35, col:49, request:['gun','random']},
+      'ForestItemPoints5':{row: 20, col:49, request:['gun','random']},
+    } 
+
+    // AUTO DROPPER
+    const mapDropKeys = Object.keys(TILESLOC_N_REQUEST)
+    const ItemDictionary_For_Random = {'gun':gunTypes, 'scope':scopeTypes, 'consumable':consumableTypes,'melee':meleeTypes,'armor':armorTypes,}
+    for (let i=0;i<mapDropKeys.length;i++){
+      const mapDropKey = mapDropKeys[i] // name of location
+      const tileloc_request = TILESLOC_N_REQUEST[mapDropKey] // info
+
+      if (tileloc_request.request[0]==="vehicle"){ // vehicle
+        if (tileloc_request.request[1]==='random'){
+          const maxVariationOfItem = vehicleTypes.length
+          const idxItem = Math.round(Math.random()*(maxVariationOfItem-1))
+          spawnVehicle(getCoordTilesCenter(tileloc_request),vehicleTypes[idxItem])
+
+        }else{ // specified
+          spawnVehicle(getCoordTilesCenter(tileloc_request),tileloc_request.request[1])
+        }
+
+      } else{ // item
+
+        if (tileloc_request.request[1]==='random'){
+          const ItemList = ItemDictionary_For_Random[tileloc_request.request[0]]
+          const maxVariationOfItem = ItemList.length
+          const idxItem = Math.round(Math.random()*(maxVariationOfItem-1)) // first and last item has less prob! Must be at least 2
+          makeNdropItem(tileloc_request.request[0], ItemList[idxItem],getCoordTilesCenter(tileloc_request))
+          //console.log(tileloc_request.request[0], ItemList[idxItem],getCoordTilesCenter(tileloc_request))
+        } else{ // specified drop
+          makeNdropItem(tileloc_request.request[0], tileloc_request.request[1],getCoordTilesCenter(tileloc_request))
+          //console.log(tileloc_request.request[0], tileloc_request.request[1],getCoordTilesCenter(tileloc_request))
+        }
+
+      }
+
+    }
+    // AUTO DROPPER
+    
+    // MANUAL DROP
+    // test feature
+    makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
 
   }
 
@@ -1035,7 +1152,7 @@ function makeBox(location){ // location is top left corner
   
 }
 
-function makeHouse(location){ // location is top left corner
+function makeHouse_2Tiles(location){ // location is top left corner
   const WALLWIDTH_HALF = 10
   const WALLWIDTH = WALLWIDTH_HALF*2
   const HOUSEWIDTH = TILE_SIZE*2

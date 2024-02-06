@@ -78,3 +78,6 @@ or
 - Maps should be square & need to specify tile number of one side 
 - Also Maps should have two layer: layer1 is for ground, layer2 is for ceiling/plants etc.
 - minimap size should be fixed to 550 with frame(used in game) and 512 without frame(used for location calculation)
+
+
+Tiled tip: If you hover over a tile and press ALT+C, tile (col,row) value is copied to a clipboard. Use it when map making!
