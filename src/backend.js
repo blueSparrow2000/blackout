@@ -186,6 +186,10 @@ if (GROUNDITEMFLAG){
     makeHouse(getCoordTiles(TILESLOC["house1"]))
     makeHouse(getCoordTiles(TILESLOC["house2"]))
     makeHouse(getCoordTiles(TILESLOC["house3"]))
+    makeNdropItem('gun', 'ump45', getCoordTilesCenter(TILESLOC["house1"]))
+    makeNdropItem('scope', "1", getCoordTilesCenter(TILESLOC["house1"]))
+    makeNdropItem('gun', 'vector', getCoordTilesCenter(TILESLOC["house2"]))
+    makeNdropItem('gun', 'mp5', getCoordTilesCenter(TILESLOC["house3"]))
 
     // some guns 
     const rock1loc = getCoordTilesCenter(TILESLOC["rock1"])
@@ -198,7 +202,7 @@ if (GROUNDITEMFLAG){
     makeNdropItem('scope', "1", rock2loc)
 
     const sandroad1loc = getCoordTilesCenter(TILESLOC["sandroad1"])
-    makeNdropItem('gun', 'mp5', sandroad1loc)
+    makeNdropItem('gun', 'usas12', sandroad1loc)
 
     const sandroad2loc = getCoordTilesCenter(TILESLOC["sandroad2"])
     makeNdropItem('gun', 's686', sandroad2loc)
@@ -207,7 +211,7 @@ if (GROUNDITEMFLAG){
     makeNdropItem('gun', 'grenadeLauncher', tree2loc)
     
 
-    makeNdropItem('gun', 'vector', getCoordTilesCenter(TILESLOC["tree3"]))
+    makeNdropItem('gun', 'FAMAS', getCoordTilesCenter(TILESLOC["tree3"]))
     makeNdropItem('melee', 'knife', getCoordTilesCenter(TILESLOC["tree4"]))
     makeNdropItem('gun', 'ak47', getCoordTilesCenter(TILESLOC["tree5"]))
 
@@ -424,7 +428,8 @@ async function main(){
                 mousePos: {x:0,y:0},
                 wearingarmorID: -1,
                 wearingscopeID: -1,
-                getinhouse: false
+                getinhouse: false,
+                myspeed:PLAYERSPEED // not passed to frontend
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)

@@ -1033,17 +1033,18 @@ function loop(){
             TILE_SIZE,TILE_SIZE
             );
         } else if(id === 188 || id === 50){ // ceiling of the house
-          canvas.save();
-          canvas.globalAlpha = 0.8;
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
-          canvas.restore();
+          if (!frontEndPlayer.getinhouse){ // not in a house, draw ceiling
+            canvas.drawImage(mapImage, 
+              imageCol * TILE_SIZE,
+              imageRow * TILE_SIZE,
+              TILE_SIZE,TILE_SIZE,
+              col*TILE_SIZE - camX, 
+              row*TILE_SIZE - camY,
+              TILE_SIZE,TILE_SIZE
+              );
+          }
+
+
         }
       }
     }
