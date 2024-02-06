@@ -325,6 +325,28 @@ function shootCheck(event){
     return
   }
 
+  ///////////////////////////// If inside vehicle 
+  const vehicleID = frontEndPlayer.ridingVehicleID
+  if (vehicleID>0){ // if player is riding => cannot shoot!
+    if (frontEndVehicles[vehicleID].type==="APC"){
+      const currentGunName = 'M249'
+      const guninfGET = gunInfoFrontEnd[currentGunName]
+      const GUNFIRERATE = guninfGET.fireRate
+
+      if (!listen) {return} // not ready to fire
+      listen = false // block
+    
+      socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName, startDistance:frontEndVehicles[vehicleID].radius+2})
+    
+      fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return};clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
+      return
+    }else{
+      return
+    }
+  } 
+
+  ///////////////////////////// If inside vehicle 
+
   if ((!(currentHoldingItem.itemtype==='melee')) && currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
     reloadGun() // auto reload when out of ammo
     return
@@ -351,7 +373,6 @@ function shootCheck(event){
 }
 addEventListener('click', (event) => {
   shootCheck(event)
-  //socket.emit("shoot", {angle:getAngle(event),currentGun:"s686"})
 })
 
 
@@ -1190,7 +1211,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
 
  function instantiateVehicle(backEndVehicle,id){
   if (backEndVehicle.type === 'car'){
-    frontEndVehicles[id] = new Car({ // should be similar to instantiate item
+    frontEndVehicles[id] = new Car({ 
       x: backEndVehicle.x, 
       y: backEndVehicle.y, 
       radius: backEndVehicle.radius, 
@@ -1204,8 +1225,23 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       type: backEndVehicle.type
     })
     return true
-  } else if(backEndVehicle.type === 'tank'){
-    frontEndVehicles[id] = new Tank({ // should be similar to instantiate item
+  } else if(backEndVehicle.type === 'Fennek'){
+    frontEndVehicles[id] = new Fennek({ 
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type
+    })
+    return true
+  } else if(backEndVehicle.type === 'APC'){
+    frontEndVehicles[id] = new APC({ 
       x: backEndVehicle.x, 
       y: backEndVehicle.y, 
       radius: backEndVehicle.radius, 

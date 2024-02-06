@@ -93,7 +93,7 @@ const gunInfo = {
     'usas12':{travelDistance:448, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
     
     'ump45':{travelDistance:700, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:15, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
-    'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
+    'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 40, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
     'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
@@ -140,6 +140,7 @@ function armorEffect(armorID, damage){
 
 // GROUND drop items
 if (GROUNDITEMFLAG){
+  ///////////////////////////////////////// TEST DROPS /////////////////////////////////////////
   if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="test"){
     makeObjects("wall", 30, {orientation: 'vertical',start:{x:1000,y:1000}, end:{x:1000,y:2000}, width:20, color: 'gray'})
     makeObjects("wall", 30, {orientation: 'horizontal',start:{x:1000,y:2000}, end:{x:1500,y:2000}, width:20, color: 'gray'})
@@ -173,9 +174,14 @@ if (GROUNDITEMFLAG){
     }
   }
 
+  ///////////////////////////////////////// BATTLE ROYALE DROPS /////////////////////////////////////////
   if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
     // special tile locations in map1
-    const TILESLOC = {"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},"rock1":{row:0,col:29},"rock2":{row:6,col:15}, "forest1":{row:21,col:27},"forest2":{row:22,col:25},"tree1":{row:21,col:12},"tree2":{row:21,col:4},"tree3":{row:16,col:14},"tree4":{row:17,col:21},"tree5":{row:13,col:23},"sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29}}
+    const TILESLOC = {"center":{row:14,col:14},"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},
+    "rock1":{row:0,col:29},"rock2":{row:6,col:15}, "rockMiddle":{row:0,col:14},
+    "forest1":{row:21,col:27},"forest2":{row:22,col:25},"forestMiddle":{row:14,col:27},
+    "tree1":{row:21,col:12},"tree2":{row:21,col:4},"tree3":{row:16,col:14},"tree4":{row:17,col:21},"tree5":{row:13,col:23},
+    "sandroad1":{row:28,col:0},"sandroad2":{row:28,col:29},"sandroadMiddle":{row:28,col:14}}
     
 
     function getCoordTilesCenter(location){
@@ -186,11 +192,10 @@ if (GROUNDITEMFLAG){
       return {x:location.col*TILE_SIZE, y:location.row*TILE_SIZE}
     }
 
-    spawnVehicle({x:200,y:400})
-    spawnVehicle({x:500,y:3000})
-    spawnVehicle({x:200+100,y:400},'tank')
-    spawnVehicle({x:500+100,y:3000},'tank')
-
+    spawnVehicle(getCoordTilesCenter(TILESLOC["center"]))
+    spawnVehicle(getCoordTilesCenter(TILESLOC["forestMiddle"]))
+    spawnVehicle(getCoordTilesCenter(TILESLOC["sandroadMiddle"]),'APC')
+    spawnVehicle(getCoordTilesCenter(TILESLOC["rockMiddle"]),'Fennek')
 
     makeHouse(getCoordTiles(TILESLOC["house1"]))
     makeHouse(getCoordTiles(TILESLOC["house2"]))
@@ -274,7 +279,7 @@ function itemBorderUpdate(item){
 }
 
 
-function addProjectile(angle,currentGun,playerID,location){
+function addProjectile(angle,currentGun,playerID,location,startDistance){
   projectileId++
   const guninfoGET = gunInfo[currentGun]
   const shakeProj = guninfoGET.shake
@@ -288,9 +293,16 @@ function addProjectile(angle,currentGun,playerID,location){
   const travelDistance = guninfoGET.travelDistance
   const projDamage =  guninfoGET.damage
 
-  backEndProjectiles[projectileId] = {
-    x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+  if (startDistance>0){
+    backEndProjectiles[projectileId] = {
+      x:location.x + Math.cos(angle)*startDistance, y:location.y + Math.sin(angle)*startDistance,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+    }
+  } else{
+    backEndProjectiles[projectileId] = {
+      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+    }
   }
+
 }
 
 function safeDeleteProjectile(projID){
@@ -472,17 +484,16 @@ async function main(){
         })
 
         // aux function for shoot
-        function shootProjectile(angle,currentGun){
+        function shootProjectile(angle,currentGun,startDistance){
           if (!backEndPlayers[socket.id]) return // player not defined
-
           const gunName = currentGun
             
           for (let i=0;i< gunInfo[currentGun].num;i++){
-            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id])
+            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistance)
           }
         }
-        socket.on('shoot', ({angle,currentGun})=>{
-          shootProjectile(angle,currentGun)
+        socket.on('shoot', ({angle,currentGun,startDistance=0})=>{
+          shootProjectile(angle,currentGun,startDistance)
         } )
 
 
@@ -1211,13 +1222,20 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
 
   if (type==='car'){
     // do nothing
-  } else if(type==='tank'){
+  } else if(type==='Fennek'){
     radius = 32
     color = "Olive"
     warningcolor = "IndianRed"
     damage = 10 // bump into damage
     health = 60
     speed = 3 
+  } else if(type==='APC'){ // with turrets!
+    radius = 30
+    color = "OliveDrab"
+    warningcolor = "Chocolate"
+    damage = 10 // bump into damage
+    health = 50
+    speed = 4 
   }
 
 
@@ -1305,6 +1323,6 @@ function updateVehiclePos(vehicle){
 
 function explosion(location,BLASTNUM,playerID=0){
   for (let i=0;i< BLASTNUM;i++){
-    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location)// damaging all players nearby
+    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location,0)// damaging all players nearby
   }
 }

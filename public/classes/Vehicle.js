@@ -40,7 +40,14 @@ class Car extends Vehicle{
 }
 
 
-class Tank extends Vehicle{
+// BRDM-like vehicle (no cannon)
+class Fennek extends Vehicle{
+  constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
+      super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+  }
+}
+
+class APC extends Vehicle{
   constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
       super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
   }
