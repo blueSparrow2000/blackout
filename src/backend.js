@@ -4,12 +4,20 @@ const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 const ITEMRADIUS = 16
 
+
+///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
+const MAPDICT = {'map1':30, 'Sahara':50} // mapName : map tile number
+let MAPNAME = 'Sahara' //'map1'
+let MAPTILENUM = MAPDICT[MAPNAME] // can vary, but map is SQUARE!
+///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
+
 // map info
-const TILES_IN_ROW = 23;
-const TILE_SIZE = 128;
-const MAPTILENUM = 30
-const MAPWIDTH = TILE_SIZE*MAPTILENUM
-const MAPHEIGHT =TILE_SIZE*MAPTILENUM
+const TILES_IN_ROW = 23 // only use designated tileset: 23 kinds of tiles are in a row
+const TILE_SIZE = 128 // fixed for the tileset
+let MAPWIDTH = TILE_SIZE*MAPTILENUM
+let MAPHEIGHT =TILE_SIZE*MAPTILENUM
+const loadMap = require("./mapLoader")
+
 
 const collide = require('line-circle-collision')
 
@@ -21,7 +29,6 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
-const loadMap = require("./mapLoader")
 
 // Server Data
 const backEndPlayers = {}
@@ -175,7 +182,7 @@ if (GROUNDITEMFLAG){
   }
 
   ///////////////////////////////////////// BATTLE ROYALE DROPS /////////////////////////////////////////
-  if (ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
+  else if (MAPNAME==='map1' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
     // special tile locations in map1
     const TILESLOC = {"center":{row:14,col:14},"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},
     "rock1":{row:0,col:29},"rock2":{row:6,col:15}, "rockMiddle":{row:0,col:14},
@@ -241,6 +248,10 @@ if (GROUNDITEMFLAG){
     const forest2loc = getCoordTilesCenter(TILESLOC["forest2"])
     makeNdropItem( 'armor', 'reduce', forest2loc)
     makeNdropItem('scope', "1", forest2loc)
+
+  }
+
+  else if (MAPNAME==='Sahara' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
 
   }
 
@@ -403,11 +414,11 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
   
 
 async function main(){
-    const {ground2D, decals2D} = await loadMap();
+    const {ground2D, decals2D} = await loadMap(MAPNAME);
 
     io.on("connect", (socket) => {
         console.log("user connected",socket.id);
-        socket.emit('map',{ground:ground2D, decals: decals2D})
+        socket.emit('map',{loadedMap:{ground:ground2D, decals: decals2D},MAPTILENUMBACKEND: MAPTILENUM, MAPNAMEBACKEND:MAPNAME})
         // give server info to a frontend
         socket.emit('serverVars', {gunInfo, consumableInfo})
 
@@ -1136,8 +1147,13 @@ function spawnEnemies(){
   const factor = 1 +  Math.random()  // 1~2
   const radius = Math.round(factor*16) // 16~32
   const speed = 3 - factor // 1~2
+
   let x = 64
   let y = 64
+  if (MAPNAME==='Sahara'){
+    x = TILE_SIZE*1 + TILE_SIZE_HALF
+    y = TILE_SIZE*1 + TILE_SIZE_HALF
+  }
 
   // if (Math.random() < 0.5) {
   //     x = Math.random() < 0.5 ? 0 - radius : MAPWIDTH + radius

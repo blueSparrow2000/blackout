@@ -1,8 +1,8 @@
 const tmx = require('tmx-parser');
 
-async function loadMap() {
+async function loadMap(mapname) {
     const map = await new Promise((resolve, reject)=>{
-        tmx.parseFile("./src/map1.tmx", function(err, loadedMap) {
+        tmx.parseFile(`./src/${mapname}.tmx`, function(err, loadedMap) {
             if (err) return reject(err);
             //console.log(loadedMap);
             resolve(loadedMap);

@@ -11,9 +11,11 @@ let decalMap = [[]];
 const TILES_IN_ROW = 23;
 const TILE_SIZE_HALF = 64;
 const TILE_SIZE = TILE_SIZE_HALF*2 //128;
-const MAPTILENUM = 30
-const MAPWIDTH = TILE_SIZE*MAPTILENUM
-const MAPHEIGHT =TILE_SIZE*MAPTILENUM
+let MAPTILENUM // can vary get from the server
+let MAPNAME // get from the server
+
+let MAPWIDTH 
+let MAPHEIGHT
 
 let cursorX = 0
 let cursorY = 0
@@ -49,8 +51,8 @@ charImage.src = "/character.png"
 
 
 // with frame
-const minimapImage = new Image();
-minimapImage.src = "/minimap_map1.png"
+let minimapImage = new Image();
+
 // minimapImage.src = "/minimap_map1_no_frame.png"   // no frame
 const MINIMAPFRAMESIZE = 550
 const MINIMAPFRAMESIZE_HALF = 275
@@ -83,9 +85,19 @@ socket.on('connect', ()=>{
     console.log("connected!");
 })
 
-socket.on('map', (loadedMap)=>{
+socket.on('map', ({loadedMap,MAPTILENUMBACKEND,MAPNAMEBACKEND})=>{
     groundMap = loadedMap.ground;
     decalMap = loadedMap.decals;
+
+    MAPTILENUM = MAPTILENUMBACKEND
+    MAPNAME = MAPNAMEBACKEND
+    MAPWIDTH = TILE_SIZE*MAPTILENUM
+    MAPHEIGHT =TILE_SIZE*MAPTILENUM
+
+    // set minimap
+    minimapImage.src = `/minimap_${MAPNAME}.png`
+
+
 })
 
 
@@ -100,6 +112,7 @@ let gunImages = {}
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
 socket.on('serverVars',( {gunInfo, consumableInfo})=>{
+
     // gun infos
     gunInfoKeysFrontEnd = Object.keys(gunInfo)
     for (let i=0;i<gunInfoKeysFrontEnd.length;i++){
@@ -1136,15 +1149,6 @@ function loop(){
             TILE_SIZE,TILE_SIZE
             );
           canvas.restore();
-        } else if(135 <= id && id <= 137){ // rocks - non-opaque
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
         } else if(id === 188 || id === 50){ // ceiling of the house
           if (!frontEndPlayer.getinhouse){ // not in a house, draw ceiling
             canvas.drawImage(mapImage, 
@@ -1156,7 +1160,28 @@ function loop(){
               TILE_SIZE,TILE_SIZE
               );
           }
-        }
+        }else if (id===107){ // partial ceiling - opacity but not clear as house
+          canvas.save();
+          canvas.globalAlpha = 0.8;
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+          canvas.restore();
+        } else { // non-opaque things (if(135 <= id && id <= 137): rocks)
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        } 
       }
     }
     //ADVANCED PLANTS

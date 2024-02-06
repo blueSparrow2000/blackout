@@ -71,3 +71,10 @@ or
 
 
 2024.2.6 Added Vehicles: Car, Fennek(BRDM), APC
+
+
+
+## Various Tips
+- Maps should be square & need to specify tile number of one side 
+- Also Maps should have two layer: layer1 is for ground, layer2 is for ceiling/plants etc.
+- minimap size should be fixed to 550 with frame(used in game) and 512 without frame(used for location calculation)
