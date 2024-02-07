@@ -53,7 +53,7 @@ mapImage.src = "/tiles1.png"
 
 let skinImages = {}
 const skinKeys = ['default','HALO','VOID']
-for (let i=0;i<2;i++){
+for (let i=0;i<skinKeys.length;i++){
   const skinKey = skinKeys[i]
   skinImages[skinKey] = new Image()
   skinImages[skinKey].src = `/playerSkins/${skinKey}.png`
@@ -1244,17 +1244,15 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     const myUserName = document.querySelector('#usernameInput').value
 
     // Skin change here
-    console.log('|',myUserName,'|')
-    if (myUserName==="HALO"){
-      Myskin='HALO'
-    } else if (myUserName==="VOID"){
-      Myskin='VOID'
-    } else{
+    //console.log('|',myUserName,'|')
+    if (skinKeys.includes(myUserName)){
+      Myskin=myUserName
+    }else{
       Myskin='default'
     }
 
     myPCSkin = skinImages[Myskin]
-    console.log(myPCSkin)
+    //console.log(myPCSkin.src)
     socket.emit('initGame', {username:myUserName, playerX, playerY, playerColor,canvasHeight:canvasEl.height,canvasWidth:canvasEl.width,Myskin})
  })
   

@@ -93,7 +93,7 @@ class Melee extends Item {
 
 let armorImages = {}
 const armorKeys = ['reduce','absorb']
-for (let i=0;i<2;i++){
+for (let i=0;i<armorKeys.length;i++){
   const armorkey = armorKeys[i]
   armorImages[armorkey] = new Image()
   armorImages[armorkey].src = `/images/${armorkey}.png`
@@ -126,7 +126,7 @@ class Armor extends Item {
 
 let scopeImages = {}
 const scopeKeys = ["1","2","3","4"]
-for (let i=0;i<4;i++){
+for (let i=0;i<scopeKeys.length;i++){
   const scopekey = scopeKeys[i]
   scopeImages[scopekey] = new Image()
   scopeImages[scopekey].src = `/images/${scopekey}.png`
