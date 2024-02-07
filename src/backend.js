@@ -377,9 +377,8 @@ if (GROUNDITEMFLAG){
     }
 
     makeHouse_36Tiles(getCoordTiles(TILESLOC_N_REQUEST['House_36TilesRoof1']))
-    
     makeHouse_42Tiles(getCoordTiles(TILESLOC_N_REQUEST['House_42TilesRoof1']))
-    
+    makeHouse_Courtyard(getCoordTiles(TILESLOC_N_REQUEST['House_CourtyardCorner2'])) // top left inner corner
 
   }
 
@@ -444,7 +443,7 @@ function safeDeletePlayer(playerId){
   if (!backEndPlayer){ // somehow got deleted by other methods
     return
   }
-  
+
   const inventoryItems = backEndPlayer.inventory
    
   for (let i=0;i<inventoryItems.length;i++){
@@ -1187,14 +1186,14 @@ function makeHouse_15Tiles(location){ // location given is center tile's top lef
   const WALLWIDTH = WALLWIDTH_HALF*2
 
   const houseRows = 5
-  const howseCols = 3
+  const houseCols = 3
 
   // adjust to have location to top left tile
   const x = location.x - TILE_SIZE
   const y = location.y - TILE_SIZE*2
 
   for (let i=0;i<2;i++){ // both sides
-    for (let j=0;j<howseCols;j++){
+    for (let j=0;j<houseCols;j++){
       if (i===0 && j===1){ // door here
         // nothing - door will be added here
       } else{
@@ -1203,7 +1202,7 @@ function makeHouse_15Tiles(location){ // location given is center tile's top lef
     }
 
     for (let j=0;j<houseRows;j++){
-      one_tile_wall_vertical({x: x+i*howseCols*TILE_SIZE , y: y+TILE_SIZE*j})
+      one_tile_wall_vertical({x: x+i*houseCols*TILE_SIZE , y: y+TILE_SIZE*j})
     }
 
   }
@@ -1214,14 +1213,14 @@ function makeHouse_36Tiles(location){ // location given is roof tile's top left 
   const WALLWIDTH = WALLWIDTH_HALF*2
 
   const houseRows = 6
-  const howseCols = 6
+  const houseCols = 6
 
   // adjust to have location to top left tile
   const x = location.x - TILE_SIZE*5
   const y = location.y - TILE_SIZE*5
 
   for (let i=0;i<2;i++){ // both sides
-    for (let j=0;j<howseCols;j++){
+    for (let j=0;j<houseCols;j++){
       one_tile_wall_horizontal({x: x+TILE_SIZE*j , y: y+i*houseRows*TILE_SIZE})
     }
 
@@ -1229,7 +1228,7 @@ function makeHouse_36Tiles(location){ // location given is roof tile's top left 
       if (i===0 && j===2){
         // door here
       } else{
-        one_tile_wall_vertical({x: x+i*howseCols*TILE_SIZE , y: y+TILE_SIZE*j})
+        one_tile_wall_vertical({x: x+i*houseCols*TILE_SIZE , y: y+TILE_SIZE*j})
       }
 
     }
@@ -1247,9 +1246,9 @@ function makeHouse_42Tiles(location){ // location given is roof tile's top left 
   const y1 = location.y - TILE_SIZE*8
 
   const houseRows1 = 3
-  const howseCols1 = 8
+  const houseCols1 = 8
   for (let i=0;i<2;i++){ // both sides
-    for (let j=0;j<howseCols1;j++){
+    for (let j=0;j<houseCols1;j++){
       if (i===0 && (j===1 || j===6)){
         // door
       } else if (i===1 && j===6){
@@ -1262,7 +1261,7 @@ function makeHouse_42Tiles(location){ // location given is roof tile's top left 
       if (i===1){
         // this is a duplicate wall
       } else{
-        one_tile_wall_vertical({x: x1+i*howseCols1*TILE_SIZE , y: y1+TILE_SIZE*j})
+        one_tile_wall_vertical({x: x1+i*houseCols1*TILE_SIZE , y: y1+TILE_SIZE*j})
       }
     }
   }
@@ -1272,9 +1271,9 @@ function makeHouse_42Tiles(location){ // location given is roof tile's top left 
   const x2 = location.x - TILE_SIZE*2
   const y2 = location.y - TILE_SIZE*8
   const houseRows2 = 9
-  const howseCols2 = 3
+  const houseCols2 = 3
   for (let i=0;i<2;i++){ // both sides
-    for (let j=0;j<howseCols2;j++){
+    for (let j=0;j<houseCols2;j++){
       if (i===0){
         // this is a duplicate wall
       } else{
@@ -1286,13 +1285,66 @@ function makeHouse_42Tiles(location){ // location given is roof tile's top left 
       if (i===0 && j===1){
         // door (vertical)
       } else{
-        one_tile_wall_vertical({x: x2+i*howseCols2*TILE_SIZE , y: y2+TILE_SIZE*j})
+        one_tile_wall_vertical({x: x2+i*houseCols2*TILE_SIZE , y: y2+TILE_SIZE*j})
+      }
+    }
+  }
+}
+
+
+function makeHouse_Courtyard(location){ // location given is top left inner corner
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+
+  const x1 = location.x - TILE_SIZE
+  const y1 = location.y - TILE_SIZE
+  const houseRows1 = 8
+  const houseCols1 = 8
+  const doorOffset1 = 3
+
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<houseCols1;j++){
+      if (j===doorOffset1 || j===doorOffset1+1){
+        // open space
+      }else{
+        one_tile_wall_horizontal({x: x1+TILE_SIZE*j , y: y1+i*houseRows1*TILE_SIZE})
+      }
+
+    }
+    for (let j=0;j<houseRows1;j++){
+      if (j===doorOffset1 || j===doorOffset1+1){
+        // open space
+      }else{
+        one_tile_wall_vertical({x: x1+i*houseCols1*TILE_SIZE , y: y1+TILE_SIZE*j})
       }
     }
   }
 
 
+  // adjust 
+  const x2 = location.x + TILE_SIZE
+  const y2 = location.y + TILE_SIZE
+  const houseRows2 = 4
+  const houseCols2 = 4
+  const doorOffset2 = 1
 
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<houseCols2;j++){
+      if (j===doorOffset2 || j===doorOffset2+1){
+        // open space
+      }else{
+        one_tile_wall_horizontal({x: x2+TILE_SIZE*j , y: y2+i*houseRows2*TILE_SIZE})
+      }
+
+    }
+    for (let j=0;j<houseRows2;j++){
+      if (j===doorOffset2 || j===doorOffset2+1){
+        // open space
+      }else{
+        one_tile_wall_vertical({x: x2+i*houseCols2*TILE_SIZE , y: y2+TILE_SIZE*j})
+      }
+    }
+  }
 }
 
 
