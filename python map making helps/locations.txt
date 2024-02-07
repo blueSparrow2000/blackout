@@ -62,7 +62,7 @@ CourtyardCorner - scope - random
 GardenCenter - gun - grenadeLauncher
 37, 19
 
-House_36TilesRoof - gun - grenadeLauncher
+House_36TilesRoof - gun - M1
 28, 18
 
 House_36TilesItemPoints - armor - random
@@ -70,7 +70,7 @@ House_36TilesItemPoints - armor - random
 28, 13
 23, 18
 
-House_42TilesRoof - gun - grenadeLauncher
+House_42TilesRoof - gun - s686
 43, 21
 
 House_42TilesItemPoints - armor - random

@@ -314,11 +314,11 @@ if (GROUNDITEMFLAG){
       'CourtyardCorner3':{row: 31, col:35, request:['scope','random']},
       'CourtyardCorner4':{row: 31, col:36, request:['scope','random']},
       'GardenCenter1':{row: 19, col:37, request:['gun','grenadeLauncher']},
-      'House_36TilesRoof1':{row: 18, col:28, request:['gun','grenadeLauncher']},
+      'House_36TilesRoof1':{row: 18, col:28, request:['gun','M1']},
       'House_36TilesItemPoints1':{row: 13, col:23, request:['armor','random']},
       'House_36TilesItemPoints2':{row: 13, col:28, request:['armor','random']},
       'House_36TilesItemPoints3':{row: 18, col:23, request:['armor','random']},
-      'House_42TilesRoof1':{row: 21, col:43, request:['gun','grenadeLauncher']},
+      'House_42TilesRoof1':{row: 21, col:43, request:['gun','s686']},
       'House_42TilesItemPoints1':{row: 14, col:36, request:['armor','random']},
       'House_42TilesItemPoints2':{row: 13, col:43, request:['armor','random']},
       'RockyItempoints1':{row: 1, col:29, request:['melee','random']},
@@ -370,6 +370,17 @@ if (GROUNDITEMFLAG){
     // MANUAL DROP
     // test feature
     makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
+
+    
+    // MAKE HOUSES
+    for (let i=0;i<5;i++){
+      makeHouse_15Tiles(getCoordTiles(TILESLOC_N_REQUEST[`House_15TilesCenter${i+1}`]))
+    }
+
+    makeHouse_36Tiles(getCoordTiles(TILESLOC_N_REQUEST['House_36TilesRoof1']))
+    
+    makeHouse_42Tiles(getCoordTiles(TILESLOC_N_REQUEST['House_42TilesRoof1']))
+    
 
   }
 
@@ -1164,6 +1175,131 @@ function makeHouse_2Tiles(location){ // location is top left corner
   makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x,y:location.y+HOUSEHEIGHT}, end:{x:location.x+HOUSEWIDTH,y:location.y+HOUSEHEIGHT}, width:WALLWIDTH, color: 'gray'})
   
 }
+
+function one_tile_wall_vertical(location){
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:location.x,y:location.y-WALLWIDTH_HALF}, end:{x:location.x,y:location.y+TILE_SIZE+WALLWIDTH_HALF}, width:WALLWIDTH, color: 'gray'})
+}
+function one_tile_wall_horizontal(location){
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:location.x-WALLWIDTH_HALF,y:location.y}, end:{x:location.x+TILE_SIZE+WALLWIDTH_HALF,y:location.y}, width:WALLWIDTH, color: 'gray'})
+}
+
+function makeHouse_15Tiles(location){ // location given is center tile's top left corner for these houses
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+
+  const houseRows = 5
+  const howseCols = 3
+
+  // adjust to have location to top left tile
+  const x = location.x - TILE_SIZE
+  const y = location.y - TILE_SIZE*2
+
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<howseCols;j++){
+      if (i===0 && j===1){ // door here
+        // nothing - door will be added here
+      } else{
+        one_tile_wall_horizontal({x: x+TILE_SIZE*j , y: y+i*houseRows*TILE_SIZE})
+      }
+    }
+
+    for (let j=0;j<houseRows;j++){
+      one_tile_wall_vertical({x: x+i*howseCols*TILE_SIZE , y: y+TILE_SIZE*j})
+    }
+
+  }
+}
+
+function makeHouse_36Tiles(location){ // location given is roof tile's top left corner for these houses
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+
+  const houseRows = 6
+  const howseCols = 6
+
+  // adjust to have location to top left tile
+  const x = location.x - TILE_SIZE*5
+  const y = location.y - TILE_SIZE*5
+
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<howseCols;j++){
+      one_tile_wall_horizontal({x: x+TILE_SIZE*j , y: y+i*houseRows*TILE_SIZE})
+    }
+
+    for (let j=0;j<houseRows;j++){
+      if (i===0 && j===2){
+        // door here
+      } else{
+        one_tile_wall_vertical({x: x+i*howseCols*TILE_SIZE , y: y+TILE_SIZE*j})
+      }
+
+    }
+
+  }
+}
+
+function makeHouse_42Tiles(location){ // location given is roof tile's top left corner for these houses
+  const WALLWIDTH_HALF = 10
+  const WALLWIDTH = WALLWIDTH_HALF*2
+
+
+  // adjust to have location to top left tile
+  const x1 = location.x - TILE_SIZE*7
+  const y1 = location.y - TILE_SIZE*8
+
+  const houseRows1 = 3
+  const howseCols1 = 8
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<howseCols1;j++){
+      if (i===0 && (j===1 || j===6)){
+        // door
+      } else if (i===1 && j===6){
+        // door 
+      } else{
+        one_tile_wall_horizontal({x: x1+TILE_SIZE*j , y: y1+i*houseRows1*TILE_SIZE})
+      }
+    }
+    for (let j=0;j<houseRows1;j++){
+      if (i===1){
+        // this is a duplicate wall
+      } else{
+        one_tile_wall_vertical({x: x1+i*howseCols1*TILE_SIZE , y: y1+TILE_SIZE*j})
+      }
+    }
+  }
+
+
+  // adjust to have location to top left tile
+  const x2 = location.x - TILE_SIZE*2
+  const y2 = location.y - TILE_SIZE*8
+  const houseRows2 = 9
+  const howseCols2 = 3
+  for (let i=0;i<2;i++){ // both sides
+    for (let j=0;j<howseCols2;j++){
+      if (i===0){
+        // this is a duplicate wall
+      } else{
+        one_tile_wall_horizontal({x: x2+TILE_SIZE*j , y: y2+i*houseRows2*TILE_SIZE})
+      }
+
+    }
+    for (let j=0;j<houseRows2;j++){
+      if (i===0 && j===1){
+        // door (vertical)
+      } else{
+        one_tile_wall_vertical({x: x2+i*howseCols2*TILE_SIZE , y: y2+TILE_SIZE*j})
+      }
+    }
+  }
+
+
+
+}
+
 
 function safeDeleteObject(id){
   //console.log(`obj removed ID: ${id}`)

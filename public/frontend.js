@@ -13,6 +13,10 @@ const TILE_SIZE_HALF = 64;
 const TILE_SIZE = TILE_SIZE_HALF*2 //128;
 let MAPTILENUM // can vary get from the server
 let MAPNAME // get from the server
+let WALLCOLOR = 'gray' // default
+
+//'PowderBlue' // glass color
+
 
 let MAPWIDTH 
 let MAPHEIGHT
@@ -97,6 +101,10 @@ socket.on('map', ({loadedMap,MAPTILENUMBACKEND,MAPNAMEBACKEND})=>{
     // set minimap
     minimapImage.src = `/minimap_${MAPNAME}.png`
 
+    // set wall color
+    if (MAPNAME==='Sahara'){
+      WALLCOLOR = 'Wheat'//'DarkGoldenRod' //'BurlyWood'//'DarkGoldenRod' //'Peru'
+    }
 
 })
 
@@ -1085,11 +1093,11 @@ function loop(){
     }
 
     // WALLS
-    canvas.strokeStyle ='gray'
-    canvas.fillStyle = 'gray'
+    canvas.strokeStyle = WALLCOLOR
+    //canvas.fillStyle = WALLCOLOR
     for (const id in frontEndObjects){
       const obj = frontEndObjects[id]
-      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistance*2) ){
+      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistanceProjectile) ){
         obj.draw(canvas, camX, camY)
       }
     }
