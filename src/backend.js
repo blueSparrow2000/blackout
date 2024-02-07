@@ -387,24 +387,6 @@ if (GROUNDITEMFLAG){
 }
 
 
-
-function itemBorderCheck(xCoord, yCoord){
-  let xInBorder = xCoord
-  let yInBorder = yCoord
-
-  if (xCoord < 0){
-    xInBorder = 0
-  }else if (xCoord > MAPWIDTH){
-    xInBorder = MAPWIDTH
-  }
-  if ( yCoord < 0){
-    yInBorder = 0
-  } else if( yCoord > MAPHEIGHT){
-    yInBorder = MAPHEIGHT
-  }
-  return [xInBorder, yInBorder]
-}
-
 function itemBorderUpdate(item){
   if (item.groundx < 0){
     item.groundx = 0
