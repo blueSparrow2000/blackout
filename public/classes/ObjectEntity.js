@@ -24,7 +24,8 @@ class ObjectEntity {
           canvas.beginPath()
           canvas.moveTo(this.start.x-camX,this.start.y-camY)
           canvas.lineTo(this.end.x-camX,this.end.y-camY)
-          canvas.lineWidth = this.linewidth * (this.health)/this.originalHealth
+          // canvas.lineWidth = this.linewidth * (this.health)/this.originalHealth
+          canvas.lineWidth = this.linewidth
           canvas.stroke()
       }
       drawShade(playerX,playerY){
