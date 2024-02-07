@@ -33,16 +33,7 @@ class Player{
         return false
       }
     }
-    // IsVisible(x,y,refDistance){
-    //   if (Math.abs(this.x-x) <= refDistance && Math.abs(this.y-y) <= refDistance){
-    //     return true
-    //   }else{
-    //     return false
-    //   }
-    // }
-    // IsVisible(x,y,refDistance){
-    //   return Math.hypot(this.x-x,this.y-y) < refDistance
-    // }
+
     displayName(canvas, camX, camY) {
       canvas.fillText(this.username,this.x - 6*this.username.length - camX ,this.y - this.radius*4 - camY)
     }

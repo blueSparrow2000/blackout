@@ -525,20 +525,6 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
       playerGIVEN.y = MAPHEIGHT - playerGIVEN.radius
     }
 
-    // NEW BORDER for player
-    // const borderTolerance = playerGIVEN.radius*2
-    // if (playerSides.left < borderTolerance){ // restore position for backend
-    //   playerGIVEN.x = borderTolerance + playerGIVEN.radius
-    // }
-    // if (playerSides.right>MAPWIDTH - borderTolerance){ // restore position for backend
-    //   playerGIVEN.x = MAPWIDTH - borderTolerance - playerGIVEN.radius
-    // }
-    // if (playerSides.top < borderTolerance){ // restore position for backend
-    //   playerGIVEN.y = borderTolerance + playerGIVEN.radius
-    // }
-    // if (playerSides.bottom>MAPHEIGHT - borderTolerance){ // restore position for backend
-    //   playerGIVEN.y = MAPHEIGHT - borderTolerance - playerGIVEN.radius
-    // }
   }
   
 
