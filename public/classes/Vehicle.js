@@ -109,3 +109,10 @@ class TURRET extends Vehicle{
       this.turretName = turretName
   }
 }
+
+class RAPTOR extends Vehicle{
+  constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type,turretName}) {
+      super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+      this.turretName = turretName
+  }
+}

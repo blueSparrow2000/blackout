@@ -16,7 +16,7 @@ let MAPNAME // get from the server
 let WALLCOLOR = 'gray' // default
 
 //'PowderBlue' // glass color
-
+let SHOOTER_VEHICLES
 
 let MAPWIDTH 
 let MAPHEIGHT
@@ -127,7 +127,8 @@ let itemImages = {}
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
 
-socket.on('serverVars',( {gunInfo, consumableInfo})=>{
+socket.on('serverVars',( {gunInfo, consumableInfo, SHOOTER_VEHICLES_BACKEND})=>{
+    SHOOTER_VEHICLES = SHOOTER_VEHICLES_BACKEND
 
     // gun infos
     gunInfoKeysFrontEnd = Object.keys(gunInfo)
@@ -364,7 +365,8 @@ function shootCheck(event){
   ///////////////////////////// If inside a vehicle 
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
-    if (frontEndVehicles[vehicleID].type==="APC" || frontEndVehicles[vehicleID].type==="tank" ||frontEndVehicles[vehicleID].type==="turret"){
+    const vehicleType = frontEndVehicles[vehicleID].type
+    if (SHOOTER_VEHICLES.includes(vehicleType)){
       const currentGunName = frontEndVehicles[vehicleID].turretName
       const guninfGET = gunInfoFrontEnd[currentGunName]
       const GUNFIRERATE = guninfGET.fireRate
@@ -372,7 +374,7 @@ function shootCheck(event){
       if (!listen) {return} // not ready to fire
       listen = false // block
     
-      socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName, startDistance:frontEndVehicles[vehicleID].radius+2})
+      socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName, startDistance:frontEndVehicles[vehicleID].radius + guninfGET.projectileSpeed})
     
       fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return};clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
       return
@@ -1322,6 +1324,22 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     return true
   } else if(backEndVehicle.type === 'turret'){
     frontEndVehicles[id] = new TURRET({ 
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type,
+      turretName: backEndVehicle.info.turretName
+    })
+    return true
+  } else if(backEndVehicle.type === 'raptor'){
+    frontEndVehicles[id] = new RAPTOR({ 
       x: backEndVehicle.x, 
       y: backEndVehicle.y, 
       radius: backEndVehicle.radius, 

@@ -65,6 +65,10 @@ class Player{
     }
 
     drawGun(canvas, camX, camY, locX, locY, currentHoldingItem, thisguninfo){
+      if (this.ridingVehicleID>0){ // if riding a vehicle, dont draw vehicle's a gun!
+        return
+      }
+
       //canvas.strokeStyle = 'black'
       // player with socket.id (me)
       let xReal = locX

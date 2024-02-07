@@ -128,7 +128,10 @@ const armorInfo = {
 
 const scopeTypes = ['1','2'] // currently available scope!
 
-const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret']
+const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret', 'raptor']
+const SHOOTER_VEHICLES_BACKEND = ["APC", "tank" ,"turret" ,"raptor"]
+
+
 
 function armorEffect(armorID, damage){
   if (armorID <= 0){ // no armor
@@ -385,6 +388,7 @@ if (GROUNDITEMFLAG){
 
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
+    spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
 
   }
 
@@ -550,7 +554,7 @@ async function main(){
         console.log("user connected",socket.id);
         socket.emit('map',{loadedMap:{ground:ground2D, decals: decals2D},MAPTILENUMBACKEND: MAPTILENUM, MAPNAMEBACKEND:MAPNAME})
         // give server info to a frontend
-        socket.emit('serverVars', {gunInfo, consumableInfo})
+        socket.emit('serverVars', {gunInfo, consumableInfo,SHOOTER_VEHICLES_BACKEND})
 
         // remove player when disconnected (F5 etc.)
         socket.on('disconnect',(reason) => {
@@ -1575,7 +1579,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     health = 112
     speed = 1 
     info = {turretName:"grenadeLauncher"}
-  }else if(type==='turret'){ // with turrets!
+  } else if(type==='turret'){ // with turrets!
     radius = 22
     color = "WhiteSmoke"
     warningcolor = "IndianRed"
@@ -1583,6 +1587,14 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     health = 120
     speed = 0
     info = {turretName:"M249"}
+  } else if(type==='raptor'){ // with turrets!
+    radius = 26
+    color = "PaleTurquoise"
+    warningcolor = "SteelBlue"
+    damage = 10 // bump into damage
+    health = 50
+    speed = 10 // max speed
+    info = {turretName:"ak47"}
   }
 
 
