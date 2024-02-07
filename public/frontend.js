@@ -1354,6 +1354,22 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       turretName: backEndVehicle.info.turretName
     })
     return true
+  } else if(backEndVehicle.type === 'B2'){
+    frontEndVehicles[id] = new B2({ 
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type,
+      turretName: backEndVehicle.info.turretName
+    })
+    return true
   } else{
     console.log("not implemented vehicle or invalid name")
     return false

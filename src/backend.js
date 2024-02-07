@@ -83,7 +83,7 @@ const gunInfo = {
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
     'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
-    'tankBuster':{travelDistance:832, damage: 100, shake:0, num: 1, fireRate: 4000, projectileSpeed:10, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
+    'tankBuster':{travelDistance:832, damage: 180, shake:0, num: 1, fireRate: 4000, projectileSpeed:10, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1088, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -94,13 +94,13 @@ const gunInfo = {
     'M249':{travelDistance:832, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
     'VSS':{travelDistance:1088, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:19, magSize:10, reloadTime: 2300, ammotype:'5mm' , size: {length:27, width:2}}, 
     'ak47':{travelDistance:704, damage: 1, shake:1, num: 1, fireRate: 110, projectileSpeed:21, magSize:30, reloadTime: 1000, ammotype:'5mm', size: {length:28, width:3}}, 
-    'FAMAS':{travelDistance:576, damage: 1, shake:2, num: 1, fireRate: 80, projectileSpeed:17, magSize: 30, reloadTime: 3200, ammotype:'5mm', size: {length:22, width:3}}, 
+    'FAMAS':{travelDistance:576, damage: 1, shake:2, num: 1, fireRate: 90, projectileSpeed:17, magSize: 30, reloadTime: 3200, ammotype:'5mm', size: {length:22, width:3}}, 
     
     's686':{travelDistance:320, damage: 1, shake:5, num: 5, fireRate: 180, projectileSpeed:10, magSize:2, reloadTime: 1200, ammotype:'12G', size: {length:13, width:5}},
     'DBS':{travelDistance:448, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:13, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
     'usas12':{travelDistance:448, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
     
-    'ump45':{travelDistance:700, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:15, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
+    'ump45':{travelDistance:700, damage: 0.5, shake:2, num: 1, fireRate: 85, projectileSpeed:16, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
     'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 40, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
@@ -128,8 +128,8 @@ const armorInfo = {
 
 const scopeTypes = ['1','2'] // currently available scope!
 
-const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret', 'raptor']
-const SHOOTER_VEHICLES_BACKEND = ["APC", "tank" ,"turret" ,"raptor"]
+const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret', 'raptor','B2']
+const SHOOTER_VEHICLES_BACKEND = ["APC", "tank" ,"turret" ,"raptor","B2"]
 
 
 
@@ -374,7 +374,6 @@ if (GROUNDITEMFLAG){
     // test feature
     makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
     makeNdropItem('gun', 'tankBuster' ,getCoordTilesCenter({row:49,col:48})) // The only anti-tank weapon
-
     
     // MAKE HOUSES
     for (let i=0;i<5;i++){
@@ -389,6 +388,7 @@ if (GROUNDITEMFLAG){
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
     spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
+    spawnVehicle(getCoordTilesCenter({row:2,col:48}), 'B2')
 
   }
 
@@ -1576,7 +1576,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     color = "Olive"
     warningcolor = "IndianRed"
     damage = 10 // bump into damage
-    health = 112
+    health = 192
     speed = 1 
     info = {turretName:"grenadeLauncher"}
   } else if(type==='turret'){ // with turrets!
@@ -1592,9 +1592,17 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     color = "PaleTurquoise"
     warningcolor = "SteelBlue"
     damage = 10 // bump into damage
-    health = 50
+    health = 40
     speed = 10 // max speed
     info = {turretName:"ak47"}
+  } else if(type==='B2'){ // with turrets!
+    radius = 28
+    color = "Silver"
+    warningcolor = "PeachPuff"
+    damage = 10 // bump into damage
+    health = 50
+    speed = 8 // max speed
+    info = {turretName:"tankBuster"} // becareful not to shoot itself!
   }
 
 
