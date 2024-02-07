@@ -6,7 +6,7 @@ const ITEMRADIUS = 16
 
 
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
-const MAPDICT = {'Wilderness':30, 'Sahara':50} // mapName : map tile number
+const MAPDICT = {'Wilderness':30, 'Sahara':50, 'MilitaryBase':100} // mapName : map tile number
 let MAPNAME = 'Sahara' // 'Wilderness' //'Sahara' 
 let MAPTILENUM = MAPDICT[MAPNAME] // can vary, but map is SQUARE!
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
@@ -387,8 +387,9 @@ if (GROUNDITEMFLAG){
 
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
-    spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
-    spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
+    // these are for next map: military base
+    // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
+    // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
   }
 
