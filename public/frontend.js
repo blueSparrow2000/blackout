@@ -814,7 +814,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
 
             const sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF
-            
+
             const thatGunSoundDistance = Math.max(backEndProjectile.travelDistance, sightdistanceProjectile)  //900
             if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
               let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
@@ -934,14 +934,10 @@ canvas.font ='italic bold 24px sans-serif'
 const defaultSightChunk = 2
 let chunkInfo 
 let sightChunk = defaultSightChunk
-// let sightdistance = (sightChunk)*TILE_SIZE  // using tile based
-// let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF // using tile based
 
 
 function updateSightChunk(scopeDist){
   sightChunk = defaultSightChunk + scopeDist
-  // sightdistance = (sightChunk)*TILE_SIZE
-  // sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF 
 }
 
 function loop(){
@@ -959,29 +955,7 @@ function loop(){
     camY = frontEndPlayer.y - centerY
 
 
-    // GROUND TILES
-    // for (let row = 0;row < groundMap.length;row++){
-    //     for (let col = 0;col < groundMap[0].length;col++){
-    //         const { id } = groundMap[row][col];
-    //         const imageRow = parseInt(id / TILES_IN_ROW);
-    //         const imageCol = id % TILES_IN_ROW;
-
-    //         canvas.drawImage(mapImage, 
-    //             imageCol * TILE_SIZE,
-    //             imageRow * TILE_SIZE,
-    //             TILE_SIZE,TILE_SIZE,
-    //             col*TILE_SIZE - camX, 
-    //             row*TILE_SIZE - camY,
-    //             TILE_SIZE,TILE_SIZE
-    //             );
-    //     }
-    // }
       // ADVANCED GROUNDTILES
-      // if (!frontEndPlayer){
-      //   chunkInfo = getChunk(0,0)
-      // } else{
-      //   chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
-      // }
       chunkInfo = getChunk(frontEndPlayer.x,frontEndPlayer.y)
 
       // SIGHT DISTANCE IS CHANGED IF PLAYER IS IN THE HOUSE CHUNK - house chunk has id===50
@@ -1029,9 +1003,6 @@ function loop(){
     for (const id in frontEndItems){
       const item = frontEndItems[id]
       const gunImg = gunImages[item.name]
-      // if (frontEndPlayer.IsVisible(item.groundx,item.groundy,sightdistance) ){
-      //   item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
-      // }
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(item.groundx,item.groundy),sightChunk) ){
         item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
       }
@@ -1041,7 +1012,6 @@ function loop(){
     canvas.strokeStyle = 'black'
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
-        //if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistanceProjectile) ){
         if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndProjectile.x,frontEndProjectile.y),sightChunk) ){
           frontEndProjectile.draw(canvas, camX, camY)
         }
@@ -1050,8 +1020,6 @@ function loop(){
     // ENEMIES
     for (const id in frontEndEnemies){ 
       const frontEndEnemy = frontEndEnemies[id]
-
-      // if (frontEndPlayer.IsVisible(frontEndEnemy.x,frontEndEnemy.y,sightdistance) ){
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndEnemy.x,frontEndEnemy.y),sightChunk) ){
         frontEndEnemy.draw(canvas, camX, camY)
       }
@@ -1060,7 +1028,6 @@ function loop(){
     // VEHICLES
     for (const id in frontEndVehicles){ 
       const frontEndVehicle = frontEndVehicles[id]
-      // if (frontEndPlayer.IsVisible(frontEndVehicle.x,frontEndVehicle.y,sightdistance) ){
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndVehicle.x,frontEndVehicle.y),sightChunk) ){
         frontEndVehicle.draw(canvas, camX, camY)
       }
@@ -1078,13 +1045,11 @@ function loop(){
           frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo)
         }
         canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
-        // canvas.drawImage(gunImages['AWM'], centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
     }
 
     for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
       if (id !== socket.id){ // other players
-          // if (!frontEndPlayer.IsVisible(currentPlayer.x,currentPlayer.y,sightdistance) ){
           if (!frontEndPlayer.IsVisible(chunkInfo,getChunk(currentPlayer.x,currentPlayer.y),sightChunk) ){
             continue
           }
@@ -1107,44 +1072,12 @@ function loop(){
     //canvas.fillStyle = WALLCOLOR
     for (const id in frontEndObjects){
       const obj = frontEndObjects[id]
-      // if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistanceProjectile) ){
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(obj.x,obj.y),sightChunk) ){
         obj.draw(canvas, camX, camY)
       }
     }
 
 
-    // PLANTS AND BUSHES - indexing starts from 0, top left 
-    // for (let row = 0;row < groundMap.length;row++){
-    //     for (let col = 0;col < groundMap[0].length;col++){
-    //         const { id } = decalMap[row][col] ?? {id:undefined};
-    //         const imageRow = parseInt(id / TILES_IN_ROW);
-    //         const imageCol = id % TILES_IN_ROW;
-
-    //         if (130 <= id && id <= 134){ // grass - opacity
-    //           canvas.save();
-    //           canvas.globalAlpha = 0.9;
-    //           canvas.drawImage(mapImage, 
-    //             imageCol * TILE_SIZE,
-    //             imageRow * TILE_SIZE,
-    //             TILE_SIZE,TILE_SIZE,
-    //             col*TILE_SIZE - camX, 
-    //             row*TILE_SIZE - camY,
-    //             TILE_SIZE,TILE_SIZE
-    //             );
-    //           canvas.restore();
-    //         } else if(135 <= id && id <= 137){ // rocks - non-opaque
-    //           canvas.drawImage(mapImage, 
-    //             imageCol * TILE_SIZE,
-    //             imageRow * TILE_SIZE,
-    //             TILE_SIZE,TILE_SIZE,
-    //             col*TILE_SIZE - camX, 
-    //             row*TILE_SIZE - camY,
-    //             TILE_SIZE,TILE_SIZE
-    //             );
-    //         }
-    //     }
-    // }
 
     // ADVANCED PLANTS
     for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
