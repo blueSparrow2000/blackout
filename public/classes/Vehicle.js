@@ -25,8 +25,6 @@ class Vehicle {
       canvas.fill()
 
       canvas.beginPath()
-      canvas.lineWidth = 4
-      canvas.strokeStyle = "black"
       canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
       canvas.stroke()
 
@@ -52,23 +50,23 @@ class APC extends Vehicle{
       super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
       this.turretName = turretName
   }
-  draw(canvas, camX, camY) {
-    canvas.beginPath()
-    if (this.health<8){
-      canvas.fillStyle = this.warningcolor
-    }else{
-      canvas.fillStyle = this.color
-    }
+  // draw(canvas, camX, camY) {
+  //   canvas.beginPath()
+  //   if (this.health<8){
+  //     canvas.fillStyle = this.warningcolor
+  //   }else{
+  //     canvas.fillStyle = this.color
+  //   }
 
-    canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
-    canvas.fill()
+  //   canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
+  //   canvas.fill()
 
-    canvas.beginPath()
-    canvas.lineWidth = 4
-    canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
-    canvas.stroke()
+  //   canvas.beginPath()
+  //   canvas.lineWidth = 4
+  //   canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
+  //   canvas.stroke()
 
-  }
+  // }
   // drawGun(canvas, camX, camY, locX, locY,canvasEl){// this should be drawn first than the tank
   //   canvas.strokeStyle = 'black'
 

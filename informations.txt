@@ -29,6 +29,8 @@
     x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID, entityType: 'enemy'
   }
 
-
+    backEndProjectiles[projectileId] = {
+      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+    }
 
 

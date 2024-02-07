@@ -50,7 +50,6 @@ class Player{
       //canvas.fillText(`HP: ${Math.round(this.health * 100) / 100}`,xReal,yReal)
 
       const HPlen = parseInt( HEALTHBARHALFLEN * this.health / 4) // max health is 8
-      canvas.lineWidth = 8
       canvas.strokeStyle = 'gray'
       canvas.beginPath()
       canvas.moveTo(xReal - HEALTHBARHALFLEN, yReal)
@@ -65,7 +64,7 @@ class Player{
     }
 
     drawGun(canvas, camX, camY, locX, locY, currentHoldingItem, thisguninfo){
-      canvas.strokeStyle = 'black'
+      //canvas.strokeStyle = 'black'
       // player with socket.id (me)
       let xReal = locX
       let yReal = locY

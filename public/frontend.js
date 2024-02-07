@@ -3,7 +3,7 @@ const TICKRATE = 15
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 const ITEMRADIUS = 24
-
+const PROJECTILERADIUS = 3
 
 // map info
 let groundMap = [[]];
@@ -950,6 +950,25 @@ function loop(){
       return
     }
 
+
+
+    // OTHERS
+    if (keys.g.pressed){ // draw minimap
+      canvas.drawImage(minimapImage, 
+        0,
+        0,
+        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE,
+        centerX - MINIMAPFRAMESIZE_HALF, centerY - MINIMAPFRAMESIZE_HALF, 
+        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE
+        )
+        const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
+        const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
+        canvas.drawImage(charImage, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
+        window.requestAnimationFrame(loop);
+        return
+    }
+
+
     // CAMERA 
     camX = frontEndPlayer.x - centerX
     camY = frontEndPlayer.y - centerY
@@ -1007,9 +1026,19 @@ function loop(){
         item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
       }
     }
-  
+
+      // ENEMIES
+      canvas.fillStyle = "CadetBlue" 
+      for (const id in frontEndEnemies){ 
+        const frontEndEnemy = frontEndEnemies[id]
+        if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndEnemy.x,frontEndEnemy.y),sightChunk) ){
+          frontEndEnemy.draw(canvas, camX, camY)
+        }
+      }
+
     // PROJECTILES
     canvas.strokeStyle = 'black'
+    canvas.lineWidth = PROJECTILERADIUS  // fixed: for performance
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
         if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndProjectile.x,frontEndProjectile.y),sightChunk) ){
@@ -1017,15 +1046,9 @@ function loop(){
         }
     }
 
-    // ENEMIES
-    for (const id in frontEndEnemies){ 
-      const frontEndEnemy = frontEndEnemies[id]
-      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndEnemy.x,frontEndEnemy.y),sightChunk) ){
-        frontEndEnemy.draw(canvas, camX, camY)
-      }
-    }
-
     // VEHICLES
+    //canvas.strokeStyle = "black" // same stroke style with projectiles
+    canvas.lineWidth = 4
     for (const id in frontEndVehicles){ 
       const frontEndVehicle = frontEndVehicles[id]
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndVehicle.x,frontEndVehicle.y),sightChunk) ){
@@ -1034,10 +1057,11 @@ function loop(){
     }
 
 
-    // PLAYERS
+    ///////////////////////////////// PLAYERS /////////////////////////////////
     canvas.fillStyle = 'white'
+    // canvas.strokeStyle = 'black' // same stroke style with projectiles
     if (frontEndPlayer){ // draw myself in the center
-        frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
+        //frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
         const currentHoldingItem = getCurItem(frontEndPlayer)
         frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
         if (gunInfoFrontEnd){
@@ -1059,13 +1083,35 @@ function loop(){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
             currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo)
           }
+          // if (!currentPlayer.getinhouse){ // display player info only if they are not inside the house!
+          //   currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
+          //   currentPlayer.displayName(canvas, camX, camY)
+          // }
+          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
+      }
+    }
+
+    // This loop is for displaying health & name
+    canvas.lineWidth = 8
+    if (frontEndPlayer){ // draw myself in the center
+      frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
+    }
+
+    for (const id in frontEndPlayers){ 
+      const currentPlayer = frontEndPlayers[id]
+      if (id !== socket.id){ // other players
+          if (!frontEndPlayer.IsVisible(chunkInfo,getChunk(currentPlayer.x,currentPlayer.y),sightChunk) ){
+            continue
+          }
           if (!currentPlayer.getinhouse){ // display player info only if they are not inside the house!
             currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
             currentPlayer.displayName(canvas, camX, camY)
           }
-          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
       }
     }
+
+
+    ///////////////////////////////// PLAYERS /////////////////////////////////
 
     // WALLS
     canvas.strokeStyle = WALLCOLOR
@@ -1079,7 +1125,42 @@ function loop(){
 
 
 
+    // ADVANCED PLANTS (OPAQUE)
+    canvas.save();
+    canvas.globalAlpha = 0.8;
+    for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
+      for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
+        if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
+          continue
+        }
+        const { id } = decalMap[row][col] ?? {id:undefined};
+        const imageRow = parseInt(id / TILES_IN_ROW);
+        const imageCol = id % TILES_IN_ROW;
+        if (130 <= id && id <= 134){ // grass - opacity
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        } else if (id===107){ // overhanges (roofs) - opacity but not clear as house
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        }
+      }
+    }
+    canvas.restore();
     // ADVANCED PLANTS
+
+    // ADVANCED NON OPAC
     for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
       for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
         if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
@@ -1089,18 +1170,8 @@ function loop(){
         const imageRow = parseInt(id / TILES_IN_ROW);
         const imageCol = id % TILES_IN_ROW;
 
-        if (130 <= id && id <= 134){ // grass - opacity
-          canvas.save();
-          canvas.globalAlpha = 0.7;
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
-          canvas.restore();
+        if ((130 <= id && id <= 134) || id===107 ){ //opacity
+          // not customed here
         } else if(id === 188 || id === 50){ // ceiling of the house
           if (!frontEndPlayer.getinhouse){ // not in a house, draw ceiling
             canvas.drawImage(mapImage, 
@@ -1112,19 +1183,7 @@ function loop(){
               TILE_SIZE,TILE_SIZE
               );
           }
-        }else if (id===107){ // partial ceiling - opacity but not clear as house
-          canvas.save();
-          canvas.globalAlpha = 0.8;
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
-          canvas.restore();
-        } else { // non-opaque things (if(135 <= id && id <= 137): rocks)
+        }else { // non-opaque things (if(135 <= id && id <= 137): rocks)
           canvas.drawImage(mapImage, 
             imageCol * TILE_SIZE,
             imageRow * TILE_SIZE,
@@ -1136,22 +1195,9 @@ function loop(){
         } 
       }
     }
-    //ADVANCED PLANTS
+    // ADVANCED NON OPAC
 
-    // OTHERS
-    if (keys.g.pressed){ // draw minimap
-      canvas.drawImage(minimapImage, 
-        0,
-        0,
-        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE,
-        centerX - MINIMAPFRAMESIZE_HALF, centerY - MINIMAPFRAMESIZE_HALF, 
-        MINIMAPFRAMESIZE,MINIMAPFRAMESIZE
-        )
-        const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
-        const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
-        canvas.drawImage(charImage, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
 
-    }
 
 
     window.requestAnimationFrame(loop);

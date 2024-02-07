@@ -9,7 +9,6 @@ class Projectile {
     }
   
     draw(canvas, camX, camY) {
-        canvas.lineWidth = 2*this.radius/3
         canvas.beginPath()
         canvas.moveTo(this.x - this.velocity.x - camX, this.y - this.velocity.y - camY)
         canvas.lineTo(this.x - camX,this.y - camY)

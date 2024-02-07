@@ -12,7 +12,7 @@ class Enemy {
   
     draw(canvas, camX, camY) {
       canvas.beginPath()
-      canvas.fillStyle = this.color
+      // canvas.fillStyle = this.color
       canvas.arc(this.x-camX, this.y-camY, this.radius, 0, Math.PI * 2, false)
       canvas.fill()
     }
