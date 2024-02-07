@@ -750,7 +750,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
                 pointEl.innerHTML = mePlayer.score
                 playerdeathsound.play()
                 document.querySelector('#usernameForm').style.display = 'block'
-                socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID, scopeID: mePlayer.wearingscopeID,vehicleID:mePlayer.ridingVehicleID})
+                //socket.emit('playerdeath',{playerId: id, armorID: mePlayer.wearingarmorID, scopeID: mePlayer.wearingscopeID,vehicleID:mePlayer.ridingVehicleID})
                 LobbyBGM.play()
             }
             else{ // other player died

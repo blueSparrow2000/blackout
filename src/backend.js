@@ -33,7 +33,6 @@ const io = new Server(httpServer);
 
 // Server Data
 const backEndPlayers = {}
-const deadPlayerPos = {}
 const backEndEnemies = {}
 const backEndProjectiles = {}
 const backEndItems = {}
@@ -442,6 +441,10 @@ function safeDeleteProjectile(projID){
 function safeDeletePlayer(playerId){
   // drop all item before removing
   const backEndPlayer = backEndPlayers[playerId]
+  if (!backEndPlayer){ // somehow got deleted by other methods
+    return
+  }
+  
   const inventoryItems = backEndPlayer.inventory
    
   for (let i=0;i<inventoryItems.length;i++){
@@ -456,7 +459,30 @@ function safeDeletePlayer(playerId){
     itemBorderUpdate(backEndItem)
   }
 
-  deadPlayerPos[playerId] = {x:backEndPlayer.x,y:backEndPlayer.y}
+  ////////////////////////// integrate player death //////////////////
+  // DROP armor
+  const armorID = backEndPlayer.wearingarmorID
+  const scopeID = backEndPlayer.wearingscopeID
+  const vehicleID = backEndPlayer.ridingVehicleID
+
+  if (armorID>0){
+    let itemToUpdate = backEndItems[armorID]
+    itemToUpdate.onground = true
+    itemToUpdate.groundx = backEndPlayer.x
+    itemToUpdate.groundy = backEndPlayer.y
+  }
+  // DROP scope
+  if (scopeID>0){
+    let itemToUpdate = backEndItems[scopeID]
+    itemToUpdate.onground = true
+    itemToUpdate.groundx = backEndPlayer.x
+    itemToUpdate.groundy = backEndPlayer.y
+  }
+  // vehicle unoccupy
+  if (backEndVehicles[vehicleID]){//exist
+    getOffVehicle(playerId,vehicleID)
+  }
+  ////////////////////////// integrate player death //////////////////
 
   delete backEndPlayers[playerId]
 }
@@ -522,36 +548,37 @@ async function main(){
         // remove player when disconnected (F5 etc.)
         socket.on('disconnect',(reason) => {
             console.log(reason)
-            delete backEndPlayers[socket.id]
+            safeDeletePlayer(socket.id)
+
         })
 
         // player death => put ammos to the ground!
-        socket.on('playerdeath',({playerId,armorID,scopeID,vehicleID})=>{
-          let deadplayerGET = deadPlayerPos[playerId]
-          if (!deadplayerGET){return}
-          // DROP armor
-          if (armorID>0){
-            let itemToUpdate = backEndItems[armorID]
-            itemToUpdate.onground = true
-            itemToUpdate.groundx = deadplayerGET.x
-            itemToUpdate.groundy = deadplayerGET.y
-          }
-          // DROP scope
-          if (scopeID>0){
-            let itemToUpdate = backEndItems[scopeID]
-            itemToUpdate.onground = true
-            itemToUpdate.groundx = deadplayerGET.x
-            itemToUpdate.groundy = deadplayerGET.y
-          }
-          // vehicle unoccupy
-          if (backEndVehicles[vehicleID]){//exist
-            getOffVehicle(playerId,vehicleID)
-          }
+        // socket.on('playerdeath',({playerId,armorID,scopeID,vehicleID})=>{
+        //   let deadplayerGET = deadPlayerPos[playerId]
+        //   if (!deadplayerGET){return}
+        //   // DROP armor
+        //   if (armorID>0){
+        //     let itemToUpdate = backEndItems[armorID]
+        //     itemToUpdate.onground = true
+        //     itemToUpdate.groundx = deadplayerGET.x
+        //     itemToUpdate.groundy = deadplayerGET.y
+        //   }
+        //   // DROP scope
+        //   if (scopeID>0){
+        //     let itemToUpdate = backEndItems[scopeID]
+        //     itemToUpdate.onground = true
+        //     itemToUpdate.groundx = deadplayerGET.x
+        //     itemToUpdate.groundy = deadplayerGET.y
+        //   }
+        //   // vehicle unoccupy
+        //   if (backEndVehicles[vehicleID]){//exist
+        //     getOffVehicle(playerId,vehicleID)
+        //   }
 
 
-          delete deadPlayerPos[playerId]
+        //   delete deadPlayerPos[playerId]
 
-        })
+        // })
 
 
 
