@@ -18,6 +18,7 @@
                 entityType:'player', // not passed to frontend
                 canvasHeight,
                 canvasWidth,
+		skin,
             };
 
   backEndVehicles[vehicleId] = {

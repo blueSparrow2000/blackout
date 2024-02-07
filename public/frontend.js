@@ -32,6 +32,7 @@ const frontEndObjects = {}
 const frontEndVehicles = {}
 
 // player info 
+let Myskin = 'default'
 let frontEndPlayer
 let listen = true // very important for event listener 
 const PLAYERRADIUS = 16 
@@ -50,8 +51,15 @@ const interactSound = new Audio("/sound/interact.mp3")
 const mapImage = new Image();
 mapImage.src = "/tiles1.png"
 
-const charImage = new Image();
-charImage.src = "/character.png"
+let skinImages = {}
+const skinKeys = ['default','HALO','VOID']
+for (let i=0;i<2;i++){
+  const skinKey = skinKeys[i]
+  skinImages[skinKey] = new Image()
+  skinImages[skinKey].src = `/playerSkins/${skinKey}.png`
+}
+
+let myPCSkin = skinImages["default"] // default
 
 
 // with frame
@@ -702,7 +710,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           getinhouse:backEndPlayer.getinhouse,
           ridingVehicleID:backEndPlayer.ridingVehicleID,
           canvasHeight:backEndPlayer.canvasHeight,
-          canvasWidth:backEndPlayer.canvasWidth
+          canvasWidth:backEndPlayer.canvasWidth,
+          skin:backEndPlayer.skin
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -720,6 +729,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             frontEndPlayerOthers.wearingscopeID = backEndPlayer.wearingscopeID
             frontEndPlayerOthers.getinhouse = backEndPlayer.getinhouse 
             frontEndPlayerOthers.ridingVehicleID = backEndPlayer.ridingVehicleID
+            frontEndPlayerOthers.skin = backEndPlayer.skin
             // canvas width and height changed => init Game!
 
             // inventory attributes
@@ -969,7 +979,7 @@ function loop(){
         )
         const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
         const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
-        canvas.drawImage(charImage, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
+        canvas.drawImage(myPCSkin, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
         window.requestAnimationFrame(loop);
         return
     }
@@ -1073,7 +1083,7 @@ function loop(){
           const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
           frontEndPlayer.drawGun(canvas, camX, camY, centerX , centerY , currentHoldingItem, thisguninfo)
         }
-        canvas.drawImage(charImage, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
+        canvas.drawImage(myPCSkin, centerX - PLAYERRADIUS, centerY - PLAYERRADIUS)
     }
 
     for (const id in frontEndPlayers){ 
@@ -1088,7 +1098,7 @@ function loop(){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
             currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo)
           }
-          canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
+          canvas.drawImage(skinImages[currentPlayer.skin], currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
       }
     }
 
@@ -1230,7 +1240,22 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     const playerX = MAPWIDTH * Math.random()
     const playerY = MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
-    socket.emit('initGame', {username: document.querySelector('#usernameInput').value, playerX, playerY, playerColor,canvasHeight:canvasEl.height,canvasWidth:canvasEl.width})
+
+    const myUserName = document.querySelector('#usernameInput').value
+
+    // Skin change here
+    console.log('|',myUserName,'|')
+    if (myUserName==="HALO"){
+      Myskin='HALO'
+    } else if (myUserName==="VOID"){
+      Myskin='VOID'
+    } else{
+      Myskin='default'
+    }
+
+    myPCSkin = skinImages[Myskin]
+    console.log(myPCSkin)
+    socket.emit('initGame', {username:myUserName, playerX, playerY, playerColor,canvasHeight:canvasEl.height,canvasWidth:canvasEl.width,Myskin})
  })
   
 

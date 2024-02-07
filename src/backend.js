@@ -590,7 +590,7 @@ async function main(){
 
 
         // initialize game when clicking button (submit name)
-        socket.on('initGame',({username,playerX, playerY, playerColor,canvasHeight,canvasWidth})=>{
+        socket.on('initGame',({username,playerX, playerY, playerColor,canvasHeight,canvasWidth,Myskin='default'})=>{
             // initialize inventory with fist
             let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
@@ -621,6 +621,7 @@ async function main(){
                 entityType:'player', // not passed to frontend
                 canvasHeight,
                 canvasWidth,
+                skin:Myskin,
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
