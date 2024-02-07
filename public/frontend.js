@@ -65,7 +65,6 @@ let myPCSkin = skinImages["default"] // default
 // with frame
 let minimapImage = new Image();
 
-// minimapImage.src = "/minimap_map1_no_frame.png"   // no frame
 const MINIMAPFRAMESIZE = 550
 const MINIMAPFRAMESIZE_HALF = 275
 const MINIMAPSIZE = 512

@@ -53,10 +53,16 @@ or
 
 ![interface](../main/run_images/ingame.png)
 
-<p align="center">map<br /></p>
+<p align="center">map: Wilderness<br /></p>
 
 
-![interface](../main/run_images/minimap_map1_no_frame.png)
+![interface](../main/run_images/minimap_Wilderness_no_frame.png)
+
+
+<p align="center">map: Sahara<br /></p>
+
+
+![interface](../main/run_images/minimap_Sahara_no_frame.png)
 
 
 

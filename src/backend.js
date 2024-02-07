@@ -6,8 +6,8 @@ const ITEMRADIUS = 16
 
 
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
-const MAPDICT = {'map1':30, 'Sahara':50} // mapName : map tile number
-let MAPNAME = 'Sahara' //'Sahara' //'map1'
+const MAPDICT = {'Wilderness':30, 'Sahara':50} // mapName : map tile number
+let MAPNAME = 'Sahara' // 'Wilderness' //'Sahara' 
 let MAPTILENUM = MAPDICT[MAPNAME] // can vary, but map is SQUARE!
 ///////////////////////////////////// MAP CONFIGURATION /////////////////////////////////////
 
@@ -201,8 +201,8 @@ if (GROUNDITEMFLAG){
   }
 
   ///////////////////////////////////////// BATTLE ROYALE DROPS /////////////////////////////////////////
-  else if (MAPNAME==='map1' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
-    // special tile locations in map1
+  else if (MAPNAME==='Wilderness' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
+    // special tile locations in 'Wilderness'
     defaultGuns = ['pistol'] // give additional pistol
 
     const TILESLOC = {"center":{row:14,col:14},"house1":{row:13,col:2},"house2":{row:2,col:24},"house3":{row:5,col:24},
@@ -1548,6 +1548,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
   let health = 30
   let speed = 6 // for a car
   let info = {}
+  //let travelDistance = TILE_SIZE*100 // fuel etc ?
 
   if (type==='car'){
     // do nothing
