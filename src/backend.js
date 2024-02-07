@@ -388,7 +388,7 @@ if (GROUNDITEMFLAG){
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
     spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
-    spawnVehicle(getCoordTilesCenter({row:2,col:48}), 'B2')
+    spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
   }
 
@@ -1584,7 +1584,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     color = "WhiteSmoke"
     warningcolor = "IndianRed"
     damage = 0 // bump into damage
-    health = 124
+    health = 148
     speed = 0
     info = {turretName:"M249"}
   } else if(type==='raptor'){ // with turrets!
