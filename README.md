@@ -86,7 +86,6 @@ Future plan
 - Code separation (backend) to modules
 - Add mines (item)
 - Add 2-person car (vehicle)
-- Add skin system
 - Add door & window (object entity)
 
 

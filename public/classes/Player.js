@@ -143,6 +143,18 @@ class Player{
 
           canvas.lineWidth = tipwidth
           canvas.stroke()
+
+        } else if(thisguninfo.ammotype==='rocket'){
+          if (currentHoldingItem.ammo>0){
+            const rocketHeadLength = 10
+            const rocketWidth = 5
+            canvas.beginPath()
+            canvas.moveTo(xReal + direction.x * itemlength, yReal + direction.y * itemlength)
+            canvas.lineTo(xReal + direction.x * (itemlength+rocketHeadLength), yReal + direction.y * (itemlength+rocketHeadLength))
+  
+            canvas.lineWidth = rocketWidth
+            canvas.stroke()
+          }
         }
 
       }
