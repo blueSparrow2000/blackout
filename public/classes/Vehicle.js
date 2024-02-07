@@ -96,8 +96,9 @@ class APC extends Vehicle{
 
 }
 
-// class Bus extends Vehicle{
-//   constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type}) {
-//       super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
-//   }
-// }
+class TANK extends Vehicle{
+  constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type,turretName}) {
+      super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+      this.turretName = turretName
+  }
+}

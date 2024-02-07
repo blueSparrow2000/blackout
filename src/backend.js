@@ -83,7 +83,7 @@ const gunInfo = {
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
     'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
-    'tankBuster':{travelDistance:832, damage: 200, shake:0, num: 1, fireRate: 4000, projectileSpeed:6, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
+    'tankBuster':{travelDistance:832, damage: 100, shake:0, num: 1, fireRate: 4000, projectileSpeed:6, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1088, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -111,7 +111,7 @@ const gunInfo = {
 let defaultGuns = ['tankBuster']//[] 
 
 // 'guntypes' is except for grenade launcher and fragments! Since they are OP
-const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5'] // except special guns: 'tankBuster', 'grenadeLauncher', 'fragment'
 const meleeTypes = ['knife','bat']
 
 const consumableTypes = ['bandage','medkit']
@@ -128,7 +128,7 @@ const armorInfo = {
 
 const scopeTypes = ['1','2'] // currently available scope!
 
-const vehicleTypes = ['car','Fennek','APC']
+const vehicleTypes = ['car','Fennek','APC', 'tank']
 
 function armorEffect(armorID, damage){
   if (armorID <= 0){ // no armor
@@ -381,6 +381,10 @@ if (GROUNDITEMFLAG){
     makeHouse_42Tiles(getCoordTiles(TILESLOC_N_REQUEST['House_42TilesRoof1']))
     makeHouse_Courtyard(getCoordTiles(TILESLOC_N_REQUEST['House_CourtyardCorner2'])) // top left inner corner
 
+
+    // Make custom vehicles
+    spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
+
   }
 
 }
@@ -432,6 +436,8 @@ function safeDeleteProjectile(projID){
   // console.log(backEndProjectile.gunName)
   if (backEndProjectile.gunName==='grenadeLauncher'){
     explosion(backEndProjectile,12,backEndProjectile.playerId)
+  } else if(backEndProjectile.gunName==='tankBuster'){
+    explosion(backEndProjectile,36,backEndProjectile.playerId)
   }
 
   delete backEndProjectiles[projID]
@@ -1558,6 +1564,14 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     health = 50
     speed = 4 
     info = {turretName:"FAMAS"}
+  } else if(type==='tank'){ // with turrets!
+    radius = 52
+    color = "Olive"
+    warningcolor = "IndianRed"
+    damage = 10 // bump into damage
+    health = 110
+    speed = 1 
+    info = {turretName:"grenadeLauncher"}
   }
 
 

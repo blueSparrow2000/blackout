@@ -73,6 +73,17 @@ or
 2024.2.6 Added Vehicles: Car, Fennek(BRDM), APC
 
 
+2024.2.7 Added new map: Sahara / New weapon: tankBuster / Frontend optimization
+
+
+Future plan
+- Code separation (backend) to modules
+- Add mines (item)
+- Add 2-person car (vehicle)
+- Add turret & tank (vehicle)
+- Add skin system
+- Add door & window (object entity)
+
 
 ## Various Tips
 - Maps should be square & need to specify tile number of one side 
