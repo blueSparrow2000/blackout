@@ -26,13 +26,20 @@ class Player{
       return {x:Math.round(this.x*MiniMapRatio), y:Math.round(this.y*MiniMapRatio)}
     }
 
-    IsVisible(x,y,refDistance){
-      if (Math.abs(this.x-x) <= refDistance && Math.abs(this.y-y) <= refDistance){
+    IsVisible(mychunkloc,otherchunkloc,refChunk){ // chunk based
+      if (Math.abs(mychunkloc.rowNum-otherchunkloc.rowNum) <= refChunk && Math.abs(mychunkloc.colNum-otherchunkloc.colNum) <= refChunk){
         return true
       }else{
         return false
       }
     }
+    // IsVisible(x,y,refDistance){
+    //   if (Math.abs(this.x-x) <= refDistance && Math.abs(this.y-y) <= refDistance){
+    //     return true
+    //   }else{
+    //     return false
+    //   }
+    // }
     // IsVisible(x,y,refDistance){
     //   return Math.hypot(this.x-x,this.y-y) < refDistance
     // }

@@ -812,6 +812,9 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           if (me){
   
             const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
+
+            const sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF
+            
             const thatGunSoundDistance = Math.max(backEndProjectile.travelDistance, sightdistanceProjectile)  //900
             if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
               let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
@@ -931,14 +934,14 @@ canvas.font ='italic bold 24px sans-serif'
 const defaultSightChunk = 2
 let chunkInfo 
 let sightChunk = defaultSightChunk
-let sightdistance = (sightChunk)*TILE_SIZE  // using tile based
-let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF // using tile based
+// let sightdistance = (sightChunk)*TILE_SIZE  // using tile based
+// let sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF // using tile based
 
 
 function updateSightChunk(scopeDist){
   sightChunk = defaultSightChunk + scopeDist
-  sightdistance = (sightChunk)*TILE_SIZE
-  sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF 
+  // sightdistance = (sightChunk)*TILE_SIZE
+  // sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF 
 }
 
 function loop(){
@@ -1022,12 +1025,14 @@ function loop(){
     }
     // ADVANCED GROUNDTILES
 
-
     // ITEMS
     for (const id in frontEndItems){
       const item = frontEndItems[id]
       const gunImg = gunImages[item.name]
-      if (frontEndPlayer.IsVisible(item.groundx,item.groundy,sightdistance) ){
+      // if (frontEndPlayer.IsVisible(item.groundx,item.groundy,sightdistance) ){
+      //   item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
+      // }
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(item.groundx,item.groundy),sightChunk) ){
         item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
       }
     }
@@ -1036,7 +1041,8 @@ function loop(){
     canvas.strokeStyle = 'black'
     for (const id in frontEndProjectiles){ 
         const frontEndProjectile = frontEndProjectiles[id]
-        if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistanceProjectile) ){
+        //if (frontEndPlayer.IsVisible(frontEndProjectile.x,frontEndProjectile.y,sightdistanceProjectile) ){
+        if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndProjectile.x,frontEndProjectile.y),sightChunk) ){
           frontEndProjectile.draw(canvas, camX, camY)
         }
     }
@@ -1044,7 +1050,9 @@ function loop(){
     // ENEMIES
     for (const id in frontEndEnemies){ 
       const frontEndEnemy = frontEndEnemies[id]
-      if (frontEndPlayer.IsVisible(frontEndEnemy.x,frontEndEnemy.y,sightdistance) ){
+
+      // if (frontEndPlayer.IsVisible(frontEndEnemy.x,frontEndEnemy.y,sightdistance) ){
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndEnemy.x,frontEndEnemy.y),sightChunk) ){
         frontEndEnemy.draw(canvas, camX, camY)
       }
     }
@@ -1052,7 +1060,8 @@ function loop(){
     // VEHICLES
     for (const id in frontEndVehicles){ 
       const frontEndVehicle = frontEndVehicles[id]
-      if (frontEndPlayer.IsVisible(frontEndVehicle.x,frontEndVehicle.y,sightdistance) ){
+      // if (frontEndPlayer.IsVisible(frontEndVehicle.x,frontEndVehicle.y,sightdistance) ){
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndVehicle.x,frontEndVehicle.y),sightChunk) ){
         frontEndVehicle.draw(canvas, camX, camY)
       }
     }
@@ -1075,7 +1084,8 @@ function loop(){
     for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
       if (id !== socket.id){ // other players
-          if (!frontEndPlayer.IsVisible(currentPlayer.x,currentPlayer.y,sightdistance) ){
+          // if (!frontEndPlayer.IsVisible(currentPlayer.x,currentPlayer.y,sightdistance) ){
+          if (!frontEndPlayer.IsVisible(chunkInfo,getChunk(currentPlayer.x,currentPlayer.y),sightChunk) ){
             continue
           }
 
@@ -1097,7 +1107,8 @@ function loop(){
     //canvas.fillStyle = WALLCOLOR
     for (const id in frontEndObjects){
       const obj = frontEndObjects[id]
-      if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistanceProjectile) ){
+      // if (frontEndPlayer.IsVisible(obj.x,obj.y,sightdistanceProjectile) ){
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(obj.x,obj.y),sightChunk) ){
         obj.draw(canvas, camX, camY)
       }
     }
