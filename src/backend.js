@@ -370,6 +370,7 @@ if (GROUNDITEMFLAG){
     // MANUAL DROP
     // test feature
     makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
+    makeNdropItem('gun', 'tankBuster' ,getCoordTilesCenter({row:49,col:48})) // The only anti-tank weapon
 
     
     // MAKE HOUSES
