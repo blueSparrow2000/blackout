@@ -115,10 +115,11 @@ let gunInfoKeysFrontEnd = []
 
 let frontEndGunSounds = {}
 let frontEndGunReloadSounds = {}
-let gunImages = {}
+let itemImages = {}
 
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
+
 socket.on('serverVars',( {gunInfo, consumableInfo})=>{
 
     // gun infos
@@ -134,8 +135,8 @@ socket.on('serverVars',( {gunInfo, consumableInfo})=>{
       }
 
       // load images
-      gunImages[gunkey] = new Image()
-      gunImages[gunkey].src = `/images/${gunkey}.png`
+      itemImages[gunkey] = new Image()
+      itemImages[gunkey].src = `/images/${gunkey}.png`
 
     }
   
@@ -147,6 +148,11 @@ socket.on('serverVars',( {gunInfo, consumableInfo})=>{
   
       // load sounds
       frontEndConsumableSounds[conskey] =  new Audio(`/consumeSound/${conskey}.mp3`)
+
+      // load images
+      itemImages[conskey] = new Image()
+      itemImages[conskey].src = `/images/${conskey}.png`
+
     }
 
   
@@ -1021,7 +1027,7 @@ function loop(){
     // ITEMS
     for (const id in frontEndItems){
       const item = frontEndItems[id]
-      const gunImg = gunImages[item.name]
+      const gunImg = itemImages[item.name]
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(item.groundx,item.groundy),sightChunk) ){
         item.draw(canvas, camX, camY, {img:gunImg,offset:ITEMRADIUS})
       }

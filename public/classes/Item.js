@@ -53,30 +53,30 @@ class Consumable extends Item {
       this.gap = 2
       this.barlen = 4
   }
-  draw(canvas, camX, camY, {img,offset}) { // on the ground
-    if (this.onground){
+  // draw(canvas, camX, camY, {img,offset}) { // on the ground
+  //   if (this.onground){
 
-      canvas.beginPath()
-      canvas.arc(this.groundx-camX, this.groundy-camY, this.length, 0, Math.PI * 2, false)
-      canvas.fillStyle = this.color
-      canvas.fill()
+  //     canvas.beginPath()
+  //     canvas.arc(this.groundx-camX, this.groundy-camY, this.length, 0, Math.PI * 2, false)
+  //     canvas.fillStyle = this.color
+  //     canvas.fill()
 
 
-      if (this.name == 'medkit'){
-        canvas.beginPath()
-        canvas.moveTo(this.groundx - this.barlen-camX,this.groundy-camY)
-        canvas.lineTo(this.groundx + this.barlen-camX,this.groundy-camY)
-        canvas.strokeStyle = 'red'
-        canvas.lineWidth = this.gap
-        canvas.stroke()
+  //     if (this.name == 'medkit'){
+  //       canvas.beginPath()
+  //       canvas.moveTo(this.groundx - this.barlen-camX,this.groundy-camY)
+  //       canvas.lineTo(this.groundx + this.barlen-camX,this.groundy-camY)
+  //       canvas.strokeStyle = 'red'
+  //       canvas.lineWidth = this.gap
+  //       canvas.stroke()
 
-        canvas.beginPath()
-        canvas.moveTo(this.groundx-camX,this.groundy - this.barlen-camY)
-        canvas.lineTo(this.groundx-camX,this.groundy + this.barlen-camY)
-        canvas.stroke()
-      }
-    }
-  }
+  //       canvas.beginPath()
+  //       canvas.moveTo(this.groundx-camX,this.groundy - this.barlen-camY)
+  //       canvas.lineTo(this.groundx-camX,this.groundy + this.barlen-camY)
+  //       canvas.stroke()
+  //     }
+  //   }
+  // }
 }
 
 
