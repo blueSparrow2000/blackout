@@ -1061,7 +1061,6 @@ function loop(){
     canvas.fillStyle = 'white'
     // canvas.strokeStyle = 'black' // same stroke style with projectiles
     if (frontEndPlayer){ // draw myself in the center
-        //frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
         const currentHoldingItem = getCurItem(frontEndPlayer)
         frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
         if (gunInfoFrontEnd){
@@ -1083,10 +1082,6 @@ function loop(){
             const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
             currentPlayer.drawGun(canvas, camX, camY, -1, -1, currentHoldingItem, thisguninfo)
           }
-          // if (!currentPlayer.getinhouse){ // display player info only if they are not inside the house!
-          //   currentPlayer.displayHealth(canvas, camX, camY, -1, -1)
-          //   currentPlayer.displayName(canvas, camX, camY)
-          // }
           canvas.drawImage(charImage, currentPlayer.x - camX- PLAYERRADIUS, currentPlayer.y - camY- PLAYERRADIUS)
       }
     }
@@ -1109,8 +1104,6 @@ function loop(){
           }
       }
     }
-
-
     ///////////////////////////////// PLAYERS /////////////////////////////////
 
     // WALLS
