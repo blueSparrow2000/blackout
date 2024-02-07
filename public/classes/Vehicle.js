@@ -102,3 +102,10 @@ class TANK extends Vehicle{
       this.turretName = turretName
   }
 }
+
+class TURRET extends Vehicle{
+  constructor({x, y, radius, color,warningcolor, velocity, damage, health=1,occupied,ridingPlayerID, type,turretName}) {
+      super({x, y, radius, color,warningcolor, velocity, damage, health,occupied,ridingPlayerID,type})
+      this.turretName = turretName
+  }
+}

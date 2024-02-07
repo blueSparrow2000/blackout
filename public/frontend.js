@@ -351,7 +351,7 @@ function shootCheck(event){
   ///////////////////////////// If inside a vehicle 
   const vehicleID = frontEndPlayer.ridingVehicleID
   if (vehicleID>0){ // if player is riding => cannot shoot!
-    if (frontEndVehicles[vehicleID].type==="APC" || frontEndVehicles[vehicleID].type==="tank"){
+    if (frontEndVehicles[vehicleID].type==="APC" || frontEndVehicles[vehicleID].type==="tank" ||frontEndVehicles[vehicleID].type==="turret"){
       const currentGunName = frontEndVehicles[vehicleID].turretName
       const guninfGET = gunInfoFrontEnd[currentGunName]
       const GUNFIRERATE = guninfGET.fireRate
@@ -1278,6 +1278,22 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     return true
   } else if(backEndVehicle.type === 'tank'){
     frontEndVehicles[id] = new TANK({ 
+      x: backEndVehicle.x, 
+      y: backEndVehicle.y, 
+      radius: backEndVehicle.radius, 
+      color: backEndVehicle.color, 
+      warningcolor: backEndVehicle.warningcolor,
+      velocity: backEndVehicle.velocity,
+      damage: backEndVehicle.damage,
+      health: backEndVehicle.health,
+      occupied: backEndVehicle.occupied,
+      ridingPlayerID: backEndVehicle.ridingPlayerID,
+      type: backEndVehicle.type,
+      turretName: backEndVehicle.info.turretName
+    })
+    return true
+  } else if(backEndVehicle.type === 'turret'){
+    frontEndVehicles[id] = new TURRET({ 
       x: backEndVehicle.x, 
       y: backEndVehicle.y, 
       radius: backEndVehicle.radius, 

@@ -73,7 +73,7 @@ or
 2024.2.6 Added Vehicles: Car, Fennek(BRDM), APC
 
 
-2024.2.7 Added new map: Sahara / New weapon: tankBuster / Frontend optimization
+2024.2.7 Added new map: Sahara / New weapon: tankBuster / New vehicle: tank & turret / Frontend optimization
 
 
 Future plan

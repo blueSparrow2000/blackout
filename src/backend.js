@@ -83,7 +83,7 @@ const gunInfo = {
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
     'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
-    'tankBuster':{travelDistance:832, damage: 100, shake:0, num: 1, fireRate: 4000, projectileSpeed:6, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
+    'tankBuster':{travelDistance:832, damage: 100, shake:0, num: 1, fireRate: 4000, projectileSpeed:10, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1088, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -128,7 +128,7 @@ const armorInfo = {
 
 const scopeTypes = ['1','2'] // currently available scope!
 
-const vehicleTypes = ['car','Fennek','APC', 'tank']
+const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret']
 
 function armorEffect(armorID, damage){
   if (armorID <= 0){ // no armor
@@ -267,8 +267,8 @@ if (GROUNDITEMFLAG){
 
   else if (MAPNAME==='Sahara' && ENTITYDISTRIBUTIONS[ENTITYDISTRIBUTION_MARK]==="battleRoyale"){
     const TILESLOC_N_REQUEST = {
-      'APCLocation1':{row: 24, col:5, request:['vehicle','APC']},
-      'APCLocation2':{row: 27, col:5, request:['vehicle','APC']},
+      'APCLocation1':{row: 24, col:5, request:['vehicle','turret']},
+      'APCLocation2':{row: 27, col:5, request:['vehicle','turret']},
       'APCLocation3':{row: 43, col:11, request:['vehicle','APC']},
       'APCLocation4':{row: 8, col:11, request:['vehicle','APC']},
       'CarLoc1':{row: 20, col:22, request:['vehicle','car']},
@@ -437,7 +437,7 @@ function safeDeleteProjectile(projID){
   if (backEndProjectile.gunName==='grenadeLauncher'){
     explosion(backEndProjectile,12,backEndProjectile.playerId)
   } else if(backEndProjectile.gunName==='tankBuster'){
-    explosion(backEndProjectile,36,backEndProjectile.playerId)
+    explosion(backEndProjectile,24,backEndProjectile.playerId)
   }
 
   delete backEndProjectiles[projID]
@@ -1560,7 +1560,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     radius = 30
     color = "OliveDrab"
     warningcolor = "Chocolate"
-    damage = 10 // bump into damage
+    damage = 5 // bump into damage
     health = 50
     speed = 4 
     info = {turretName:"FAMAS"}
@@ -1569,9 +1569,17 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     color = "Olive"
     warningcolor = "IndianRed"
     damage = 10 // bump into damage
-    health = 110
+    health = 112
     speed = 1 
     info = {turretName:"grenadeLauncher"}
+  }else if(type==='turret'){ // with turrets!
+    radius = 22
+    color = "WhiteSmoke"
+    warningcolor = "IndianRed"
+    damage = 0 // bump into damage
+    health = 120
+    speed = 0
+    info = {turretName:"M249"}
   }
 
 
