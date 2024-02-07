@@ -391,6 +391,24 @@ if (GROUNDITEMFLAG){
     // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
     // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
+    const BarrelRowNum = 3
+    const BarrelColNum = 4
+    
+    for (let i=0;i<BarrelRowNum;i++){
+      for (let j=0;j<BarrelColNum;j++){
+        makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 6+i, col:1+j}), radius: 18, color:'gray'}, 'SaharaBarrel')
+      }
+    }
+
+    for (let i=0;i<BarrelRowNum;i++){
+      for (let j=0;j<BarrelColNum;j++){
+        makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 40+i, col:1+j}), radius: 18, color:'gray'}, 'SaharaBarrel')
+      }
+    }
+
+    //makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 6, col:8}), radius: 18, color:'gray'})
+
+
   }
 
 }
@@ -877,7 +895,7 @@ setInterval(() => {
       let collisionDetectedObject 
       if (backEndObject.objecttype==='wall'){
         collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [projGET.x, projGET.y], PROJECTILERADIUS + objInfo.width/2 + COLLISIONTOLERANCE)
-      } else if(backEndObject.objecttype==='hut'){
+      } else if(backEndObject.objecttype==='hut' || backEndObject.objecttype==='barrel'){
         const DISTANCE = Math.hypot(projGET.x - objInfo.center.x, projGET.y - objInfo.center.y)
         collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance
       } else{
@@ -1128,8 +1146,12 @@ function makeNdropItem(itemtype, name, groundloc,onground=true){
 
 
 // safely create object
-function makeObjects(objecttype, health, objectinfo){
+function makeObjects(objecttype, health, objectinfo, givenname = ''){
   objectId++
+  let name = givenname
+  if (givenname===''){
+    name = objecttype // given default name is objecttype
+  }
 
   let objectsideforbackend = {}
 
@@ -1153,12 +1175,12 @@ function makeObjects(objecttype, health, objectinfo){
         centery: objectinfo.start.y // same with end.y
       }
     }
-
   }
+
   //console.log(`new obj ID: ${objectId}`)
 
   backEndObjects[objectId] = {
-    objecttype , myID:objectId, deleteRequest:false, health, objectinfo, objectsideforbackend
+    objecttype , myID:objectId, deleteRequest:false, health, objectinfo, objectsideforbackend, name
   }
 }
 
@@ -1364,6 +1386,10 @@ function makeHouse_Courtyard(location){ // location given is top left inner corn
 
 function safeDeleteObject(id){
   //console.log(`obj removed ID: ${id}`)
+  const objToDelete = backEndObjects[id]
+  if (objToDelete.objecttype==='barrel'){
+    explosion(objToDelete.objectinfo.center,18)
+  }
   delete backEndObjects[id]
 }
 
@@ -1406,9 +1432,8 @@ function borderCheckWithObjects(entity){
       }
     } 
     
-    if(obj.objecttype === 'hut'){
+    if(obj.objecttype === 'hut' || obj.objecttype === 'barrel'){
       const objinfoGET = obj.objectinfo
-      // 'hut': {center:{x:,y:}, radius: 20, color:, health:}
       const radiusSum = objinfoGET.radius + entity.radius
       const xDist = entity.x - objinfoGET.center.x
       const yDist = entity.y - objinfoGET.center.y 
@@ -1423,6 +1448,7 @@ function borderCheckWithObjects(entity){
         entity.y = objinfoGET.center.y + Math.sin(angle) * radiusSum
       }
     }
+    
   }
 
   // vehicle hitbox check

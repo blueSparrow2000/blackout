@@ -869,12 +869,21 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             objecttype: backEndObject.objecttype, 
             health: backEndObject.health, 
             objectinfo: backEndObject.objectinfo,
+            name:backEndObject.name,
           })
-        } else if(backEndObject.objecttype === 'hut'){
+        } else if(backEndObject.objecttype === 'barrel'){
+          frontEndObjects[id] = new Barrel({
+            objecttype: backEndObject.objecttype, 
+            health: backEndObject.health, 
+            objectinfo: backEndObject.objectinfo,
+            name:backEndObject.name,
+          })
+        }else if(backEndObject.objecttype === 'hut'){
           frontEndObjects[id] = new Hut({
             objecttype: backEndObject.objecttype, 
             health: backEndObject.health, 
             objectinfo: backEndObject.objectinfo,
+            name:backEndObject.name,
           })
         }
   

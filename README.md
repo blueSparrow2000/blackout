@@ -65,6 +65,8 @@ or
 ![interface](../main/run_images/minimap_Sahara_no_frame.png)
 
 
+<p align="center">map: MilitaryBase (Comming Soon!)<br /></p>
+
 
  ## Version history
 2024.2.3 Basic multiplayer with camera
