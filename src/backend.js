@@ -41,12 +41,14 @@ backEndItems[0] = {
     itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'fist', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
 }
 const backEndObjects = {}
+const backEndAirstrikes = {}
+
 let enemyId = 0
 let projectileId = 0
 let itemsId = 0 
 let objectId = 0
 let vehicleId = 0
-
+let airstrikeId = 0
 
 // player attributes
 const INVENTORYSIZE = 4
@@ -872,6 +874,8 @@ httpServer.listen(5000);
 
 main();
 
+let strike = true
+
 let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
@@ -883,6 +887,12 @@ setInterval(() => {
     }
     GLOBALCLOCK = 0 // init
   }
+
+  // red zone?
+  // if ((USERCOUNT[0]>0) && strike){
+  //   strike = false
+  //   spawnAirstrike({x:MAPWIDTH/2,y:256}, signalColor='red')
+  // }
 
   // update players - speed info
   for (const id in backEndPlayers){
@@ -1151,7 +1161,12 @@ setInterval(() => {
     }
   }
 
-    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles})
+  // update airstrikes
+  for (const id in backEndAirstrikes){
+    updateAirstrike(id)
+  }
+
+    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes})
 }, TICKRATE)
 
 
@@ -1800,7 +1815,6 @@ function updateVehiclePos(vehicle){
     vehicle.x = rider.x
     vehicle.y = rider.y
   }
-
 }
 
 function explosion(location,BLASTNUM,playerID=0,shockWave=false){
@@ -1812,4 +1826,80 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
     }
 
   }
+}
+
+
+
+// 
+const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply'} // 'white':'detect'
+const STRIKE_INTERVAL_COEF = 30
+
+function spawnAirstrike(location, signalColor='green'){ // currently only makes cars
+  airstrikeId++
+  const x = location.x
+
+  let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+1 , 4) // 1~4
+  const y = MAPHEIGHT-1 // goes up
+
+  const signal = AIRSTRIKE_TYPE_DICT[signalColor]
+  // default signal is supply
+  let strike_Y_level = location.y
+  let strikeNumber = 1
+
+  if (signal==='bomb'){
+    speed = 8 // fly fast and bomb (same speed as B2)
+    strikeNumber = 5
+    strike_Y_level = Math.round(location.y + (strikeNumber/2)*speed*STRIKE_INTERVAL_COEF)
+  }
+
+
+  backEndAirstrikes[airstrikeId] = {
+    x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber
+  }
+}
+
+function updateAirstrike(airstrikeid){
+  let airstrike = backEndAirstrikes[airstrikeid]
+  airstrike.y -= airstrike.speed
+
+  // check location
+  const strikeDestination = airstrike.strike_Y_level
+
+  if (airstrike.y <= 0){
+    safeDeleteAirstrike(airstrikeid)
+  } else if (airstrike.y <= airstrike.strike_Y_level){
+    if (airstrike.strikeNumber>0){
+      airstrike.strikeNumber -= 1
+      DeployAirstrike(airstrike)
+    }
+  }
+}
+
+
+const AirstrikeGuns = ['grenadeLauncher','AWM','tankBuster']
+function DeployAirstrike(airstrike){
+  const x_turbulance = Math.round((Math.random()-0.5) * 100)+100
+
+  const location = {x:airstrike.x + x_turbulance, y:airstrike.y}
+
+  if (airstrike.signal==='bomb'){ // strike multiple times
+
+    explosion(location,18,playerID=0,shockWave=true)
+    airstrike.strike_Y_level -= airstrike.speed*STRIKE_INTERVAL_COEF
+
+  } else if(airstrike.signal==='supply'){ // strike once
+
+    const idxGUN = Math.round(Math.random()*(AirstrikeGuns.length-1)) 
+
+    makeNdropItem('gun', AirstrikeGuns[idxGUN], location)
+    makeNdropItem('scope', "2" ,{x:airstrike.x - x_turbulance, y:airstrike.y})
+    makeNdropItem('armor', 'reduce', {x:airstrike.x, y:airstrike.y})
+  }
+}
+
+
+function safeDeleteAirstrike(airstrikeid){
+  const airstrike = backEndAirstrikes[airstrikeid]
+
+  delete backEndAirstrikes[airstrikeid]
 }

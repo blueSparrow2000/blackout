@@ -30,6 +30,7 @@ const frontEndItems = {}
 const frontEndEnemies = {}
 const frontEndObjects = {}
 const frontEndVehicles = {}
+const frontEndAirstrikes = {}
 
 // player info 
 let Myskin = 'default'
@@ -52,6 +53,14 @@ const interactSound = new Audio("/sound/interact.mp3")
 
 const mapImage = new Image();
 mapImage.src = "/tiles1.png"
+
+const planeImage = new Image();
+planeImage.src = "/images/plane.png"
+
+const planeImageMINIMAP = new Image();
+planeImageMINIMAP.src = "/images/plane_minimap.png"
+
+
 
 let skinImages = {}
 const skinKeys = ['default','HALO','VOID']
@@ -699,7 +708,7 @@ socket.on('interact',({backEndItems,backEndVehicles})=>{
 
 
 // backend -> front end signaling
-socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles})=>{
+socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes})=>{
     /////////////////////////////////////////////////// 1.PLAYER //////////////////////////////////////////////////
     const myPlayerID = socket.id
 
@@ -968,8 +977,39 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       }
     }
 
+    /////////////////////////////////////////////////// 7.AIRSTRIKES //////////////////////////////////////////////////
+    for (const id in backEndAirstrikes) {
+      const backEndAirstrike = backEndAirstrikes[id]
+  
+
+      //x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber
+      if (!frontEndAirstrikes[id]){ // new 
+        frontEndAirstrikes[id] = {
+          x: backEndAirstrike.x, 
+          y: backEndAirstrike.y, 
+        }
+      } else { // already exist
+        let frontEndAirstrike = frontEndAirstrikes[id]
+        frontEndAirstrike.y = backEndAirstrike.y
+      }
+    
+    }
+    // remove deleted 
+    for (const frontEndAirstrikeId in frontEndAirstrikes){
+      if (!backEndAirstrikes[frontEndAirstrikeId]){
+       delete frontEndAirstrikes[frontEndAirstrikeId]
+      }
+    }
+    
+
 
 })
+
+
+function getMinimapLoc(MiniMapRatio,x,y){
+  return {x:Math.round(x*MiniMapRatio), y:Math.round(y*MiniMapRatio)}
+}
+
 
 // init cam
 let camX = 100
@@ -999,7 +1039,6 @@ function loop(){
     }
 
 
-
     // OTHERS
     if (keys.g.pressed){ // draw minimap
       canvas.drawImage(minimapImage, 
@@ -1010,8 +1049,23 @@ function loop(){
         MINIMAPFRAMESIZE,MINIMAPFRAMESIZE
         )
         const MiniMapRatio = MINIMAPSIZE/MAPWIDTH
-        const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
+
+        
+        // const locationOnMinimap = frontEndPlayer.getMinimapLoc(MiniMapRatio)
+        const locationOnMinimap = getMinimapLoc(MiniMapRatio,frontEndPlayer.x,frontEndPlayer.y)
+
+        // draw player
         canvas.drawImage(myPCSkin, centerX - MINIMAPSIZE_HALF + locationOnMinimap.x - PLAYERRADIUS, centerY - MINIMAPSIZE_HALF + locationOnMinimap.y - PLAYERRADIUS)
+
+
+        // draw airstrike location
+        for (const id in frontEndAirstrikes){ 
+          const frontEndAirstrike = frontEndAirstrikes[id]
+          const currentplaneloc = getMinimapLoc(MiniMapRatio,frontEndAirstrike.x,frontEndAirstrike.y)
+          canvas.drawImage(planeImageMINIMAP, centerX - MINIMAPSIZE_HALF + currentplaneloc.x - 24, centerY - MINIMAPSIZE_HALF + currentplaneloc.y - 32)
+        }
+
+
         window.requestAnimationFrame(loop);
         return
     }
@@ -1240,10 +1294,24 @@ function loop(){
 
 
 
+    // Air strike
+    for (const id in frontEndAirstrikes){ 
+      const frontEndAirstrike = frontEndAirstrikes[id]
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndAirstrike.x,frontEndAirstrike.y),sightChunk+3) ){
+        canvas.drawImage(planeImage,frontEndAirstrike.x - camX - 384, frontEndAirstrike.y - camY - 558)
+
+      }
+    }
+
+
+    
 
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
+
+
+
 
 function getChunk(x,y){ // returns the tile row and col where player is standing at
   return {rowNum:Math.floor(y/TILE_SIZE), colNum:Math.floor(x/TILE_SIZE)}
@@ -1269,8 +1337,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = MAPWIDTH * Math.random()
-    const playerY = MAPHEIGHT * Math.random()
+    const playerX = MAPWIDTH/2 //MAPWIDTH * Math.random()
+    const playerY = 16 //MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value
