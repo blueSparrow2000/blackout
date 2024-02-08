@@ -423,8 +423,8 @@ if (GROUNDITEMFLAG){
     // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
     // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
-    const BarrelRowNum = 3
-    const BarrelColNum = 4
+    const BarrelRowNum = 2
+    const BarrelColNum = 3
     
     for (let i=0;i<BarrelRowNum;i++){
       for (let j=0;j<BarrelColNum;j++){
