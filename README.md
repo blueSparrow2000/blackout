@@ -84,9 +84,12 @@ or
 2024.2.7 Added new map: Sahara / New weapon: tankBuster / New vehicle: tank & turret & raptor & B2 / Skin system: (username) HALO, VOID is added / New object: Barrel / Frontend optimization
 
 
+2024.2.8 Added New object: Mine / New explosion: shockwave (for mine & tankBuster)
+
+
+
 Future plan
 - Code separation (backend) to modules
-- Add mines (item)
 - Add 2-person car (vehicle)
 - Add door & window (object entity)
 

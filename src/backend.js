@@ -79,7 +79,7 @@ const ENTITYDISTRIBUTION_MARK = 1
 
 // for items
 const MINE_DETECTION_RADIUS = 32
-const MINE_DETONATE_COUNTDOWN = 30 // 1 tick = 15ms (20 tick is about 0.3s)
+const MINE_DETONATE_COUNTDOWN = 20 // 1 tick = 15ms (20 tick is about 0.3s)
 
 const BARREL_RADIUS = 18
 const BARREL_HEALTH = 2
@@ -394,8 +394,9 @@ if (GROUNDITEMFLAG){
 
     // makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3})) 
     makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:4}),onground=true,variantNameGiven='SaharaBarrel') 
-
-    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 1, col:4}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='SaharaMine')
+   
+    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 30, col: 21}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='SaharaMine')
+    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 31, col: 21}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='SaharaMine')
 
     for (let i=0;i<2;i++){
       makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:47,col:2}),onground=true,variantNameGiven='SaharaMine') 
@@ -419,8 +420,8 @@ if (GROUNDITEMFLAG){
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
     // these are for next map: military base
-    spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
-    spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
+    // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
+    // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
     const BarrelRowNum = 3
     const BarrelColNum = 4
