@@ -90,7 +90,7 @@ const BARREL_HEALTH = 2
 
 
 const gunInfo = {
-    'flareGun':{travelDistance:320, damage: 0, shake:0, num: 1, fireRate: 100, projectileSpeed:3, magSize: 1, reloadTime: 1000, ammotype:'red', size: {length:25, width:4}}, // default is red
+    'flareGun':{travelDistance:320, damage: 0, shake:0, num: 1, fireRate: 1000, projectileSpeed:3, magSize: 1, reloadTime: 1000, ammotype:'red', size: {length:15, width:4}}, // default is red
 
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
@@ -412,9 +412,11 @@ if (GROUNDITEMFLAG){
       makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:46}),onground=true,variantNameGiven='') 
     }
 
-    for (let i=0;i<1;i++){
+    for (let i=0;i<4;i++){
       makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:24,col:3}),onground=true,variantNameGiven='green')// variant should be red,green etc.
       makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:25,col:3}),onground=true,variantNameGiven='red')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:26,col:3}),onground=true,variantNameGiven='yellow')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:27,col:3}),onground=true,variantNameGiven='white')// variant should be red,green etc.
     }
 
     // MAKE HOUSES
@@ -428,7 +430,7 @@ if (GROUNDITEMFLAG){
 
 
     // Make custom vehicles
-    spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
+    // spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
     // these are for next map: military base
     // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
     // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
@@ -525,7 +527,7 @@ function safeDeleteProjectile(projID){
     explosion(backEndProjectile,12,playerID=backEndProjectile.playerId,shockWave=true)
   } else if(backEndProjectile.gunName==='flareGun'){
     // request an air drop!
-    spawnAirstrike({x:backEndProjectile.x, y:backEndProjectile.y}, signalColor = backEndProjectile.color)
+    spawnAirstrike({x:backEndProjectile.x, y:backEndProjectile.y}, backEndProjectile.playerId ,signalColor = backEndProjectile.color)
   }
 
   delete backEndProjectiles[projID]
@@ -614,6 +616,7 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
       bottom: playerGIVEN.y + playerGIVEN.radius
     }
   
+    // MAP BORDER CHECK
     if (playerSides.left<0){ // restore position for backend
       playerGIVEN.x = playerGIVEN.radius
     }
@@ -645,36 +648,6 @@ async function main(){
             safeDeletePlayer(socket.id)
 
         })
-
-        // player death => put ammos to the ground!
-        // socket.on('playerdeath',({playerId,armorID,scopeID,vehicleID})=>{
-        //   let deadplayerGET = deadPlayerPos[playerId]
-        //   if (!deadplayerGET){return}
-        //   // DROP armor
-        //   if (armorID>0){
-        //     let itemToUpdate = backEndItems[armorID]
-        //     itemToUpdate.onground = true
-        //     itemToUpdate.groundx = deadplayerGET.x
-        //     itemToUpdate.groundy = deadplayerGET.y
-        //   }
-        //   // DROP scope
-        //   if (scopeID>0){
-        //     let itemToUpdate = backEndItems[scopeID]
-        //     itemToUpdate.onground = true
-        //     itemToUpdate.groundx = deadplayerGET.x
-        //     itemToUpdate.groundy = deadplayerGET.y
-        //   }
-        //   // vehicle unoccupy
-        //   if (backEndVehicles[vehicleID]){//exist
-        //     getOffVehicle(playerId,vehicleID)
-        //   }
-
-
-        //   delete deadPlayerPos[playerId]
-
-        // })
-
-
 
         // initialize game when clicking button (submit name)
         socket.on('initGame',({username,playerX, playerY, playerColor,canvasHeight,canvasWidth,Myskin='default'})=>{
@@ -710,6 +683,9 @@ async function main(){
                 canvasHeight,
                 canvasWidth,
                 skin:Myskin,
+                onBoard:false,
+                strikeID:-1,
+
             };
             USERCOUNT[0]++;
             } ,PLAYER_JOIN_DELAY)
@@ -725,8 +701,20 @@ async function main(){
             addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistance)
           }
         }
-        socket.on('shoot', ({angle,currentGun,startDistance=0})=>{
-          shootProjectile(angle,currentGun,startDistance)
+        socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0})=>{
+          if (currentHoldingItemId>0){ // decrease ammo
+            let thisGun = backEndItems[currentHoldingItemId]
+            if (thisGun.iteminfo.ammo>0){
+              if (thisGun.name==='flareGun'){
+                thisGun.iteminfo.ammo = 0
+              }
+
+              shootProjectile(angle,currentGun,startDistance)
+            }
+          }else{ // on vehicle turret etc.
+            shootProjectile(angle,currentGun,startDistance)
+          }
+          
         } )
 
 
@@ -822,6 +810,14 @@ async function main(){
         socket.on('getOnVehicle',({vehicleID})=>{
           getOnVehicle(socket.id,vehicleID)
         })
+
+        socket.on('takeOff',()=>{
+          const player = backEndPlayers[socket.id]
+          if (player && player.onBoard){
+            safeTakeOff(player.strikeID)
+          }
+        })
+
         ///////////////////////////////// Frequent key-downs update ///////////////////////////////////////////////
         // update frequent keys at once (Movement & hold shoot)  //always fire hold = true since space was pressed
         socket.on('moveNshootUpdate', ({WW, AA, SS, DD, x, y})=>{
@@ -908,6 +904,10 @@ main();
 
 let strike = true
 
+function onBoardCheck(player){
+  return player.onBoard
+}
+
 let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
@@ -923,20 +923,26 @@ setInterval(() => {
   // red zone?
   // if ((USERCOUNT[0]>0) && strike){
   //   strike = false
-  //   spawnAirstrike({x:MAPWIDTH/2,y:256}, signalColor='red')
+  //   spawnAirstrike({x:MAPWIDTH/2,y:256},0, signalColor='red')
   // }
 
   // update players - speed info
   for (const id in backEndPlayers){
     let playerGET = backEndPlayers[id]
-    if (playerGET.ridingVehicleID>0){// riding something
+
+    if (playerGET.onBoard){
+      const planeLocation = backEndAirstrikes[playerGET.strikeID]
+      playerGET.x = planeLocation.x
+      playerGET.y = planeLocation.y
+    } else if (playerGET.ridingVehicleID>0){// riding something
       // lower the speed!
       playerGET.speed = Math.max(0, playerGET.speed - 0.1)
-    }else{ // not riding 
+    } else { // not riding 
       Moveplayer(playerGET, false, false, false, false)
     }
     playerGET.x = Math.round(playerGET.x)
     playerGET.y = Math.round(playerGET.y)
+
   }
 
 
@@ -1031,29 +1037,33 @@ setInterval(() => {
 
     // collision detection with players
     for (const playerId in backEndPlayers) {
-    let backEndPlayer = backEndPlayers[playerId]
-    const DISTANCE = Math.hypot(projGET.x - backEndPlayer.x, projGET.y - backEndPlayer.y)
+      let backEndPlayer = backEndPlayers[playerId]
+      if (onBoardCheck(backEndPlayer)){
+        continue // move on: no collision with bullets
+      }
+      
+      const DISTANCE = Math.hypot(projGET.x - backEndPlayer.x, projGET.y - backEndPlayer.y)
         if ((projGET.playerId !== playerId) && (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE)) {
-            // who got hit
-            if (backEndPlayer){ // safe
-            const armoredDamage = armorEffect(backEndPlayer.wearingarmorID, projGET.projDamage)
-            //const armoredDamage = projGET.projDamage
-            if (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-                backEndPlayer.health -= armoredDamage
-            } else{ // not accurate shot
-                backEndPlayer.health -= armoredDamage/2
-            }
-            if (backEndPlayer.health <= 0){ //check again
-                // who shot projectile
-                if (backEndPlayers[projGET.playerId]){ // safe
-                backEndPlayers[projGET.playerId].score ++
-                }
-                safeDeletePlayer(playerId)} 
-            }
-            // delete projectile after inspecting who shot the projectile & calculating damage
-            BULLETDELETED = true
-            safeDeleteProjectile(id)
-            break // only one player can get hit by a projectile
+          // who got hit
+          if (backEndPlayer){ // safe
+          const armoredDamage = armorEffect(backEndPlayer.wearingarmorID, projGET.projDamage)
+          //const armoredDamage = projGET.projDamage
+          if (DISTANCE < PROJECTILERADIUS + PLAYERRADIUS + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
+              backEndPlayer.health -= armoredDamage
+          } else{ // not accurate shot
+              backEndPlayer.health -= armoredDamage/2
+          }
+          if (backEndPlayer.health <= 0){ //check again
+              // who shot projectile
+              if (backEndPlayers[projGET.playerId]){ // safe
+              backEndPlayers[projGET.playerId].score ++
+              }
+              safeDeletePlayer(playerId)} 
+          }
+          // delete projectile after inspecting who shot the projectile & calculating damage
+          BULLETDELETED = true
+          safeDeleteProjectile(id)
+          break // only one player can get hit by a projectile
         }
     }
     // collision detection with enemies
@@ -1173,6 +1183,9 @@ setInterval(() => {
     // collision detection
     for (const playerId in backEndPlayers) {
       let backEndPlayer = backEndPlayers[playerId]
+      if (onBoardCheck(backEndPlayer)){
+        continue // move on: no collision with enemies
+      }
       const DISTANCE = Math.hypot(enemy.x - backEndPlayer.x, enemy.y - backEndPlayer.y)
       if ((DISTANCE < enemyRad + backEndPlayer.radius)) {
         // who got hit
@@ -1714,6 +1727,19 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
   delete backEndEnemies[enemyid]
 }
 
+function NONitemBorderUpdate(entity){
+  if (entity.x < 0){
+    entity.x = 1
+  }else if (entity.x > MAPWIDTH){
+    entity.x = MAPWIDTH-1
+  }
+  if (entity.y < 0){
+    entity.y = 1
+  } else if(entity.y > MAPHEIGHT){
+    entity.y = MAPHEIGHT-1
+  }
+}
+
 function spawnVehicle(location, type='car'){ // currently only makes cars
   vehicleId++
   const x = location.x
@@ -1783,6 +1809,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
   backEndVehicles[vehicleId] = {
     x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1,info
   }
+  NONitemBorderUpdate(backEndVehicles[vehicleId])
 }
 
 function getOnVehicle(playerID,vehicleID){
@@ -1875,10 +1902,11 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
 
 
 // 
-const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply'} // 'white':'detect', 'yellow':'Mission Support Request' (= vehicle request)
+const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply','white':'transport', 'yellow':'vehicle request'} 
 const STRIKE_INTERVAL_COEF = 15
+const PLANE_PICKUP_RADIUS = 256 // plane rad is 384
 
-function spawnAirstrike(location, signalColor='green'){ // currently only makes cars
+function spawnAirstrike(location, callerID, signalColor='green'){ // currently only makes cars
   airstrikeId++
   const x = location.x
 
@@ -1886,20 +1914,23 @@ function spawnAirstrike(location, signalColor='green'){ // currently only makes 
   const y = MAPHEIGHT-1 // goes up
 
   const signal = AIRSTRIKE_TYPE_DICT[signalColor]
-  // default signal is supply
+  // default signal is supply/vehicle request
   let strike_Y_level = location.y
   let strikeNumber = 1
 
   if (signal==='bomb'){
-    speed = 8 // fly fast and bomb (same speed as B2)
+    speed = 8 // fly fast and bomber (same speed as B2)
     strikeNumber = 16
     strike_Y_level = Math.round(location.y + (strikeNumber/2)*speed*STRIKE_INTERVAL_COEF)
+  } else if(signal==='transport'){
+    speed = 6
   }
 
 
   backEndAirstrikes[airstrikeId] = {
-    x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber
+    x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber, callerID, onBoard:false
   }
+  NONitemBorderUpdate(backEndAirstrikes[airstrikeId])
 }
 
 function updateAirstrike(airstrikeid){
@@ -1909,7 +1940,7 @@ function updateAirstrike(airstrikeid){
   // check location
   const strikeDestination = airstrike.strike_Y_level
 
-  if (airstrike.y <= 0){
+  if (airstrike.y <= PLAYERRADIUS*2){
     safeDeleteAirstrike(airstrikeid)
   } else if (airstrike.y <= airstrike.strike_Y_level){
     if (airstrike.strikeNumber>0){
@@ -1937,15 +1968,54 @@ function DeployAirstrike(airstrike){
     makeNdropItem('gun', AirstrikeGuns[idxGUN], {x:airstrike.x + 100, y:airstrike.y})
     makeNdropItem('scope', "2" ,{x:airstrike.x - 100, y:airstrike.y})
     makeNdropItem('armor', 'reduce', {x:airstrike.x, y:airstrike.y})
+
+  } else if(airstrike.signal==='vehicle request'){
+    spawnVehicle({x:airstrike.x, y:airstrike.y},'tank')
+
+  } else if(airstrike.signal==='transport'){ // NOTE: this is called only once!
+    const caller = backEndPlayers[airstrike.callerID] 
+    if (caller && !caller.onBoard){ // should not be onBoard yet
+      // If distance is enough to pick up, pick up the player
+      const playerDist = Math.hypot(caller.x - airstrike.x, caller.y - airstrike.y)
+      console.log('TRIED TO PICK A PLAYER UP AT: ',airstrike.x,airstrike.y)
+
+      if (playerDist <= PLANE_PICKUP_RADIUS && caller.ridingVehicleID===-1 && !caller.getinhouse){ // should not be riding & not inside a house
+        console.log('PICKED UP A PLAYER AT: ',caller.x,caller.y)
+        // player cannot listen to any events but F: prioritized to take off (check) first - done in the frontEnd
+        // carry player: player location is the airstrike location - done in update player
+        caller.onBoard = true
+        caller.strikeID = airstrike.myID
+        airstrike.onBoard = true
+      } else{
+        console.log('COULD NOT PICKUP A PLAYER. REASON: was player riding a vehicle? ',caller.ridingVehicleID!==-1,' / was player inside a house? ',caller.getinhouse)
+      }
+
+    }
   }
 
 
 }
 
 
-function safeDeleteAirstrike(airstrikeid){
-  const airstrike = backEndAirstrikes[airstrikeid]
+function safeTakeOff(airstrikeID){
+  const airstrike = backEndAirstrikes[airstrikeID]
+  const passenger = backEndPlayers[airstrike.callerID] 
+  if (!passenger){// no passenger remaining
+    return
+  }
+  if (passenger.onBoard && airstrike.onBoard){ // both on board
+    // takeoff player: detatch the link
+    passenger.onBoard = false
+    passenger.strikeID = -1 
+    airstrike.onBoard = false
+    NONitemBorderUpdate(passenger)
+  }
+  pushSoundRequest({x:airstrike.x,y:airstrike.y},'takeoff',TILE_SIZE*3, duration=1)
 
+}
+
+function safeDeleteAirstrike(airstrikeid){ 
+  safeTakeOff(airstrikeid)// leave player behind: set player pos to endpos
   delete backEndAirstrikes[airstrikeid]
 }
 

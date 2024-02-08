@@ -19,6 +19,10 @@
                 canvasHeight,
                 canvasWidth,
 		skin,
+
+		onBoard:false,
+		strikeID:-1, // not passed to frontend
+
             };
 
   backEndVehicles[vehicleId] = {
@@ -30,8 +34,15 @@
     x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed, wearingarmorID, entityType: 'enemy'
   }
 
-    backEndProjectiles[projectileId] = {
-      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
-    }
 
+
+  if (startDistance>0){
+    backEndProjectiles[projectileId] = {
+      x:location.x + Math.cos(angle)*startDistance, y:location.y + Math.sin(angle)*startDistance,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage,color
+    }
+  } else{
+    backEndProjectiles[projectileId] = {
+      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage, color
+    }
+  }
 

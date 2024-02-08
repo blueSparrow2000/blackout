@@ -118,7 +118,7 @@ class Player{
           canvas.lineWidth = gunmainwidth + 2
           canvas.stroke()
 
-
+          // tip part
           canvas.beginPath()
           canvas.moveTo(xReal + direction.x * tipstart, yReal + direction.y * tipstart)
           canvas.lineTo(xReal + direction.x * itemlength, yReal + direction.y * itemlength)
@@ -159,6 +159,17 @@ class Player{
             canvas.lineWidth = rocketWidth
             canvas.stroke()
           }
+        } else if(currentHoldingItem.name==='flareGun' && (currentHoldingItem.ammo>0)){
+          const tipsize = 4
+          const tipstart = itemlength - tipsize
+
+          canvas.strokeStyle = currentHoldingItem.ammotype
+          // tip part
+          canvas.beginPath()
+          canvas.moveTo(xReal + direction.x * tipstart, yReal + direction.y * tipstart)
+          canvas.lineTo(xReal + direction.x * itemlength, yReal + direction.y * itemlength)
+          canvas.stroke()
+          canvas.strokeStyle = 'black'
         }
 
       }

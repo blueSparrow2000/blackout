@@ -434,7 +434,7 @@ function shootCheck(event){
     startDistance = guninfGET.size.length*2
   }
 
-  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,startDistance})
+  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,startDistance,currentHoldingItemId})
 
   if (!(currentHoldingItem.itemtype==='melee')){ // not malee, i.e. gun!
     // decrease ammo here!!!!!
@@ -446,14 +446,36 @@ function shootCheck(event){
   fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return};clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
   //console.log("ready to fire")
 }
+
+function CheckOnBoard(){
+  return (frontEndPlayer && frontEndPlayer.onBoard)
+}
+
 addEventListener('click', (event) => {
+  if (CheckOnBoard()){
+    return
+  }
   shootCheck(event)
+
 })
 
 
 
 // periodically request backend server
 setInterval(()=>{
+  if (keys.f.pressed){
+    socket.emit('keydown',{keycode:'KeyF'})
+  }
+  // dont have to emit since they are seen by me(a client, not others)
+  if (keys.g.pressed){
+    // not emitting when G
+    //socket.emit('keydown',{keycode:'KeyG'})
+  }
+
+  if (CheckOnBoard()){// player cannot do anything below
+    return
+  }
+
   if (keys.digit1.pressed){
       socket.emit('keydown',{keycode:'Digit1'})
   }
@@ -466,15 +488,7 @@ setInterval(()=>{
   if (keys.digit4.pressed){
       socket.emit('keydown',{keycode:'Digit4'})
   }
-  if (keys.f.pressed){
-      socket.emit('keydown',{keycode:'KeyF'})
-  }
-  // dont have to emit since they are seen by me(a client, not others)
-  if (keys.g.pressed){
-      // not emitting when G
-      //socket.emit('keydown',{keycode:'KeyG'})
 
-  }
   if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
       socket.emit('keydown',{keycode:'KeyR'})
   }
@@ -522,6 +536,7 @@ function reloadGun(){
   const GUNRELOADRATE = gunInfoFrontEnd[currentGunName].reloadTime
 
   if (currentGunName==='flareGun'){ // not reloadable
+    console.log("flaregun cannot be reloaded")
     return
   }
 
@@ -681,6 +696,16 @@ function interactItem(itemId,backEndItems){
 socket.on('interact',({backEndItems,backEndVehicles})=>{
     if (!frontEndPlayer){return}
 
+    // manual takeoff
+    if (frontEndPlayer.onBoard){
+      // take off!
+      playerdeathsound.play() // sounds like this!
+
+      socket.emit('takeOff')
+      frontEndPlayer.onBoard = false
+      return
+    }
+
     let foundOneFlag = false
 
     // client collision check - reduce server load
@@ -731,7 +756,7 @@ function playSoundEffectGun(gunName,DISTANCE,thatGunSoundDistance){
 
 
 let MySoundEffects = {}
-const mysoundeffectkeys = ['explosion']
+const mysoundeffectkeys = ['explosion', 'takeoff']
 for (let i=0;i<mysoundeffectkeys.length;i++){
   const soundkey = mysoundeffectkeys[i]
   const soundstring = `/sound/${soundkey}.mp3`
@@ -785,7 +810,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           ridingVehicleID:backEndPlayer.ridingVehicleID,
           canvasHeight:backEndPlayer.canvasHeight,
           canvasWidth:backEndPlayer.canvasWidth,
-          skin:backEndPlayer.skin
+          skin:backEndPlayer.skin,
+          onBoard: backEndPlayer.onBoard
         })
   
           document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}"> > ${backEndPlayer.username} </div>`
@@ -804,6 +830,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             frontEndPlayerOthers.getinhouse = backEndPlayer.getinhouse 
             frontEndPlayerOthers.ridingVehicleID = backEndPlayer.ridingVehicleID
             frontEndPlayerOthers.skin = backEndPlayer.skin
+            frontEndPlayerOthers.onBoard = backEndPlayer.onBoard
             // canvas width and height changed => init Game!
 
             // inventory attributes
@@ -992,6 +1019,10 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         frontEndItem.groundx = backEndItem.groundx
         frontEndItem.groundy = backEndItem.groundy
         frontEndItem.onground = backEndItem.onground
+        // only update important gun's ammo (flare gun is one time use)
+        if (backEndItem.name==='flareGun'){
+          frontEndItem.ammo = backEndItem.iteminfo.ammo
+        }
       }
     }
     // remove deleted 
@@ -1243,7 +1274,7 @@ function loop(){
     ///////////////////////////////// PLAYERS /////////////////////////////////
     canvas.fillStyle = 'white'
     // canvas.strokeStyle = 'black' // same stroke style with projectiles
-    if (frontEndPlayer){ // draw myself in the center
+    if (frontEndPlayer && !frontEndPlayer.onBoard){ // draw myself in the center
         const currentHoldingItem = getCurItem(frontEndPlayer)
         frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
         if (gunInfoFrontEnd){
@@ -1255,6 +1286,9 @@ function loop(){
 
     for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
+      if (currentPlayer.onBoard){ // do not draw anything if on board
+        continue
+      }
       if (id !== socket.id){ // other players
           if (!frontEndPlayer.IsVisible(chunkInfo,getChunk(currentPlayer.x,currentPlayer.y),sightChunk) ){
             continue
@@ -1271,12 +1305,15 @@ function loop(){
 
     // This loop is for displaying health & name
     canvas.lineWidth = 8
-    if (frontEndPlayer){ // draw myself in the center
+    if (frontEndPlayer && !frontEndPlayer.onBoard){ // draw myself in the center
       frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
     }
 
     for (const id in frontEndPlayers){ 
       const currentPlayer = frontEndPlayers[id]
+      if (currentPlayer.onBoard){ // do not draw anything if on board
+        continue
+      }
       if (id !== socket.id){ // other players
           if (!frontEndPlayer.IsVisible(chunkInfo,getChunk(currentPlayer.x,currentPlayer.y),sightChunk) ){
             continue
@@ -1384,6 +1421,9 @@ function loop(){
       }
     }
 
+    if (frontEndPlayer.onBoard){ // show text message
+      canvas.fillText('Press F to take off!', centerX - 110, centerY + PLAYERRADIUS*2)
+    }
 
     
 
@@ -1418,8 +1458,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = MAPWIDTH * Math.random()
-    const playerY = MAPHEIGHT * Math.random()
+    const playerX = TILE_SIZE*2 //MAPWIDTH * Math.random()
+    const playerY = MAPHEIGHT/2 //MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value
