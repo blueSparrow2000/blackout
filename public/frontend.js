@@ -31,6 +31,7 @@ const frontEndEnemies = {}
 const frontEndObjects = {}
 const frontEndVehicles = {}
 const frontEndAirstrikes = {}
+const frontEndSoundRequest = {}
 
 // player info 
 let Myskin = 'default'
@@ -428,7 +429,12 @@ function shootCheck(event){
   if (!listen) {return} // not ready to fire
   listen = false // block
 
-  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName})
+  let startDistance = 0
+  if (currentGunName==='flareGun'){
+    startDistance = guninfGET.size.length*2
+  }
+
+  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,startDistance})
 
   if (!(currentHoldingItem.itemtype==='melee')){ // not malee, i.e. gun!
     // decrease ammo here!!!!!
@@ -514,6 +520,11 @@ function reloadGun(){
 
   const currentGunName = currentHoldingItem.name
   const GUNRELOADRATE = gunInfoFrontEnd[currentGunName].reloadTime
+
+  if (currentGunName==='flareGun'){ // not reloadable
+    return
+  }
+
 
   //console.log("reload commit")
   if (!listen) {return} // not ready to reload
@@ -706,9 +717,40 @@ socket.on('interact',({backEndItems,backEndVehicles})=>{
 })
 
 
+function playSoundEffectGun(gunName,DISTANCE,thatGunSoundDistance){
+  let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
+    if (DISTANCE > 100){
+      gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
+    }
+    gunSound.play()
+    gunSound.remove()
+}
+
+
+
+
+
+let MySoundEffects = {}
+const mysoundeffectkeys = ['explosion']
+for (let i=0;i<mysoundeffectkeys.length;i++){
+  const soundkey = mysoundeffectkeys[i]
+  const soundstring = `/sound/${soundkey}.mp3`
+  MySoundEffects[soundkey] = new Audio(soundstring)
+}
+
+
+function playSoundEffect(gunName,DISTANCE,thatGunSoundDistance){
+  let gunSound = MySoundEffects[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
+    if (DISTANCE > 100){
+      gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
+    }
+    gunSound.play()
+    gunSound.remove()
+}
+
 
 // backend -> front end signaling
-socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes})=>{
+socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes,backEndSoundRequest})=>{
     /////////////////////////////////////////////////// 1.PLAYER //////////////////////////////////////////////////
     const myPlayerID = socket.id
 
@@ -850,29 +892,35 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           x: backEndProjectile.x, 
           y: backEndProjectile.y, 
           radius: backEndProjectile.radius, 
-          color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
+          color: backEndProjectile.color, // only call when available
           velocity: backEndProjectile.velocity,
           gunName
         })
   
-          // player close enough should hear the sound (when projectile created) - for me
-          const me = frontEndPlayers[myPlayerID]
-          if (me){
-  
-            const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
+        // player close enough should hear the sound (when projectile created) - for me
+        const me = frontEndPlayers[myPlayerID]
+        if (me){
 
-            const sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF
+          const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
 
-            const thatGunSoundDistance = Math.max(backEndProjectile.travelDistance, sightdistanceProjectile)  //900
-            if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
-              let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
-              if (DISTANCE > 100){
-                gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
-              }
-              gunSound.play()
-              gunSound.remove()
-            }
+          const sightdistanceProjectile = (sightChunk+1)*TILE_SIZE + TILE_SIZE_HALF
+
+          const thatGunSoundDistance = Math.max(backEndProjectile.travelDistance, sightdistanceProjectile)  //900
+          if (gunName === 'shockWave' ||gunName === 'fragment'){// these are explosions
+            // pass
+          } else if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
+            playSoundEffectGun(gunName,DISTANCE,thatGunSoundDistance)
+          //   let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
+          //   if (DISTANCE > 100){
+          //     gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
+          //   }
+          //   gunSound.play()
+          //   gunSound.remove()
           }
+        }
+
+
+
   
       } else { // already exist
         let frontEndProj = frontEndProjectiles[id]
@@ -1000,7 +1048,40 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
        delete frontEndAirstrikes[frontEndAirstrikeId]
       }
     }
-    
+
+    /////////////////////////////////////////////////// 8.Sound effects //////////////////////////////////////////////////
+    for (const id in backEndSoundRequest) {
+      const backendSR = backEndSoundRequest[id]
+
+      //x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber
+      if (!frontEndSoundRequest[id]){ // new 
+        // add and play the sound!
+        frontEndSoundRequest[id] = {
+          x:backendSR.x,
+          y:backendSR.y,
+          soundName:backendSR.soundName,
+          soundDistance:backendSR.soundDistance,
+        }
+
+        // player close enough should hear the sound (when projectile created) - for me
+        const me = frontEndPlayers[myPlayerID]
+        if (me){
+          const DISTANCE = Math.hypot(backendSR.x - me.x, backendSR.y - me.y)
+          const thatGunSoundDistance = backendSR.soundDistance
+          if (DISTANCE-100 < thatGunSoundDistance){ 
+            playSoundEffect(backendSR.soundName,DISTANCE,thatGunSoundDistance)
+          }
+        }
+      } else { // already exist
+        // no update
+      }
+    }
+    // remove deleted 
+    for (const soundId in frontEndSoundRequest){
+      if (!backEndSoundRequest[soundId]){
+       delete frontEndSoundRequest[soundId]
+      }
+    }
 
 
 })
@@ -1337,8 +1418,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = MAPWIDTH/2 //MAPWIDTH * Math.random()
-    const playerY = 16 //MAPHEIGHT * Math.random()
+    const playerX = MAPWIDTH * Math.random()
+    const playerY = MAPHEIGHT * Math.random()
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value

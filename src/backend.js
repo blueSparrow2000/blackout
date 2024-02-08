@@ -42,6 +42,7 @@ backEndItems[0] = {
 }
 const backEndObjects = {}
 const backEndAirstrikes = {}
+const backEndSoundRequest = {}
 
 let enemyId = 0
 let projectileId = 0
@@ -49,6 +50,7 @@ let itemsId = 0
 let objectId = 0
 let vehicleId = 0
 let airstrikeId = 0
+let soundID = 0
 
 // player attributes
 const INVENTORYSIZE = 4
@@ -88,6 +90,8 @@ const BARREL_HEALTH = 2
 
 
 const gunInfo = {
+    'flareGun':{travelDistance:320, damage: 0, shake:0, num: 1, fireRate: 100, projectileSpeed:3, magSize: 1, reloadTime: 1000, ammotype:'red', size: {length:25, width:4}}, // default is red
+
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
     // 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
@@ -124,6 +128,7 @@ let defaultGuns = []//['tankBuster','shockWave','fragment','grenadeLauncher']//
 
 // 'guntypes' is except for grenade launcher and fragments! Since they are OP
 const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5'] // except special guns: 'tankBuster', 'grenadeLauncher', 'fragment'
+const flareTypes = ['red','green','yellow','white']
 const meleeTypes = ['knife','bat']
 
 const consumableTypes = ['bandage','medkit']
@@ -407,7 +412,10 @@ if (GROUNDITEMFLAG){
       makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:46}),onground=true,variantNameGiven='') 
     }
 
-
+    for (let i=0;i<1;i++){
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:24,col:3}),onground=true,variantNameGiven='green')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:25,col:3}),onground=true,variantNameGiven='red')// variant should be red,green etc.
+    }
 
     // MAKE HOUSES
     for (let i=0;i<5;i++){
@@ -460,6 +468,17 @@ function itemBorderUpdate(item){
 }
 
 
+function getCurItem(currentPlayer){
+  let inventoryPointer = currentPlayer.currentSlot - 1 // current slot is value between 1 to 4
+  if (!inventoryPointer) {inventoryPointer = 0} // default 0
+  let currentHoldingItem = currentPlayer.inventory[inventoryPointer] // if it is 0, it is fist
+  return currentHoldingItem
+}
+
+function get_player_center_mouse_distance(mousePos, centerX, centerY){
+  return Math.hypot(mousePos.x - centerX,mousePos.y - centerY)
+}
+
 function addProjectile(angle,currentGun,playerID,location,startDistance){
   projectileId++
   const guninfoGET = gunInfo[currentGun]
@@ -471,16 +490,26 @@ function addProjectile(angle,currentGun,playerID,location,startDistance){
   }
   const radius = 5
 
-  const travelDistance = guninfoGET.travelDistance
+  let travelDistance = guninfoGET.travelDistance
   const projDamage =  guninfoGET.damage
+
+  let color = 'black'
+  if (currentGun==='flareGun'){
+    //const currentGunID = backEndPlayers[playerID].inventory[backEndPlayers[playerID].currentSlot-1]
+    const thisPlayer = backEndPlayers[playerID]
+    const itemInfoFlareGun = getCurItem(thisPlayer).iteminfo
+    color = itemInfoFlareGun.ammotype
+    // recalculate distance: max travel distance or player mouse pos
+    travelDistance = Math.min(guninfoGET.travelDistance, Math.max(startDistance, get_player_center_mouse_distance(thisPlayer.mousePos, thisPlayer.canvasWidth/2, thisPlayer.canvasHeight/2) - startDistance))
+  }
 
   if (startDistance>0){
     backEndProjectiles[projectileId] = {
-      x:location.x + Math.cos(angle)*startDistance, y:location.y + Math.sin(angle)*startDistance,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+      x:location.x + Math.cos(angle)*startDistance, y:location.y + Math.sin(angle)*startDistance,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage,color
     }
   } else{
     backEndProjectiles[projectileId] = {
-      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage
+      x:location.x, y:location.y,radius,velocity, speed:bulletSpeed, playerId: playerID, gunName:currentGun, travelDistance, projDamage, color
     }
   }
 
@@ -494,6 +523,9 @@ function safeDeleteProjectile(projID){
     explosion(backEndProjectile,12,playerID=backEndProjectile.playerId)
   } else if(backEndProjectile.gunName==='tankBuster'){
     explosion(backEndProjectile,12,playerID=backEndProjectile.playerId,shockWave=true)
+  } else if(backEndProjectile.gunName==='flareGun'){
+    // request an air drop!
+    spawnAirstrike({x:backEndProjectile.x, y:backEndProjectile.y}, signalColor = backEndProjectile.color)
   }
 
   delete backEndProjectiles[projID]
@@ -1166,7 +1198,12 @@ setInterval(() => {
     updateAirstrike(id)
   }
 
-    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes})
+  // update sound request (if any)
+  for (const id in backEndSoundRequest){
+    updateSoundRequest(id)
+  }
+
+    io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndObjects, backEndItems,backEndVehicles,backEndAirstrikes,backEndSoundRequest})
 }, TICKRATE)
 
 
@@ -1191,7 +1228,13 @@ function makeNdropItem(itemtype, name, groundloc,onground=true,variantNameGiven=
       color = 'black'
       ammo = 'inf'
     }
-    const ammotype = guninfoGET.ammotype 
+    let ammotype = guninfoGET.ammotype 
+
+    if (name==='flareGun'){
+      ammotype = variantNameGiven
+      ammo = 1
+    }
+
     iteminfo = {ammo,ammotype}
 
   } else if(itemtype === 'consumable'){
@@ -1824,14 +1867,14 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
     } else{
       addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location,0)// damaging all players nearby
     }
-
   }
+  pushSoundRequest(location,'explosion',TILE_SIZE*4, duration=1)
 }
 
 
 
 // 
-const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply'} // 'white':'detect'
+const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply'} // 'white':'detect', 'yellow':'Mission Support Request' (= vehicle request)
 const STRIKE_INTERVAL_COEF = 30
 
 function spawnAirstrike(location, signalColor='green'){ // currently only makes cars
@@ -1886,6 +1929,7 @@ function DeployAirstrike(airstrike){
 
     explosion(location,18,playerID=0,shockWave=true)
     airstrike.strike_Y_level -= airstrike.speed*STRIKE_INTERVAL_COEF
+    //console.log('air bombing at ', location)
 
   } else if(airstrike.signal==='supply'){ // strike once
 
@@ -1903,3 +1947,27 @@ function safeDeleteAirstrike(airstrikeid){
 
   delete backEndAirstrikes[airstrikeid]
 }
+
+
+function pushSoundRequest(location,soundName,soundDistance, duration=1){
+  soundID++
+  const x = location.x
+  const y = location.y
+  backEndSoundRequest[soundID] = {
+    x,y, myID:soundID, soundName, soundDistance, duration
+  }
+}
+
+function updateSoundRequest(soundRequestID){
+  let soundObject = backEndSoundRequest[soundRequestID]
+  if (soundObject.duration<=0){
+    safeDeleteSoundRequest(soundRequestID)
+  } 
+  soundObject.duration -= 1
+
+}
+
+function safeDeleteSoundRequest(soundRequestID){
+  delete backEndSoundRequest[soundRequestID]
+}
+
