@@ -76,6 +76,13 @@ let GHOSTENEMY = false
 const ENTITYDISTRIBUTIONS = ["test", "battleRoyale"]
 const ENTITYDISTRIBUTION_MARK = 1
 
+// for items
+const MINE_DETECTION_RADIUS = 32
+const MINE_DETONATE_COUNTDOWN = 10
+
+const BARREL_RADIUS = 18
+const BARREL_HEALTH = 2
+
 
 const gunInfo = {
     // 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
@@ -130,6 +137,13 @@ const scopeTypes = ['1','2'] // currently available scope!
 
 const vehicleTypes = ['car','Fennek','APC', 'tank', 'turret', 'raptor','B2']
 const SHOOTER_VEHICLES_BACKEND = ["APC", "tank" ,"turret" ,"raptor","B2"]
+
+
+const placeableTypes = ['barrel', 'mine']
+const placeableInfo = {
+'barrel':{color: 'gray',size:{length:12, width:12},variantName:''},
+'mine':{color: 'gray',size:{length:12, width:12},variantName:''},
+}
 
 
 
@@ -374,7 +388,15 @@ if (GROUNDITEMFLAG){
     // test feature
     makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
     makeNdropItem('gun', 'tankBuster' ,getCoordTilesCenter({row:49,col:48})) // The only anti-tank weapon
-    
+
+    makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3})) 
+    makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3}),onground=true,variantNameGiven='SaharaBarrel') 
+
+    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 0, col:4}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='')
+    makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:4}),onground=true,variantNameGiven='') 
+
+
+
     // MAKE HOUSES
     for (let i=0;i<5;i++){
       makeHouse_15Tiles(getCoordTiles(TILESLOC_N_REQUEST[`House_15TilesCenter${i+1}`]))
@@ -396,17 +418,15 @@ if (GROUNDITEMFLAG){
     
     for (let i=0;i<BarrelRowNum;i++){
       for (let j=0;j<BarrelColNum;j++){
-        makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 6+i, col:1+j}), radius: 18, color:'gray'}, 'SaharaBarrel')
+        makeObjects("barrel", BARREL_HEALTH, {center:getCoordTilesCenter({row: 6+i, col:1+j}), radius: BARREL_RADIUS, color:'gray',placerID:0}, givenname ='SaharaBarrel')
       }
     }
 
     for (let i=0;i<BarrelRowNum;i++){
       for (let j=0;j<BarrelColNum;j++){
-        makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 40+i, col:1+j}), radius: 18, color:'gray'}, 'SaharaBarrel')
+        makeObjects("barrel", BARREL_HEALTH, {center:getCoordTilesCenter({row: 40+i, col:1+j}), radius: BARREL_RADIUS, color:'gray',placerID:0}, givenname ='SaharaBarrel')
       }
     }
-
-    //makeObjects("barrel", 2, {center:getCoordTilesCenter({row: 6, col:8}), radius: 18, color:'gray'})
 
 
   }
@@ -626,6 +646,7 @@ async function main(){
             playerJoinTimeout = setTimeout(function(){
             clearTimeout(playerJoinTimeout);
             backEndPlayers[socket.id] = {
+                thisPlayerID:socket.id, // only for backend
                 x:playerX,
                 y:playerY,
                 color: playerColor,
@@ -669,12 +690,10 @@ async function main(){
         socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {
           let curplayer = backEndPlayers[playerId]
           if (!curplayer) {return}
-          function APIdeleteItem(){
-            // change player current holding item to fist
+          function APIdeleteItem(){ // change player current holding item to fist
             curplayer.inventory[currentSlot-1] = backEndItems[0]
             // delete safely
             backEndItems[itemid].deleteflag = deleteflag
-            //delete backEndItems[itemid]
           }
 
           if (itemName === 'medkit'){
@@ -684,7 +703,34 @@ async function main(){
             curplayer.health += healamount
             APIdeleteItem()
           }
-          
+        })
+
+        // place
+        socket.on('place',({itemName,playerId,deleteflag, itemid,currentSlot,imgName}) => {
+          let curplayer = backEndPlayers[playerId]
+          if (!curplayer) {return}
+          function APIdeleteItem(){ // change player current holding item to fist
+            curplayer.inventory[currentSlot-1] = backEndItems[0]
+            backEndItems[itemid].deleteflag = deleteflag
+          }
+
+          // for a barrel
+          let hitpoints = BARREL_HEALTH
+          let hitRadius = BARREL_RADIUS
+
+          if (itemName==='barrel'){
+            console.log('placing: ',imgName)
+          }else if (itemName==='mine'){    
+            console.log('placing mine')
+            hitpoints = MINE_DETONATE_COUNTDOWN // count down #
+            hitRadius = MINE_DETECTION_RADIUS // actually detection radius
+          }else{
+            console.log("WTF")
+          }
+          makeObjects(itemName, hitpoints, {center: {x:curplayer.x,y:curplayer.y}, radius: hitRadius, color:'gray',placerID:playerId}, imgName)
+
+          APIdeleteItem()
+
         })
         
         // change gound item info from client side
@@ -898,6 +944,8 @@ setInterval(() => {
       } else if(backEndObject.objecttype==='hut' || backEndObject.objecttype==='barrel'){
         const DISTANCE = Math.hypot(projGET.x - objInfo.center.x, projGET.y - objInfo.center.y)
         collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance
+      } else if(backEndObject.objecttype==='mine'){ // projectiles cannot shoot this
+        collisionDetectedObject = false
       } else{
         console.log("invalid object-projectile interaction: undefined or other name given to obj")
       }
@@ -1006,8 +1054,8 @@ setInterval(() => {
 
   // update objects
   for (const id in backEndObjects){
-    const objinfo = backEndObjects[id].objectinfo
-    if (objinfo.health <= 0){
+    const backEndObject = backEndObjects[id]
+    if (backEndObject.health <= 0){
       safeDeleteObject(id)
     }
   }
@@ -1091,7 +1139,7 @@ setInterval(() => {
 
 
 
-function makeNdropItem(itemtype, name, groundloc,onground=true){
+function makeNdropItem(itemtype, name, groundloc,onground=true,variantNameGiven=''){
   const groundx = groundloc.x
   const groundy = groundloc.y
 
@@ -1131,9 +1179,16 @@ function makeNdropItem(itemtype, name, groundloc,onground=true){
     size = {length:12, width:12}
     color = 'white'
     iteminfo = {scopeDist:parseInt(name)}
-  } 
-  
-  else{
+  } else if(itemtype==='placeable'){
+    const placeableinfoGET = placeableInfo[name]
+    size = placeableinfoGET.size
+    color = placeableinfoGET.color // default drawing color if no image
+
+
+    iteminfo = {variantName:variantNameGiven} // mine: explosion timer etc.
+
+    console.log(iteminfo)
+  } else{
     console.log("invalid itemtype requested in makeNdropItem")
     return 
   }
@@ -1389,6 +1444,8 @@ function safeDeleteObject(id){
   const objToDelete = backEndObjects[id]
   if (objToDelete.objecttype==='barrel'){
     explosion(objToDelete.objectinfo.center,18)
+  } else if(objToDelete.objecttype==='mine'){
+    explosion(objToDelete.objectinfo.center,18)
   }
   delete backEndObjects[id]
 }
@@ -1447,6 +1504,22 @@ function borderCheckWithObjects(entity){
         entity.x = objinfoGET.center.x + Math.cos(angle) * radiusSum
         entity.y = objinfoGET.center.y + Math.sin(angle) * radiusSum
       }
+    }else if(obj.objecttype === 'mine'){
+
+      const objinfoGET = obj.objectinfo
+      if (entity.entityType==='player' && objinfoGET.placerID===entity.thisPlayerID){      // if placer steps over it, it is okay
+        // pass
+      }else{
+        const radiusSum = objinfoGET.radius + entity.radius
+        const xDist = entity.x - objinfoGET.center.x
+        const yDist = entity.y - objinfoGET.center.y 
+        const Dist = Math.hypot(xDist,yDist)
+  
+        if (Dist < radiusSum){
+          obj.health -= 1 // detonate count down! If stayed long enough, detonate
+        }
+      }
+      
     }
     
   }

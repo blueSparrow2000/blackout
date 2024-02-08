@@ -48,16 +48,16 @@ class Hut extends ObjectEntity {
 }
 
 
-let barrelImages = {}
-const barrelKeys = ['SaharaBarrel','barrel']
-for (let i=0;i<barrelKeys.length;i++){
-  const barrelkey = barrelKeys[i]
-  barrelImages[barrelkey] = new Image()
-  barrelImages[barrelkey].src = `/images/${barrelkey}.png`
+let placeableObjectImages = {}
+const placeableObjectKeys = ['SaharaBarrel','barrel','mine']
+for (let i=0;i<placeableObjectKeys.length;i++){
+  const placeableObjectkey = placeableObjectKeys[i]
+  placeableObjectImages[placeableObjectkey] = new Image()
+  placeableObjectImages[placeableObjectkey].src = `/images/${placeableObjectkey}.png`
 }
 
 
-class Barrel extends ObjectEntity {
+class PlaceableObject extends ObjectEntity {
   constructor({objecttype, health, objectinfo,name}) {
     super({objecttype, health,name})
     this.x = objectinfo.center.x
@@ -67,7 +67,7 @@ class Barrel extends ObjectEntity {
     this.offset = 24
   }
   draw(canvas, camX, camY) { // on the ground
-    canvas.drawImage(barrelImages[this.name], this.x-camX-this.offset, this.y-camY-this.offset)
+    canvas.drawImage(placeableObjectImages[this.name], this.x-camX-this.offset, this.y-camY-this.offset)
   }
 }
   

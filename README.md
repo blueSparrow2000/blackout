@@ -81,7 +81,7 @@ or
 2024.2.6 Added Vehicles: Car, Fennek(BRDM), APC
 
 
-2024.2.7 Added new map: Sahara / New weapon: tankBuster / New vehicle: tank & turret & raptor & B2 / Skin system: (username) HALO, VOID is added / Frontend optimization
+2024.2.7 Added new map: Sahara / New weapon: tankBuster / New vehicle: tank & turret & raptor & B2 / Skin system: (username) HALO, VOID is added / New object: Barrel / Frontend optimization
 
 
 Future plan

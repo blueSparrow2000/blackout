@@ -148,4 +148,29 @@ class Scope extends Item {
 
 }
 
+let placeableItemImages = {}
+const placeableItemkeys = ['barrel','SaharaBarrel','mine']
+for (let i=0;i<placeableItemkeys.length;i++){
+  const placeablekey = placeableItemkeys[i]
+  placeableItemImages[placeablekey] = new Image()
+  placeableItemImages[placeablekey].src = `/images/${placeablekey}_item.png`
+}
 
+class Placeable extends Item {
+  constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {variantName}}) {
+      super({groundx, groundy, size, name, onground, color})
+      this.variantName = iteminfo.variantName
+      this.imgName = name
+      if (this.variantName !== ''){
+        this.imgName = this.variantName
+      }
+      this.itemtype = 'placeable'
+
+  }
+  draw(canvas, camX, camY, {img,offset}) { // on the ground
+    if (this.onground){
+      canvas.drawImage(placeableItemImages[this.imgName], this.groundx-camX-offset, this.groundy-camY-offset)
+
+    }
+  }
+}

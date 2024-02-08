@@ -41,6 +41,7 @@ let fireTimeout
 let reloadTimeout
 let interactTimeout
 const INTERACTTIME = 300
+const ITEM_THAT_TAKESUP_INVENTORY = ['gun', 'consumable', 'melee' , 'placeable']
 
 const LobbyBGM = new Audio("/sound/Lobby.mp3")
 const shothitsound = new Audio("/sound/shothit.mp3")
@@ -355,7 +356,29 @@ function shootCheck(event){
       clearTimeout(fireTimeout);
       listen = true},CONSUMERATE)
     return
+  } else if ((currentHoldingItem.itemtype==='placeable')){ // place
+    // dont need to check amount since we will delete item if eaten
+    const currentItemName = currentHoldingItem.name
+    const PLACERATE = 300
+
+    if (!listen) {return} // not ready to eat
+    listen = false // block
+  
+    interactSound.play()
+
+    fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return}; socket.emit('place',{
+      itemName: currentHoldingItem.name,
+      playerId: socket.id,
+      deleteflag: true, // current version, delete right away
+      itemid: currentHoldingItemId,
+      currentSlot: frontEndPlayer.currentSlot,
+      imgName:currentHoldingItem.imgName,
+    }) ;
+      clearTimeout(fireTimeout);
+      listen = true},PLACERATE)
+    return
   }
+
 
   if (!(currentHoldingItem.itemtype==='gun' || currentHoldingItem.itemtype==='melee')){ // not a gun/melee, dont shoot
     console.log("this item is not a gun/consumable/melee. It is undefined or something else")
@@ -515,16 +538,16 @@ function dropItem(currentHoldingItemId, backEndItems){
   const droppingItem = backEndItems[currentHoldingItemId]
   //let frontEndPlayer = frontEndPlayers[socket.id]
   let curItemGET = frontEndItems[currentHoldingItemId]
-  if (droppingItem.itemtype === 'gun'){
-    // empty out the gun (retrieve the ammo back)
-    // frontEndPlayer.getAmmo(curItemGET.ammotype,curItemGET.ammo)
-    // reset ammo
-    // curItemGET.ammo = 0
-  } else if(droppingItem.itemtype === 'consumable'){
-    // nothing to do since consumables do not stack currently...
-  } else if(droppingItem.itemtype === 'melee'){
-    //console.log("NOT IMPLEMENTED!")
-  }
+  // if (droppingItem.itemtype === 'gun'){
+  //   // empty out the gun (retrieve the ammo back)
+  //   // frontEndPlayer.getAmmo(curItemGET.ammotype,curItemGET.ammo)
+  //   // reset ammo
+  //   // curItemGET.ammo = 0
+  // } else if(droppingItem.itemtype === 'consumable'){
+  //   // nothing to do since consumables do not stack currently...
+  // } else if(droppingItem.itemtype === 'melee'){
+  //   //console.log("NOT IMPLEMENTED!")
+  // }
 
   // change onground flag
   // update ground location
@@ -584,7 +607,7 @@ function interactItem(itemId,backEndItems){
   // make the item unpickable for other players => backenditem onground switch to false
   const pickingItem = backEndItems[itemId]
 
-  if(pickingItem.itemtype === 'gun' || pickingItem.itemtype === 'consumable' || pickingItem.itemtype === 'melee'){
+  if(ITEM_THAT_TAKESUP_INVENTORY.includes(pickingItem.itemtype) ){
     //console.log(`itemId: ${itemId} / inventorypointer: ${inventoryPointer}`)
     dropItem(currentHoldingItemId, backEndItems)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
@@ -871,8 +894,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
             objectinfo: backEndObject.objectinfo,
             name:backEndObject.name,
           })
-        } else if(backEndObject.objecttype === 'barrel'){
-          frontEndObjects[id] = new Barrel({
+        } else if(backEndObject.objecttype === 'barrel' ||backEndObject.objecttype === 'mine' ){
+          frontEndObjects[id] = new PlaceableObject({
             objecttype: backEndObject.objecttype, 
             health: backEndObject.health, 
             objectinfo: backEndObject.objectinfo,
@@ -1440,6 +1463,16 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
       color: backendItem.color,
       iteminfo:{scopeDist:backendItem.iteminfo.scopeDist}
     })
+  } else if (backendItem.itemtype==='placeable') {
+    frontEndItems[id] = new Placeable({groundx:backendItem.groundx, 
+      groundy:backendItem.groundy, 
+      size:backendItem.size, 
+      name:backendItem.name, 
+      onground: backendItem.onground, 
+      color: backendItem.color,
+      iteminfo:{variantName:backendItem.iteminfo.variantName }
+    })
+    return true
   } else{
     console.log("not implemented item or invalid name")
     // undefined or etc.
