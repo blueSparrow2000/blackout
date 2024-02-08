@@ -149,7 +149,7 @@ class Scope extends Item {
 }
 
 let placeableItemImages = {}
-const placeableItemkeys = ['barrel','SaharaBarrel','mine']
+const placeableItemkeys = ['barrel','SaharaBarrel','mine','SaharaMine']
 for (let i=0;i<placeableItemkeys.length;i++){
   const placeablekey = placeableItemkeys[i]
   placeableItemImages[placeablekey] = new Image()

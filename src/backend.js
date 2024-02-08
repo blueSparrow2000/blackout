@@ -78,7 +78,7 @@ const ENTITYDISTRIBUTION_MARK = 1
 
 // for items
 const MINE_DETECTION_RADIUS = 32
-const MINE_DETONATE_COUNTDOWN = 10
+const MINE_DETONATE_COUNTDOWN = 30 // 1 tick = 15ms (20 tick is about 0.3s)
 
 const BARREL_RADIUS = 18
 const BARREL_HEALTH = 2
@@ -393,7 +393,11 @@ if (GROUNDITEMFLAG){
     makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3}),onground=true,variantNameGiven='SaharaBarrel') 
 
     makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 0, col:4}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='')
-    makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:4}),onground=true,variantNameGiven='') 
+    for (let i=0;i<10;i++){
+      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:4}),onground=true,variantNameGiven='') 
+      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:5}),onground=true,variantNameGiven='SaharaMine') 
+    }
+
 
 
 
@@ -719,9 +723,9 @@ async function main(){
           let hitRadius = BARREL_RADIUS
 
           if (itemName==='barrel'){
-            console.log('placing: ',imgName)
+            //console.log('placing: ',imgName)
           }else if (itemName==='mine'){    
-            console.log('placing mine')
+            //console.log('placing mine')
             hitpoints = MINE_DETONATE_COUNTDOWN // count down #
             hitRadius = MINE_DETECTION_RADIUS // actually detection radius
           }else{
@@ -1184,10 +1188,7 @@ function makeNdropItem(itemtype, name, groundloc,onground=true,variantNameGiven=
     size = placeableinfoGET.size
     color = placeableinfoGET.color // default drawing color if no image
 
-
     iteminfo = {variantName:variantNameGiven} // mine: explosion timer etc.
-
-    console.log(iteminfo)
   } else{
     console.log("invalid itemtype requested in makeNdropItem")
     return 

@@ -359,7 +359,7 @@ function shootCheck(event){
   } else if ((currentHoldingItem.itemtype==='placeable')){ // place
     // dont need to check amount since we will delete item if eaten
     const currentItemName = currentHoldingItem.name
-    const PLACERATE = 300
+    const PLACERATE = 200
 
     if (!listen) {return} // not ready to eat
     listen = false // block
