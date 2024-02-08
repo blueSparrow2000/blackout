@@ -392,15 +392,17 @@ if (GROUNDITEMFLAG){
     makeNdropItem('scope', "3" ,getCoordTilesCenter({row:1,col:1})) // get with your own risk: will be laggy!
     makeNdropItem('gun', 'tankBuster' ,getCoordTilesCenter({row:49,col:48})) // The only anti-tank weapon
 
-    makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3})) 
-    makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3}),onground=true,variantNameGiven='SaharaBarrel') 
+    // makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:3})) 
+    makeNdropItem('placeable', 'barrel' ,getCoordTilesCenter({row:2,col:4}),onground=true,variantNameGiven='SaharaBarrel') 
 
-    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 0, col:4}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='')
-    for (let i=0;i<10;i++){
-      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:4}),onground=true,variantNameGiven='') 
-      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:5}),onground=true,variantNameGiven='SaharaMine') 
+    makeObjects("mine", MINE_DETONATE_COUNTDOWN, {center:getCoordTilesCenter({row: 1, col:4}), radius: MINE_DETECTION_RADIUS, color:'gray', placerID:0}, givenname ='SaharaMine')
+
+    for (let i=0;i<2;i++){
+      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:47,col:2}),onground=true,variantNameGiven='SaharaMine') 
     }
-
+    for (let i=0;i<2;i++){
+      makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:46}),onground=true,variantNameGiven='') 
+    }
 
 
 
@@ -417,8 +419,8 @@ if (GROUNDITEMFLAG){
     // Make custom vehicles
     spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
     // these are for next map: military base
-    // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
-    // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
+    spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
+    spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
 
     const BarrelRowNum = 3
     const BarrelColNum = 4

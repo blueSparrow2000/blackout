@@ -35,6 +35,7 @@ const frontEndVehicles = {}
 let Myskin = 'default'
 let frontEndPlayer
 let listen = true // very important for event listener 
+
 const PLAYERRADIUS = 16 
 // semaphores
 let fireTimeout
@@ -356,34 +357,9 @@ function shootCheck(event){
       clearTimeout(fireTimeout);
       listen = true},CONSUMERATE)
     return
-  } else if ((currentHoldingItem.itemtype==='placeable')){ // place
-    // dont need to check amount since we will delete item if eaten
-    const currentItemName = currentHoldingItem.name
-    const PLACERATE = 200
-
-    if (!listen) {return} // not ready to eat
-    listen = false // block
-  
-    interactSound.play()
-
-    fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return}; socket.emit('place',{
-      itemName: currentHoldingItem.name,
-      playerId: socket.id,
-      deleteflag: true, // current version, delete right away
-      itemid: currentHoldingItemId,
-      currentSlot: frontEndPlayer.currentSlot,
-      imgName:currentHoldingItem.imgName,
-    }) ;
-      clearTimeout(fireTimeout);
-      listen = true},PLACERATE)
-    return
-  }
+  } 
 
 
-  if (!(currentHoldingItem.itemtype==='gun' || currentHoldingItem.itemtype==='melee')){ // not a gun/melee, dont shoot
-    console.log("this item is not a gun/consumable/melee. It is undefined or something else")
-    return
-  }
 
   ///////////////////////////// If inside a vehicle 
   const vehicleID = frontEndPlayer.ridingVehicleID
@@ -405,8 +381,31 @@ function shootCheck(event){
       return
     }
   } 
-
   ///////////////////////////// If inside vehicle 
+
+
+  if ((currentHoldingItem.itemtype==='placeable')){ // place
+    // dont need to check amount since we will delete item if eaten
+    const currentItemName = currentHoldingItem.name
+    const PLACERATE = 100
+
+    if (!listen) {return} // not ready to eat
+    listen = false // block
+
+    interactSound.play()
+
+    fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return}; socket.emit('place',{
+      itemName: currentHoldingItem.name,
+      playerId: socket.id,
+      deleteflag: true, // current version, delete right away
+      itemid: currentHoldingItemId,
+      currentSlot: frontEndPlayer.currentSlot,
+      imgName:currentHoldingItem.imgName,
+    }) ;
+      clearTimeout(fireTimeout);
+      listen = true},PLACERATE)
+    return
+  }
 
   if ((!(currentHoldingItem.itemtype==='melee')) && currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
     reloadGun() // auto reload when out of ammo
