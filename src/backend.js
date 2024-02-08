@@ -63,6 +63,7 @@ let USERCOUNT = [0]
 // for bullets
 const FRICTION = 0.999//0.992
 const HIGHFRICTION = 0.98
+const EXTREMEFRICTION = 0.88
 
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
@@ -90,7 +91,9 @@ const gunInfo = {
     // 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
     'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
     'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
-    'tankBuster':{travelDistance:832, damage: 100, shake:0, num: 1, fireRate: 4000, projectileSpeed:10, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
+    'tankBuster':{travelDistance:832, damage: 50, shake:0, num: 1, fireRate: 4000, projectileSpeed:12, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
+    'shockWave':{travelDistance:192, damage: 15, shake:6, num: 1, fireRate: 100, projectileSpeed:18, magSize: 1, reloadTime: 1400, ammotype:'shockWave', size: {length:14, width:2}}, 
+
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
     'mk14':{travelDistance:1088, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
@@ -115,7 +118,7 @@ const gunInfo = {
     'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
     'bat':{travelDistance:48, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
 }
-let defaultGuns = []//[] 
+let defaultGuns = []//['tankBuster','shockWave','fragment','grenadeLauncher']// 
 
 // 'guntypes' is except for grenade launcher and fragments! Since they are OP
 const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5'] // except special guns: 'tankBuster', 'grenadeLauncher', 'fragment'
@@ -483,9 +486,9 @@ function safeDeleteProjectile(projID){
   // if name is grenadeLauncher, explode and damage surrounding enemies and players!backEndProjectile.name
   // console.log(backEndProjectile.gunName)
   if (backEndProjectile.gunName==='grenadeLauncher'){
-    explosion(backEndProjectile,12,backEndProjectile.playerId)
+    explosion(backEndProjectile,12,playerID=backEndProjectile.playerId)
   } else if(backEndProjectile.gunName==='tankBuster'){
-    explosion(backEndProjectile,24,backEndProjectile.playerId)
+    explosion(backEndProjectile,12,playerID=backEndProjectile.playerId,shockWave=true)
   }
 
   delete backEndProjectiles[projID]
@@ -905,6 +908,13 @@ setInterval(() => {
         projGET.velocity.x *= HIGHFRICTION
         projGET.velocity.y *= HIGHFRICTION
         myspeed *= HIGHFRICTION
+      }else if (gunNameOfProjectile === 'shockWave'){
+        projGET.velocity.x *= EXTREMEFRICTION
+        projGET.velocity.y *= EXTREMEFRICTION
+        myspeed *= EXTREMEFRICTION
+        if (myspeed <=  0.1){
+          myspeed=0 // set to zero
+        }
       }else{
         projGET.velocity.x *= FRICTION
         projGET.velocity.y *= FRICTION
@@ -917,7 +927,8 @@ setInterval(() => {
 
     projGET.travelDistance -= myspeed
     // travel distance check for projectiles
-    if (projGET.travelDistance <= 0){
+    if (projGET.travelDistance <= 0 || myspeed<=0.1){
+      // console.log(projGET.travelDistance,myspeed)
       BULLETDELETED = true
       safeDeleteProjectile(id)
       continue // dont reference projectile that does not exist
@@ -1188,7 +1199,7 @@ function makeNdropItem(itemtype, name, groundloc,onground=true,variantNameGiven=
     size = placeableinfoGET.size
     color = placeableinfoGET.color // default drawing color if no image
 
-    iteminfo = {variantName:variantNameGiven} // mine: explosion timer etc.
+    iteminfo = {variantName:variantNameGiven} 
   } else{
     console.log("invalid itemtype requested in makeNdropItem")
     return 
@@ -1444,9 +1455,9 @@ function safeDeleteObject(id){
   //console.log(`obj removed ID: ${id}`)
   const objToDelete = backEndObjects[id]
   if (objToDelete.objecttype==='barrel'){
-    explosion(objToDelete.objectinfo.center,18)
+    explosion(objToDelete.objectinfo.center,18,playerID=0)
   } else if(objToDelete.objecttype==='mine'){
-    explosion(objToDelete.objectinfo.center,18)
+    explosion(objToDelete.objectinfo.center,12,playerID=0,shockWave=true)
   }
   delete backEndObjects[id]
 }
@@ -1774,7 +1785,7 @@ function safeDeleteVehicle(vehicleid){
   }
 
   // explode
-  explosion(vehicle, 18)
+  explosion(vehicle, 18,playerID=0)
 
   delete backEndVehicles[vehicleid]
 }
@@ -1789,8 +1800,13 @@ function updateVehiclePos(vehicle){
 
 }
 
-function explosion(location,BLASTNUM,playerID=0){
+function explosion(location,BLASTNUM,playerID=0,shockWave=false){
   for (let i=0;i< BLASTNUM;i++){
-    addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location,0)// damaging all players nearby
+    if (shockWave){
+      addProjectile( (2*Math.PI/BLASTNUM)*i,'shockWave',playerID, location,0)// damaging all players nearby
+    } else{
+      addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location,0)// damaging all players nearby
+    }
+
   }
 }
