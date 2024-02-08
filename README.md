@@ -92,6 +92,7 @@ Future plan
 - Code separation (backend) to modules
 - Add 2-person car (vehicle)
 - Add door & window (object entity)
+- Particle effects & vehicle sound effects 
 
 
 ## Various Tips
