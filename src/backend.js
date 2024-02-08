@@ -1269,6 +1269,7 @@ function makeNdropItem(itemtype, name, groundloc,onground=true,variantNameGiven=
   backEndItems[itemsId] = {
     itemtype, name, groundx, groundy, size, color, iteminfo, onground, myID: itemsId, deleteRequest:false
   }
+  itemBorderUpdate(backEndItems[itemsId])
 }
 
 
@@ -1868,20 +1869,20 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
       addProjectile( (2*Math.PI/BLASTNUM)*i,'fragment',playerID, location,0)// damaging all players nearby
     }
   }
-  pushSoundRequest(location,'explosion',TILE_SIZE*4, duration=1)
+  pushSoundRequest(location,'explosion',TILE_SIZE*8, duration=1)
 }
 
 
 
 // 
 const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply'} // 'white':'detect', 'yellow':'Mission Support Request' (= vehicle request)
-const STRIKE_INTERVAL_COEF = 30
+const STRIKE_INTERVAL_COEF = 15
 
 function spawnAirstrike(location, signalColor='green'){ // currently only makes cars
   airstrikeId++
   const x = location.x
 
-  let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+1 , 4) // 1~4
+  let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+2 , 5) // 1~4
   const y = MAPHEIGHT-1 // goes up
 
   const signal = AIRSTRIKE_TYPE_DICT[signalColor]
@@ -1891,7 +1892,7 @@ function spawnAirstrike(location, signalColor='green'){ // currently only makes 
 
   if (signal==='bomb'){
     speed = 8 // fly fast and bomb (same speed as B2)
-    strikeNumber = 5
+    strikeNumber = 16
     strike_Y_level = Math.round(location.y + (strikeNumber/2)*speed*STRIKE_INTERVAL_COEF)
   }
 
@@ -1921,24 +1922,24 @@ function updateAirstrike(airstrikeid){
 
 const AirstrikeGuns = ['grenadeLauncher','AWM','tankBuster']
 function DeployAirstrike(airstrike){
-  const x_turbulance = Math.round((Math.random()-0.5) * 100)+100
-
-  const location = {x:airstrike.x + x_turbulance, y:airstrike.y}
 
   if (airstrike.signal==='bomb'){ // strike multiple times
-
-    explosion(location,18,playerID=0,shockWave=true)
+    const x_turbulance = Math.round((Math.random()-0.5) * 100)+100
+    for (let i=-1;i<2;i+=2){
+      explosion({x:airstrike.x + i*x_turbulance, y:airstrike.y},18,playerID=0,shockWave=true)
+    }
     airstrike.strike_Y_level -= airstrike.speed*STRIKE_INTERVAL_COEF
     //console.log('air bombing at ', location)
 
   } else if(airstrike.signal==='supply'){ // strike once
 
     const idxGUN = Math.round(Math.random()*(AirstrikeGuns.length-1)) 
-
-    makeNdropItem('gun', AirstrikeGuns[idxGUN], location)
-    makeNdropItem('scope', "2" ,{x:airstrike.x - x_turbulance, y:airstrike.y})
+    makeNdropItem('gun', AirstrikeGuns[idxGUN], {x:airstrike.x + 100, y:airstrike.y})
+    makeNdropItem('scope', "2" ,{x:airstrike.x - 100, y:airstrike.y})
     makeNdropItem('armor', 'reduce', {x:airstrike.x, y:airstrike.y})
   }
+
+
 }
 
 
