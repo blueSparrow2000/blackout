@@ -83,7 +83,7 @@ const ENTITYDISTRIBUTION_MARK = 1
 
 // for items
 const MINE_DETECTION_RADIUS = 32
-const MINE_DETONATE_COUNTDOWN = 20 // 1 tick = 15ms (20 tick is about 0.3s)
+const MINE_DETONATE_COUNTDOWN = 10 // 1 tick = 15ms (20 tick is about 0.3s)
 
 const BARREL_RADIUS = 18
 const BARREL_HEALTH = 2
@@ -419,12 +419,6 @@ if (GROUNDITEMFLAG){
       makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:37,col:5}),onground=true,variantNameGiven='white')// variant should be red,green etc.
     }
 
-    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:0}),onground=true,variantNameGiven='green')// variant should be red,green etc.
-    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:1}),onground=true,variantNameGiven='red')// variant should be red,green etc.
-    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:2}),onground=true,variantNameGiven='yellow')// variant should be red,green etc.
-    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:3}),onground=true,variantNameGiven='white')// variant should be red,green etc.
-
-
 
     // MAKE HOUSES
     for (let i=0;i<5;i++){
@@ -437,10 +431,15 @@ if (GROUNDITEMFLAG){
 
 
     // Make custom vehicles
-    // spawnVehicle(getCoordTilesCenter({row:3,col:2}), 'tank')
-    // these are for next map: military base
-    // spawnVehicle(getCoordTilesCenter({row:48,col:2}), 'raptor')
-    // spawnVehicle(getCoordTilesCenter({row:3,col:47}), 'B2')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:1}),'car')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:2}), 'tank')
+    // // these are for next map: military base
+    // spawnVehicle(getCoordTilesCenter({row:46,col:3}), 'raptor')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:4}), 'B2')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:5}), 'Fennek')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:6}), 'APC')
+    // spawnVehicle(getCoordTilesCenter({row:46,col:7}), 'turret')
+
 
     const BarrelRowNum = 2
     const BarrelColNum = 3
@@ -595,9 +594,17 @@ function safeDeletePlayer(playerId){
 function Moveplayer(playerGIVEN, WW, AA, SS, DD){
     const vehicleID = playerGIVEN.ridingVehicleID
     if (vehicleID>0){ // if riding something
-      const maxSpeedVehicle = backEndVehicles[vehicleID].speed
+      let vehicleOfPlayer = backEndVehicles[vehicleID]
+      const maxSpeedVehicle = vehicleOfPlayer.speed
       playerGIVEN.speed = Math.min(maxSpeedVehicle, playerGIVEN.speed + 0.11)
       // console.log(playerGIVEN.speed )
+      // if (vehicleOfPlayer.mytick > 30){ // only use a B2 sound since other sound is bad...
+      //   // pushSoundRequest({x:playerGIVEN.x,y:playerGIVEN.y},`${vehicleOfPlayer.type}_moving`,TILE_SIZE*3, duration=1)
+      //   pushSoundRequest({x:playerGIVEN.x,y:playerGIVEN.y},'B2_moving',TILE_SIZE*3, duration=1)
+      //   vehicleOfPlayer.mytick = 0
+      // }
+      // vehicleOfPlayer.mytick += 1
+
     }
 
     if (WW){
@@ -1806,7 +1813,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
     health = 192
     speed = 1 
     info = {turretName:"grenadeLauncher"}
-  } else if(type==='turret'){ // with turrets!
+  } else if(type==='turret'){ // with turrets! - no sound effect
     radius = 52
     color = "WhiteSmoke"
     warningcolor = "IndianRed"
@@ -1834,7 +1841,7 @@ function spawnVehicle(location, type='car'){ // currently only makes cars
 
 
   backEndVehicles[vehicleId] = {
-    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1,info
+    x,y,radius,velocity:0, myID:vehicleId, color, warningcolor, damage, health, speed, type,occupied:false,ridingPlayerID:-1,info, mytick:0
   }
   NONitemBorderUpdate(backEndVehicles[vehicleId])
 }
@@ -1964,12 +1971,16 @@ function updateAirstrike(airstrikeid){
   let airstrike = backEndAirstrikes[airstrikeid]
   airstrike.y -= airstrike.speed
 
+  //console.log(airstrike.mytick)
   // sound effect of flying
-  if (airstrike.mytick % 16===0 && airstrike.signal === 'bomb'){
-    pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',TILE_SIZE*10, duration=1)
+  if (airstrike.mytick % 18===0 && airstrike.signal === 'bomb'){ // smallest tick
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',TILE_SIZE*16, duration=1)
     airstrike.mytick = 0
-  } else if (airstrike.mytick % 112===0){ // other planes check this
-    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',TILE_SIZE*10, duration=1)
+  } else if (airstrike.mytick % 90===0 && airstrike.signal === 'vehicle request'){ // next large tick
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_motor_2sec',TILE_SIZE*16, duration=1)
+    airstrike.mytick = 0
+  } else if (airstrike.mytick % 100===0){ // other planes check this 
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',TILE_SIZE*16, duration=1)
     airstrike.mytick = 0
   }
   airstrike.mytick += 1
@@ -1985,7 +1996,7 @@ function updateAirstrike(airstrikeid){
   }
 }
 
-
+//'item_landing','vehicle_landing'
 const AirstrikeGuns = ['grenadeLauncher','AWM','tankBuster']
 function DeployAirstrike(airstrike){
 
@@ -2004,8 +2015,12 @@ function DeployAirstrike(airstrike){
     makeNdropItem('scope', "2" ,{x:airstrike.x - 100, y:airstrike.y})
     makeNdropItem('armor', 'reduce', {x:airstrike.x, y:airstrike.y})
 
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'item_landing',TILE_SIZE*3, duration=1)
+
   } else if(airstrike.signal==='vehicle request'){
     spawnVehicle({x:airstrike.x, y:airstrike.y},'tank')
+
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'vehicle_landing',TILE_SIZE*6, duration=1)
 
   } else if(airstrike.signal==='transport'){ // NOTE: this is called only once!
     const caller = backEndPlayers[airstrike.callerID] 
@@ -2021,6 +2036,10 @@ function DeployAirstrike(airstrike){
         caller.onBoard = true
         caller.strikeID = airstrike.myID
         airstrike.onBoard = true
+
+        pushSoundRequest({x:airstrike.x,y:airstrike.y},'player_pickup',TILE_SIZE*2, duration=1)
+
+
       } else{
         console.log('COULD NOT PICKUP A PLAYER. REASON: was player riding a vehicle? ',caller.ridingVehicleID!==-1,' / was player inside a house? ',caller.getinhouse)
       }
@@ -2056,6 +2075,9 @@ function safeDeleteAirstrike(airstrikeid){
 
 
 function pushSoundRequest(location,soundName,soundDistance, duration=1){
+  if (soundName==='turret_moving'){
+    return
+  }
   soundID++
   const x = location.x
   const y = location.y

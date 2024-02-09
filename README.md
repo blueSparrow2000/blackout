@@ -92,9 +92,10 @@ or
 
 Future plan
 - Code separation (backend) to modules
-- Add 2-person car (vehicle)
+- ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
 - Add door & window (object entity)
-- Particle effects & vehicle sound effects 
+- Particle effects
+- ~~vehicle sound effects~~ canceled due to lagging
 
 
 ## Various Tips

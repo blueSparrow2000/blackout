@@ -746,7 +746,7 @@ function playSoundEffectGun(gunName,DISTANCE,thatGunSoundDistance){
 
 
 let MySoundEffects = {}
-const mysoundeffectkeys = ['explosion', 'takeoff','plane_2sec','B2_halfsec']
+const mysoundeffectkeys = ['explosion', 'takeoff','plane_2sec','plane_motor_2sec','B2_halfsec','item_landing','vehicle_landing','player_pickup',   'tank_moving','car_moving','B2_moving','raptor_moving','APC_moving','Fennek_moving']
 for (let i=0;i<mysoundeffectkeys.length;i++){
   const soundkey = mysoundeffectkeys[i]
   const soundstring = `/sound/${soundkey}.mp3`
@@ -755,6 +755,10 @@ for (let i=0;i<mysoundeffectkeys.length;i++){
 
 
 function playSoundEffect(gunName,DISTANCE,thatGunSoundDistance){
+  if (!mysoundeffectkeys.includes(gunName)){
+    console.log('no sound for: ',gunName)
+    return
+  }
   let gunSound = MySoundEffects[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
     if (DISTANCE > 100){
       gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
@@ -1457,8 +1461,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = 0 //MAPWIDTH * Math.random() //TILE_SIZE*2 //
-    const playerY = MAPHEIGHT// MAPHEIGHT * Math.random() //MAPHEIGHT/2 //
+    const playerX = MAPWIDTH * Math.random() //0 //
+    const playerY = MAPHEIGHT * Math.random() //MAPHEIGHT// 
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value
