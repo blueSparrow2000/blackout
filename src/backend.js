@@ -412,11 +412,11 @@ if (GROUNDITEMFLAG){
       makeNdropItem('placeable', 'mine' ,getCoordTilesCenter({row:1,col:46}),onground=true,variantNameGiven='') 
     }
 
-    for (let i=0;i<4;i++){
+    for (let i=0;i<1;i++){
       makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:24,col:3}),onground=true,variantNameGiven='green')// variant should be red,green etc.
-      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:25,col:3}),onground=true,variantNameGiven='red')// variant should be red,green etc.
-      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:26,col:3}),onground=true,variantNameGiven='yellow')// variant should be red,green etc.
-      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:27,col:3}),onground=true,variantNameGiven='white')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:14,col:5}),onground=true,variantNameGiven='red')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:27,col:3}),onground=true,variantNameGiven='yellow')// variant should be red,green etc.
+      makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:37,col:5}),onground=true,variantNameGiven='white')// variant should be red,green etc.
     }
 
     // MAKE HOUSES
@@ -694,27 +694,33 @@ async function main(){
 
         // aux function for shoot
         function shootProjectile(angle,currentGun,startDistance){
-          if (!backEndPlayers[socket.id]) return // player not defined
           const gunName = currentGun
             
           for (let i=0;i< gunInfo[currentGun].num;i++){
             addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistance)
           }
         }
-        socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0})=>{
+        socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0})=>{ // NOTE: reload does not use socket!!!
+          if (!backEndPlayers[socket.id]) return // player not defined
+          if (backEndPlayers[socket.id].onBoard){return} // cannot shoot if on board
+
           if (currentHoldingItemId>0){ // decrease ammo
             let thisGun = backEndItems[currentHoldingItemId]
-            if (thisGun.iteminfo.ammo>0){
-              if (thisGun.name==='flareGun'){
+            if (thisGun.name==='flareGun'){
+              if (thisGun.iteminfo.ammo>0){
                 thisGun.iteminfo.ammo = 0
               }
+              shootProjectile(angle,currentGun,startDistance)
 
+            }else{ // not a flare gun, then ammo is not important
               shootProjectile(angle,currentGun,startDistance)
             }
           }else{ // on vehicle turret etc.
             shootProjectile(angle,currentGun,startDistance)
           }
-          
+          // shootProjectile(angle,currentGun,startDistance)
+
+
         } )
 
 
@@ -908,6 +914,7 @@ function onBoardCheck(player){
   return player.onBoard
 }
 
+let ServerTime = 0
 let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
@@ -918,6 +925,19 @@ setInterval(() => {
       spawnEnemies()
     }
     GLOBALCLOCK = 0 // init
+
+    // print entity object's lengths
+    console.log(`[ Entity amount check ${ServerTime} ]`)
+    console.log(
+      "Players       ",Object.keys(backEndPlayers).length,
+    "\nEnemies       ",Object.keys(backEndEnemies).length,
+    "\nProjectiles   ",Object.keys(backEndProjectiles).length,
+    "\nItems         ",Object.keys(backEndItems).length,
+    "\nVehicles      ",Object.keys(backEndVehicles).length,
+    "\nObjects       ",Object.keys(backEndObjects).length,
+    "\nAirstrikes    ",Object.keys(backEndAirstrikes).length,
+    "\nSoundRequests ",Object.keys(backEndSoundRequest).length )
+    ServerTime += 1
   }
 
   // red zone?
@@ -1903,14 +1923,14 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
 
 // 
 const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply','white':'transport', 'yellow':'vehicle request'} 
-const STRIKE_INTERVAL_COEF = 15
+const STRIKE_INTERVAL_COEF = 10
 const PLANE_PICKUP_RADIUS = 256 // plane rad is 384
 
 function spawnAirstrike(location, callerID, signalColor='green'){ // currently only makes cars
   airstrikeId++
   const x = location.x
 
-  let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+2 , 5) // 1~4
+  let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+2 , 5) // 2~5
   const y = MAPHEIGHT-1 // goes up
 
   const signal = AIRSTRIKE_TYPE_DICT[signalColor]
@@ -1919,7 +1939,7 @@ function spawnAirstrike(location, callerID, signalColor='green'){ // currently o
   let strikeNumber = 1
 
   if (signal==='bomb'){
-    speed = 8 // fly fast and bomber (same speed as B2)
+    speed = 12 // fly fast and bomber (same speed as B2)
     strikeNumber = 16
     strike_Y_level = Math.round(location.y + (strikeNumber/2)*speed*STRIKE_INTERVAL_COEF)
   } else if(signal==='transport'){
@@ -2009,8 +2029,8 @@ function safeTakeOff(airstrikeID){
     passenger.strikeID = -1 
     airstrike.onBoard = false
     NONitemBorderUpdate(passenger)
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'takeoff',TILE_SIZE*3, duration=1)
   }
-  pushSoundRequest({x:airstrike.x,y:airstrike.y},'takeoff',TILE_SIZE*3, duration=1)
 
 }
 

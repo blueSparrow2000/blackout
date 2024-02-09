@@ -447,18 +447,11 @@ function shootCheck(event){
   //console.log("ready to fire")
 }
 
-function CheckOnBoard(){
-  return (frontEndPlayer && frontEndPlayer.onBoard)
-}
 
 addEventListener('click', (event) => {
-  if (CheckOnBoard()){
-    return
-  }
   shootCheck(event)
 
 })
-
 
 
 // periodically request backend server
@@ -470,10 +463,6 @@ setInterval(()=>{
   if (keys.g.pressed){
     // not emitting when G
     //socket.emit('keydown',{keycode:'KeyG'})
-  }
-
-  if (CheckOnBoard()){// player cannot do anything below
-    return
   }
 
   if (keys.digit1.pressed){
@@ -509,6 +498,8 @@ setInterval(()=>{
   } else{ // builtin
       socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
   } 
+
+
 },TICKRATE)
 
 
@@ -536,7 +527,7 @@ function reloadGun(){
   const GUNRELOADRATE = gunInfoFrontEnd[currentGunName].reloadTime
 
   if (currentGunName==='flareGun'){ // not reloadable
-    console.log("flaregun cannot be reloaded")
+    //console.log("flaregun cannot be reloaded")
     return
   }
 
@@ -699,10 +690,7 @@ socket.on('interact',({backEndItems,backEndVehicles})=>{
     // manual takeoff
     if (frontEndPlayer.onBoard){
       // take off!
-      playerdeathsound.play() // sounds like this!
-
       socket.emit('takeOff')
-      frontEndPlayer.onBoard = false
       return
     }
 
@@ -1274,7 +1262,7 @@ function loop(){
     ///////////////////////////////// PLAYERS /////////////////////////////////
     canvas.fillStyle = 'white'
     // canvas.strokeStyle = 'black' // same stroke style with projectiles
-    if (frontEndPlayer && !frontEndPlayer.onBoard){ // draw myself in the center
+    if (!frontEndPlayer.onBoard){ // draw myself in the center
         const currentHoldingItem = getCurItem(frontEndPlayer)
         frontEndPlayer.displayAttribute(canvas, camX, camY, currentHoldingItem)
         if (gunInfoFrontEnd){
@@ -1305,7 +1293,7 @@ function loop(){
 
     // This loop is for displaying health & name
     canvas.lineWidth = 8
-    if (frontEndPlayer && !frontEndPlayer.onBoard){ // draw myself in the center
+    if (!frontEndPlayer.onBoard){ // draw myself in the center
       frontEndPlayer.displayHealth(canvas, camX, camY, centerX , centerY - PLAYERRADIUS*2)
     }
 
@@ -1338,40 +1326,7 @@ function loop(){
 
 
 
-    // ADVANCED PLANTS (OPAQUE)
-    canvas.save();
-    canvas.globalAlpha = 0.8;
-    for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
-      for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
-        if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
-          continue
-        }
-        const { id } = decalMap[row][col] ?? {id:undefined};
-        const imageRow = parseInt(id / TILES_IN_ROW);
-        const imageCol = id % TILES_IN_ROW;
-        if (130 <= id && id <= 134){ // grass - opacity
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
-        } else if (id===107){ // overhanges (roofs) - opacity but not clear as house
-          canvas.drawImage(mapImage, 
-            imageCol * TILE_SIZE,
-            imageRow * TILE_SIZE,
-            TILE_SIZE,TILE_SIZE,
-            col*TILE_SIZE - camX, 
-            row*TILE_SIZE - camY,
-            TILE_SIZE,TILE_SIZE
-            );
-        }
-      }
-    }
-    canvas.restore();
-    // ADVANCED PLANTS
+
 
     // ADVANCED NON OPAC
     for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
@@ -1411,15 +1366,57 @@ function loop(){
     // ADVANCED NON OPAC
 
 
+    // GLOBAL ALPHA CHANGES
+    canvas.save();
+    // ADVANCED PLANTS (OPAQUE)
+    canvas.globalAlpha = 0.8;
+
+    for (let row = chunkInfo.rowNum-sightChunk;row < chunkInfo.rowNum + sightChunk+1;row++){
+      for (let col = chunkInfo.colNum-sightChunk;col < chunkInfo.colNum + sightChunk+1 ;col++){
+        if (row < 0 || col < 0 || row >= groundMap.length || col >= groundMap[0].length){
+          continue
+        }
+        const { id } = decalMap[row][col] ?? {id:undefined};
+        const imageRow = parseInt(id / TILES_IN_ROW);
+        const imageCol = id % TILES_IN_ROW;
+        if (130 <= id && id <= 134){ // grass - opacity
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        } else if (id===107){ // overhanges (roofs) - opacity but not clear as house
+          canvas.drawImage(mapImage, 
+            imageCol * TILE_SIZE,
+            imageRow * TILE_SIZE,
+            TILE_SIZE,TILE_SIZE,
+            col*TILE_SIZE - camX, 
+            row*TILE_SIZE - camY,
+            TILE_SIZE,TILE_SIZE
+            );
+        }
+      }
+    }
+    // ADVANCED PLANTS
+
 
     // Air strike
+    // canvas.globalAlpha = 0.9;
     for (const id in frontEndAirstrikes){ 
       const frontEndAirstrike = frontEndAirstrikes[id]
       if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndAirstrike.x,frontEndAirstrike.y),sightChunk+3) ){
         canvas.drawImage(planeImage,frontEndAirstrike.x - camX - 384, frontEndAirstrike.y - camY - 558)
-
       }
     }
+
+    canvas.restore();
+    // GLOBAL ALPHA CHANGES
+
+
+
 
     if (frontEndPlayer.onBoard){ // show text message
       canvas.fillText('Press F to take off!', centerX - 110, centerY + PLAYERRADIUS*2)
@@ -1458,8 +1455,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = TILE_SIZE*2 //MAPWIDTH * Math.random()
-    const playerY = MAPHEIGHT/2 //MAPHEIGHT * Math.random()
+    const playerX = MAPWIDTH * Math.random() //TILE_SIZE*2 //
+    const playerY = MAPHEIGHT * Math.random() //MAPHEIGHT/2 //
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value
