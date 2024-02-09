@@ -87,16 +87,20 @@ or
 2024.2.8 Added New object: Mine / New explosion: shockwave (for mine & tankBuster) + explosion sound effect is enhanced! / New gun: flareGun => calls airstrike! / TYPES OF AIRSTRIKES: bomb, supply, request vehicle(tank), transport
 
 
-2024.2.9 Added Airstrike plane sound effect (using sound request) / 
+2024.2.9 Added Airstrike plane sound effect (using sound request) 
+
+
+**1 week of developement ends**
+
 
 
 Future plan
 - Code separation (backend) to modules
-- ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
 - Add door & window (object entity)
 - Particle effects
+- custom vehicle designs?
 - ~~vehicle sound effects~~ canceled due to lagging
-
+- ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
 
 ## Various Tips
 - Maps should be square & need to specify tile number of one side 
