@@ -419,6 +419,13 @@ if (GROUNDITEMFLAG){
       makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:37,col:5}),onground=true,variantNameGiven='white')// variant should be red,green etc.
     }
 
+    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:0}),onground=true,variantNameGiven='green')// variant should be red,green etc.
+    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:1}),onground=true,variantNameGiven='red')// variant should be red,green etc.
+    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:2}),onground=true,variantNameGiven='yellow')// variant should be red,green etc.
+    makeNdropItem('gun', 'flareGun', getCoordTilesCenter({row:49,col:3}),onground=true,variantNameGiven='white')// variant should be red,green etc.
+
+
+
     // MAKE HOUSES
     for (let i=0;i<5;i++){
       makeHouse_15Tiles(getCoordTiles(TILESLOC_N_REQUEST[`House_15TilesCenter${i+1}`]))
@@ -1939,7 +1946,7 @@ function spawnAirstrike(location, callerID, signalColor='green'){ // currently o
   let strikeNumber = 1
 
   if (signal==='bomb'){
-    speed = 12 // fly fast and bomber (same speed as B2)
+    speed = 7 // fly fast and bomber (same speed as B2)
     strikeNumber = 16
     strike_Y_level = Math.round(location.y + (strikeNumber/2)*speed*STRIKE_INTERVAL_COEF)
   } else if(signal==='transport'){
@@ -1948,7 +1955,7 @@ function spawnAirstrike(location, callerID, signalColor='green'){ // currently o
 
 
   backEndAirstrikes[airstrikeId] = {
-    x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber, callerID, onBoard:false
+    x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber, callerID, onBoard:false, mytick:0
   }
   NONitemBorderUpdate(backEndAirstrikes[airstrikeId])
 }
@@ -1957,8 +1964,16 @@ function updateAirstrike(airstrikeid){
   let airstrike = backEndAirstrikes[airstrikeid]
   airstrike.y -= airstrike.speed
 
-  // check location
-  const strikeDestination = airstrike.strike_Y_level
+  // sound effect of flying
+  if (airstrike.mytick % 16===0 && airstrike.signal === 'bomb'){
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',TILE_SIZE*10, duration=1)
+    airstrike.mytick = 0
+  } else if (airstrike.mytick % 112===0){ // other planes check this
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',TILE_SIZE*10, duration=1)
+    airstrike.mytick = 0
+  }
+  airstrike.mytick += 1
+  // sound effect of flying
 
   if (airstrike.y <= PLAYERRADIUS*2){
     safeDeleteAirstrike(airstrikeid)

@@ -37,6 +37,8 @@ const frontEndSoundRequest = {}
 let Myskin = 'default'
 let frontEndPlayer
 let listen = true // very important for event listener 
+const AIRSTRIKEDIST_ADDITIONAL = 8 // additional distance to see the airdrop (+3 is just enough to see it)
+
 
 const PLAYERRADIUS = 16 
 // semaphores
@@ -744,7 +746,7 @@ function playSoundEffectGun(gunName,DISTANCE,thatGunSoundDistance){
 
 
 let MySoundEffects = {}
-const mysoundeffectkeys = ['explosion', 'takeoff']
+const mysoundeffectkeys = ['explosion', 'takeoff','plane_2sec','B2_halfsec']
 for (let i=0;i<mysoundeffectkeys.length;i++){
   const soundkey = mysoundeffectkeys[i]
   const soundstring = `/sound/${soundkey}.mp3`
@@ -1087,7 +1089,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         if (me){
           const DISTANCE = Math.hypot(backendSR.x - me.x, backendSR.y - me.y)
           const thatGunSoundDistance = backendSR.soundDistance
-          if (DISTANCE-100 < thatGunSoundDistance){ 
+          if (DISTANCE-100 < thatGunSoundDistance){ // more wider
             playSoundEffect(backendSR.soundName,DISTANCE,thatGunSoundDistance)
           }
         }
@@ -1407,7 +1409,7 @@ function loop(){
     // canvas.globalAlpha = 0.9;
     for (const id in frontEndAirstrikes){ 
       const frontEndAirstrike = frontEndAirstrikes[id]
-      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndAirstrike.x,frontEndAirstrike.y),sightChunk+3) ){
+      if (frontEndPlayer.IsVisible(chunkInfo,getChunk(frontEndAirstrike.x,frontEndAirstrike.y),sightChunk+AIRSTRIKEDIST_ADDITIONAL) ){
         canvas.drawImage(planeImage,frontEndAirstrike.x - camX - 384, frontEndAirstrike.y - camY - 558)
       }
     }
@@ -1455,8 +1457,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
     resetKeys()
     listen = true // initialize the semaphore
     updateSightChunk(0) // scope to 0
-    const playerX = MAPWIDTH * Math.random() //TILE_SIZE*2 //
-    const playerY = MAPHEIGHT * Math.random() //MAPHEIGHT/2 //
+    const playerX = 0 //MAPWIDTH * Math.random() //TILE_SIZE*2 //
+    const playerY = MAPHEIGHT// MAPHEIGHT * Math.random() //MAPHEIGHT/2 //
     const playerColor =  `hsl(${Math.random()*360},100%,70%)`
 
     const myUserName = document.querySelector('#usernameInput').value
