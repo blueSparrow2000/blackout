@@ -98,7 +98,7 @@ const gunInfo = {
     'grenadeLauncher':{travelDistance:576, damage: 3, shake:0, num: 1, fireRate: 1600, projectileSpeed:13, magSize: 3, reloadTime: 1800, ammotype:'fragment', size: {length:25, width:4}}, 
     'fragment':{travelDistance:192, damage: 2, shake:3, num: 1, fireRate: 100, projectileSpeed:8, magSize: 5, reloadTime: 1400, ammotype:'fragment', size: {length:13, width:1}}, 
     'tankBuster':{travelDistance:832, damage: 50, shake:0, num: 1, fireRate: 4000, projectileSpeed:12, magSize: 1, reloadTime: 6000, ammotype:'rocket', size: {length:35, width:4}}, 
-    'shockWave':{travelDistance:192, damage: 15, shake:6, num: 1, fireRate: 100, projectileSpeed:18, magSize: 1, reloadTime: 1400, ammotype:'shockWave', size: {length:14, width:2}}, 
+    'shockWave':{travelDistance:192, damage: 15, shake:6, num: 1, fireRate: 300, projectileSpeed:18, magSize: 1, reloadTime: 1400, ammotype:'shockWave', size: {length:14, width:2}}, 
 
 
     'M1':{travelDistance:1472, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
