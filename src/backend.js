@@ -85,7 +85,7 @@ const ENTITYDISTRIBUTION_MARK = 1
 const MINE_DETECTION_RADIUS = 32
 const MINE_DETONATE_COUNTDOWN = 10 // 1 tick = 15ms (20 tick is about 0.3s)
 
-const BARREL_RADIUS = 18
+const BARREL_RADIUS = 24
 const BARREL_HEALTH = 2
 
 
