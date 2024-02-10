@@ -1189,7 +1189,7 @@ function loop(){
 
       const { id } =groundMap[chunkInfo.rowNum][chunkInfo.colNum]
       
-      if (!frontEndPlayer.getinhouse && id === 50){ //  get in house for the first time
+      if (!frontEndPlayer.getinhouse && id === 50 && !frontEndPlayer.onBoard){ //  get in house for the first time
         frontEndPlayer.getinhouse = true // prediction
         socket.emit('houseEnter')
         updateSightChunk(-1)
