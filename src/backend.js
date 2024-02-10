@@ -1938,13 +1938,21 @@ function explosion(location,BLASTNUM,playerID=0,shockWave=false){
 const AIRSTRIKE_TYPE_DICT = {'red':'bomb','green':'supply','white':'transport', 'yellow':'vehicle request'} 
 const STRIKE_INTERVAL_COEF = 10
 const PLANE_PICKUP_RADIUS = 256 // plane rad is 384
+const PLANE_SOUND_HEAR_RANGE = TILE_SIZE*16
 
 function spawnAirstrike(location, callerID, signalColor='green'){ // currently only makes cars
   airstrikeId++
-  const x = location.x
+  let x = location.x
+  // check x border
+  if (x < 0){
+    x = 1
+  }else if (x > MAPWIDTH){
+    x = MAPWIDTH-1
+  }
+
 
   let speed = Math.min( ((MAPHEIGHT - location.y)/MAPHEIGHT)*6+2 , 5) // 2~5
-  const y = MAPHEIGHT-1 // goes up
+  const y = MAPHEIGHT + PLANE_SOUND_HEAR_RANGE // goes up
 
   const signal = AIRSTRIKE_TYPE_DICT[signalColor]
   // default signal is supply/vehicle request
@@ -1963,7 +1971,7 @@ function spawnAirstrike(location, callerID, signalColor='green'){ // currently o
   backEndAirstrikes[airstrikeId] = {
     x,y, myID:airstrikeId, signal, speed, strike_Y_level, strikeNumber, callerID, onBoard:false, mytick:0
   }
-  NONitemBorderUpdate(backEndAirstrikes[airstrikeId])
+
 }
 
 function updateAirstrike(airstrikeid){
@@ -1973,25 +1981,27 @@ function updateAirstrike(airstrikeid){
   //console.log(airstrike.mytick)
   // sound effect of flying
   if (airstrike.mytick % 18===0 && airstrike.signal === 'bomb'){ // smallest tick
-    pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',TILE_SIZE*16, duration=1)
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
-  } else if (airstrike.mytick % 90===0 && airstrike.signal === 'vehicle request'){ // next large tick
-    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_motor_2sec',TILE_SIZE*16, duration=1)
+  } else if (airstrike.mytick % 95===0 && airstrike.signal === 'vehicle request'){ // next large tick
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_motor_2sec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
-  } else if (airstrike.mytick % 100===0){ // other planes check this 
-    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',TILE_SIZE*16, duration=1)
+  } else if (airstrike.mytick % 105===0){ // other planes check this 
+    pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
   }
   airstrike.mytick += 1
   // sound effect of flying
 
-  if (airstrike.y <= PLAYERRADIUS*2){
+  if (airstrike.y <= - PLANE_SOUND_HEAR_RANGE){
     safeDeleteAirstrike(airstrikeid)
-  } else if (airstrike.y <= airstrike.strike_Y_level){
-    if (airstrike.strikeNumber>0){
-      airstrike.strikeNumber -= 1
-      DeployAirstrike(airstrike)
-    }
+
+  } else if (airstrike.y < PLAYERRADIUS*2 && airstrike.signal==='transport') {
+    safeTakeOff(airstrikeid)// leave player behind: set player pos to endpos
+
+  }else if (airstrike.y <= airstrike.strike_Y_level && airstrike.strikeNumber>0){
+    airstrike.strikeNumber -= 1
+    DeployAirstrike(airstrike)
   }
 }
 
@@ -2068,7 +2078,6 @@ function safeTakeOff(airstrikeID){
 }
 
 function safeDeleteAirstrike(airstrikeid){ 
-  safeTakeOff(airstrikeid)// leave player behind: set player pos to endpos
   delete backEndAirstrikes[airstrikeid]
 }
 
