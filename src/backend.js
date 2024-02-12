@@ -760,6 +760,7 @@ async function main(){
         socket.on('place',({itemName,playerId,deleteflag, itemid,currentSlot,imgName}) => {
           let curplayer = backEndPlayers[playerId]
           if (!curplayer) {return}
+          if (curplayer.onBoard){return} // cannot shoot if on board
           function APIdeleteItem(){ // change player current holding item to fist
             curplayer.inventory[currentSlot-1] = backEndItems[0]
             backEndItems[itemid].deleteflag = deleteflag
@@ -804,6 +805,9 @@ async function main(){
         })
 
         socket.on('updateitemrequestDROP', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
+          if (!backEndPlayers[socket.id]) return // player not defined
+          if (backEndPlayers[socket.id].onBoard){return} // cannot shoot if on board
+
           let itemToUpdate = backEndItems[itemid]
           if (!itemToUpdate) {return}
           if(requesttype==='dropitem' || (!itemid)){ // not fist
