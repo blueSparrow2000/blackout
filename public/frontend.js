@@ -219,6 +219,9 @@ const keys = {
     r:{ // reload
       pressed: false
     },
+    q:{ // drop
+      pressed: false
+    },
 }
 
 
@@ -265,6 +268,9 @@ switch(event.code) {
     case 'KeyR':
     keys.r.pressed = true
     break
+    case 'KeyQ':
+      keys.q.pressed = true
+    break
 }
 })
 
@@ -310,6 +316,9 @@ switch(event.code) {
     break
     case 'KeyR':
     keys.r.pressed = false
+    break
+    case 'KeyQ':
+      keys.q.pressed = false
     break
 }
 })
@@ -467,21 +476,35 @@ setInterval(()=>{
     //socket.emit('keydown',{keycode:'KeyG'})
   }
 
-  if (keys.digit1.pressed){
-      socket.emit('keydown',{keycode:'Digit1'})
-  }
-  if (keys.digit2.pressed){
-      socket.emit('keydown',{keycode:'Digit2'})
-  }
-  if (keys.digit3.pressed){
-      socket.emit('keydown',{keycode:'Digit3'})
-  }
-  if (keys.digit4.pressed){
-      socket.emit('keydown',{keycode:'Digit4'})
-  }
+  if (listen) {
+      if (keys.digit1.pressed){
+          socket.emit('keydown',{keycode:'Digit1'})
+      }
+      if (keys.digit2.pressed){
+          socket.emit('keydown',{keycode:'Digit2'})
+      }
+      if (keys.digit3.pressed){
+          socket.emit('keydown',{keycode:'Digit3'})
+      }
+      if (keys.digit4.pressed){
+          socket.emit('keydown',{keycode:'Digit4'})
+      }
 
-  if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
-      socket.emit('keydown',{keycode:'KeyR'})
+      if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
+          socket.emit('keydown',{keycode:'KeyR'})
+      }
+      if (keys.q.pressed){ //
+        //socket.emit('keydown',{keycode:'KeyQ'})
+        if (!frontEndPlayer){return}
+        let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
+        if (!inventoryPointer) {inventoryPointer = 0} // default 0
+        const currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
+
+        dropItem(currentHoldingItemId)
+        socket.emit('updateitemrequest',{itemid:0, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id}) // update to fist
+        frontEndPlayer.inventory[inventoryPointer] = 0 // front end should also be changed
+
+    }
   }
 
   const Movement = keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed
@@ -558,13 +581,11 @@ socket.on('reload',()=>{
 })
 
 
-function dropItem(currentHoldingItemId, backEndItems){
+function dropItem(currentHoldingItemId){
   if (currentHoldingItemId===0){// fist - nothing to do
     return
   }
-  const droppingItem = backEndItems[currentHoldingItemId]
-  //let frontEndPlayer = frontEndPlayers[socket.id]
-  let curItemGET = frontEndItems[currentHoldingItemId]
+
   // if (droppingItem.itemtype === 'gun'){
   //   // empty out the gun (retrieve the ammo back)
   //   // frontEndPlayer.getAmmo(curItemGET.ammotype,curItemGET.ammo)
@@ -636,7 +657,7 @@ function interactItem(itemId,backEndItems){
 
   if(ITEM_THAT_TAKESUP_INVENTORY.includes(pickingItem.itemtype) ){
     //console.log(`itemId: ${itemId} / inventorypointer: ${inventoryPointer}`)
-    dropItem(currentHoldingItemId, backEndItems)
+    dropItem(currentHoldingItemId)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
     frontEndPlayer.inventory[inventoryPointer] = itemId // front end should also be changed
   } else if (pickingItem.itemtype === 'armor'){
@@ -1139,7 +1160,7 @@ function loop(){
 
     if (!frontEndPlayer){ // if not exists - draw nothing
       canvas.fillStyle = 'black'
-      canvas.fillText("loading...",centerX - 50,centerY + 50)
+      canvas.fillText("loading...",centerX - 50,centerY + 30)
       window.requestAnimationFrame(loop);
       return
     }

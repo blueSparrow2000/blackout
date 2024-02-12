@@ -90,6 +90,9 @@ or
 2024.2.9 Added Airstrike plane sound effect (using sound request)  / Added BLACKOUT WIKI (excel file)
 
 
+2024.2.12 Added item drop button: Q
+
+
 **1 week of developement ends**
 
 - Tweak log
@@ -104,6 +107,8 @@ Future plan
 - custom vehicle designs?
 - ~~vehicle sound effects~~ canceled due to lagging
 - ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
+- Shoot more accurately while standing still (spraying - hold shift - cause bullet spread)
+
 
 ## Various Tips
 - Maps should be square & need to specify tile number of one side 

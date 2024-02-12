@@ -1983,10 +1983,10 @@ function updateAirstrike(airstrikeid){
   if (airstrike.mytick % 18===0 && airstrike.signal === 'bomb'){ // smallest tick
     pushSoundRequest({x:airstrike.x,y:airstrike.y},'B2_halfsec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
-  } else if (airstrike.mytick % 95===0 && airstrike.signal === 'vehicle request'){ // next large tick
+  } else if (airstrike.mytick % 92===0 && airstrike.signal === 'vehicle request'){ // next large tick
     pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_motor_2sec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
-  } else if (airstrike.mytick % 105===0){ // other planes check this 
+  } else if (airstrike.mytick % 102===0){ // other planes check this 
     pushSoundRequest({x:airstrike.x,y:airstrike.y},'plane_2sec',PLANE_SOUND_HEAR_RANGE, duration=1)
     airstrike.mytick = 0
   }
