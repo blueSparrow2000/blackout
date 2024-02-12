@@ -66,7 +66,7 @@ planeImageMINIMAP.src = "/images/plane_minimap.png"
 
 
 let skinImages = {}
-const skinKeys = ['default','HALO','VOID']
+const skinKeys = ['default','HALO','VOID','FROST','TAEGEUK','GRADIENT','CANDY','JAVA','PYTHON','LINUX']
 for (let i=0;i<skinKeys.length;i++){
   const skinKey = skinKeys[i]
   skinImages[skinKey] = new Image()
