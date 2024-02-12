@@ -92,6 +92,9 @@ or
 
 **1 week of developement ends**
 
+- Tweak log
+2024.2.12 Buffed .45ACP damage from 0.5 -> 0.8 / absorb armor special effect starts from 0.5 -> 0.8 / changed effective DPS calculation
+
 
 
 Future plan

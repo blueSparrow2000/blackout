@@ -115,9 +115,9 @@ const gunInfo = {
     'DBS':{travelDistance:448, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:13, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
     'usas12':{travelDistance:448, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
     
-    'ump45':{travelDistance:700, damage: 0.5, shake:2, num: 1, fireRate: 85, projectileSpeed:16, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
-    'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 40, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
-    'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
+    'ump45':{travelDistance:700, damage: 0.8, shake:2, num: 1, fireRate: 85, projectileSpeed:16, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
+    'vector':{travelDistance:600, damage: 0.8, shake:1, num: 1, fireRate: 40, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
+    'mp5':{travelDistance:650, damage: 0.8, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
     'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
     'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
@@ -164,7 +164,7 @@ function armorEffect(armorID, damage){
   switch (armortype){
     case 'absorb': // absorb 0.2 damage: immune to fist
     //console.log("absorb")
-      if (damage>0.5){ // absorb more
+      if (damage>0.8){ // absorb more
         return Math.max(damage - 0.4, 0)
       }
       return Math.max(damage - 0.2, 0)
