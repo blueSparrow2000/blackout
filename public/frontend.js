@@ -440,12 +440,7 @@ function shootCheck(event){
   if (!listen) {return} // not ready to fire
   listen = false // block
 
-  let startDistance = 0
-  if (currentGunName==='flareGun'){
-    startDistance = guninfGET.size.length*2
-  }
-
-  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,startDistance,currentHoldingItemId})
+  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,currentHoldingItemId})
 
   if (!(currentHoldingItem.itemtype==='melee')){ // not malee, i.e. gun!
     // decrease ammo here!!!!!

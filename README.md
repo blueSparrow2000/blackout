@@ -101,13 +101,18 @@ or
 
 
 Future plan
+- ~~vehicle sound effects~~ canceled due to lagging
+- ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
+- Shoot more accurately while standing still (spraying - hold shift - cause bullet spread)
+- Make a death match version: Each kill advances the weapon of a player(cannot be dropped) + smarter AI & AI health increase + on ground items are: medkits/flareguns/scopes/armors 
+- Make a death match version: When a player reaches the last gun and get a kill, game initializes itself with last winner's name on the leaderboard
+
+
 - Code separation (backend) to modules
 - Add door & window (object entity)
 - Particle effects
 - custom vehicle designs?
-- ~~vehicle sound effects~~ canceled due to lagging
-- ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
-- Shoot more accurately while standing still (spraying - hold shift - cause bullet spread)
+
 
 
 ## Various Tips

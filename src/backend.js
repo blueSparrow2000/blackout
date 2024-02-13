@@ -119,9 +119,9 @@ const gunInfo = {
     'vector':{travelDistance:600, damage: 0.8, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
     'mp5':{travelDistance:650, damage: 0.8, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
     
-    'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:24, width:4}},
-    'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:28, width:2}},
-    'bat':{travelDistance:48, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:36, width:3}},
+    'fist':{travelDistance:24, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:0, width:4}},
+    'knife':{travelDistance:32, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:8, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:0, width:2}},
+    'bat':{travelDistance:48, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:6, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:0, width:3}},
 }
 let defaultGuns = []//['tankBuster','shockWave','fragment','grenadeLauncher']// 
 
@@ -708,9 +708,14 @@ async function main(){
         // aux function for shoot
         function shootProjectile(angle,currentGun,startDistance){
           const gunName = currentGun
-            
+          let startDistanceShoot = startDistance
+          if (startDistance===0){ // player shot this, not on a vehicle: always shoot at gun's front end point
+            startDistanceShoot = gunInfo[currentGun].size.length*2
+          }
+          
+
           for (let i=0;i< gunInfo[currentGun].num;i++){
-            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistance)
+            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistanceShoot)
           }
         }
         socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0})=>{ // NOTE: reload does not use socket!!!
@@ -725,7 +730,7 @@ async function main(){
               }
               shootProjectile(angle,currentGun,startDistance)
 
-            }else{ // not a flare gun, then ammo is not important
+            }else{ // not a flare gun, then ammo is not important / on vehicle turret etc.
               shootProjectile(angle,currentGun,startDistance)
             }
           }else{ // on vehicle turret etc.
