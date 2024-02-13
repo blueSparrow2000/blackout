@@ -341,7 +341,7 @@ function getCurItem(currentPlayer){
 }
 
 
-function shootCheck(event){
+function shootCheck(event,holding = false){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not fire bullet
     return
   }
@@ -394,7 +394,7 @@ function shootCheck(event){
       if (!listen) {return} // not ready to fire
       listen = false // block
     
-      socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName, startDistance:frontEndVehicles[vehicleID].radius + guninfGET.projectileSpeed})
+      socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName, startDistance:frontEndVehicles[vehicleID].radius + guninfGET.projectileSpeed,holding})
     
       fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return};clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
       return
@@ -440,7 +440,7 @@ function shootCheck(event){
   if (!listen) {return} // not ready to fire
   listen = false // block
 
-  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,currentHoldingItemId})
+  socket.emit("shoot", {angle:getAngle(event),currentGun:currentGunName,currentHoldingItemId,holding})
 
   if (!(currentHoldingItem.itemtype==='melee')){ // not malee, i.e. gun!
     // decrease ammo here!!!!!
@@ -507,14 +507,14 @@ setInterval(()=>{
   if (Movement && keys.space.pressed){ // always fire hold = true since space was pressed
   // update frequent keys at once (Movement & hold shoot)
       socket.emit('moveNshootUpdate', {WW: keys.w.pressed, AA: keys.a.pressed,SS: keys.s.pressed,DD: keys.d.pressed, x:cursorX, y:cursorY})
-      shootCheck({clientX:cursorX, clientY:cursorY})
+      shootCheck({clientX:cursorX, clientY:cursorY},true)
   } else if (Movement){
   // update frequent keys at once (Movement only)
       socket.emit('movingUpdate', {WW: keys.w.pressed, AA: keys.a.pressed, SS: keys.s.pressed, DD: keys.d.pressed, x:cursorX, y:cursorY})
 
   } else if(keys.space.pressed){ // always fire hold = true since space was pressed
       socket.emit('holdUpdate',{x:cursorX, y:cursorY})
-      shootCheck({clientX:cursorX, clientY:cursorY})
+      shootCheck({clientX:cursorX, clientY:cursorY},true)
   } else{ // builtin
       socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
   } 

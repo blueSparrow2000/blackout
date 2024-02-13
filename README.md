@@ -99,14 +99,14 @@ or
 2024.2.12 Buffed .45ACP damage from 0.5 -> 0.8 / absorb armor special effect starts from 0.5 -> 0.8 / changed effective DPS calculation / vector firerate nerfed 40 -> 50
 
 
+2024.2.13 Gun's start distance is at the gun's front end / Shoot more accurately while standing still (spraying - hold shift - cause bullet spread)
+
 
 Future plan
 - ~~vehicle sound effects~~ canceled due to lagging
 - ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
-- Shoot more accurately while standing still (spraying - hold shift - cause bullet spread)
 - Make a death match version: Each kill advances the weapon of a player(cannot be dropped) + smarter AI & AI health increase + on ground items are: medkits/flareguns/scopes/armors 
 - Make a death match version: When a player reaches the last gun and get a kill, game initializes itself with last winner's name on the leaderboard
-
 
 - Code separation (backend) to modules
 - Add door & window (object entity)

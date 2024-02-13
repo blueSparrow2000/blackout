@@ -486,10 +486,13 @@ function get_player_center_mouse_distance(mousePos, centerX, centerY){
   return Math.hypot(mousePos.x - centerX,mousePos.y - centerY)
 }
 
-function addProjectile(angle,currentGun,playerID,location,startDistance){
+function addProjectile(angle,currentGun,playerID,location,startDistance,holding=false){
   projectileId++
   const guninfoGET = gunInfo[currentGun]
-  const shakeProj = guninfoGET.shake
+  let  shakeProj = guninfoGET.shake
+  if (holding){
+    shakeProj *= 2 // double spread
+  }
   const bulletSpeed = guninfoGET.projectileSpeed
   const velocity = { // with shake!
     x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
@@ -706,7 +709,7 @@ async function main(){
         })
 
         // aux function for shoot
-        function shootProjectile(angle,currentGun,startDistance){
+        function shootProjectile(angle,currentGun,startDistance,holding){
           const gunName = currentGun
           let startDistanceShoot = startDistance
           if (startDistance===0){ // player shot this, not on a vehicle: always shoot at gun's front end point
@@ -715,10 +718,10 @@ async function main(){
           
 
           for (let i=0;i< gunInfo[currentGun].num;i++){
-            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistanceShoot)
+            addProjectile(angle,currentGun,socket.id, backEndPlayers[socket.id],startDistanceShoot,holding)
           }
         }
-        socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0})=>{ // NOTE: reload does not use socket!!!
+        socket.on('shoot', ({angle,currentGun,startDistance=0,currentHoldingItemId=0,holding})=>{ // NOTE: reload does not use socket!!!
           if (!backEndPlayers[socket.id]) return // player not defined
           if (backEndPlayers[socket.id].onBoard){return} // cannot shoot if on board
 
@@ -728,13 +731,13 @@ async function main(){
               if (thisGun.iteminfo.ammo>0){
                 thisGun.iteminfo.ammo = 0
               }
-              shootProjectile(angle,currentGun,startDistance)
+              shootProjectile(angle,currentGun,startDistance,holding)
 
             }else{ // not a flare gun, then ammo is not important / on vehicle turret etc.
-              shootProjectile(angle,currentGun,startDistance)
+              shootProjectile(angle,currentGun,startDistance,holding)
             }
           }else{ // on vehicle turret etc.
-            shootProjectile(angle,currentGun,startDistance)
+            shootProjectile(angle,currentGun,startDistance,holding)
           }
           // shootProjectile(angle,currentGun,startDistance)
 
