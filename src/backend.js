@@ -72,7 +72,7 @@ const EXTREMEFRICTION = 0.88
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
 let ENEMYSPAWNRATE = 30000
-let ENEMYNUM = 2
+let ENEMYNUM = 1
 let ENEMYCOUNT = 0
 
 const GROUNDITEMFLAG = true
@@ -129,6 +129,8 @@ let defaultGuns = []//['tankBuster','shockWave','fragment','grenadeLauncher']//
 const gunTypes = [ 'M1', 'mk14', 'SLR','AWM',    'pistol','VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5'] // except special guns: 'tankBuster', 'grenadeLauncher', 'fragment'
 const flareTypes = ['red','green','yellow','white']
 const meleeTypes = ['knife','bat']
+const gunOrderInDeathmatch = ['grenadeLauncher','AWM','vector','s686','ak47','SLR','FAMAS','usas12','mp5','M249','mk14','VSS','DBS','ump45','M1','pistol']
+
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -1741,7 +1743,7 @@ function spawnEnemies(){
 
   const damage = 1
   const myID = enemyId
-  const health = factor*2 -1
+  const health = factor*8 - 1
   const wearingarmorID = -1 //none
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))

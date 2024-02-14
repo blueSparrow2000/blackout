@@ -105,8 +105,8 @@ or
 Future plan
 - ~~vehicle sound effects~~ canceled due to lagging
 - ~~Add 2-person car (vehicle)~~ canceled due to policy: "no rotation in the game"
-- Make a death match version: Each kill advances the weapon of a player(cannot be dropped) + smarter AI & AI health increase + on ground items are: medkits/flareguns/scopes/armors 
-- Make a death match version: When a player reaches the last gun and get a kill, game initializes itself with last winner's name on the leaderboard
+- Make a death match version: Each kill advances the weapon of a player(cannot be dropped) + smarter AI & AI health increase + on ground items are: medkits/scopes/armors - medkits are used immediately when interact
+- Make a death match version: When a player reaches the last gun and get a kill, game initializes itself with last winner's name on the leaderboard / unable to drop item & pickup guns / player drop a medkit only when death
 
 - Code separation (backend) to modules
 - Add door & window (object entity)
